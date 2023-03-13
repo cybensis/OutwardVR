@@ -1,0 +1,14 @@
+{
+  "bindings": {
+    "/actions/default": {
+      "chords": [],
+      "poses": [],
+      "haptics": [],
+      "sources": [],
+      "skeleton": []
+    }
+  },
+  "controller_type": "index_hmd",
+  "description": "",
+  "name": "index hmd defaults"
+}

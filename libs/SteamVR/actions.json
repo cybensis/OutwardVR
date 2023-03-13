@@ -1,0 +1,172 @@
+{
+  "actions": [
+    {
+      "name": "/actions/default/in/SkeletonLeftHand",
+      "type": "skeleton",
+      "skeleton": "/skeleton/hand/left"
+    },
+    {
+      "name": "/actions/default/in/SkeletonRightHand",
+      "type": "skeleton",
+      "skeleton": "/skeleton/hand/right"
+    },
+    {
+      "name": "/actions/default/in/LeftHandPose",
+      "type": "pose"
+    },
+    {
+      "name": "/actions/default/in/RightHandPose",
+      "type": "pose"
+    },
+    {
+      "name": "/actions/default/in/decline",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/confirm",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/actionbar",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/pause",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/move",
+      "type": "vector2"
+    },
+    {
+      "name": "/actions/default/in/movecamera",
+      "type": "vector2"
+    },
+    {
+      "name": "/actions/default/in/group",
+      "type": "vector1"
+    },
+    {
+      "name": "/actions/default/in/menus",
+      "type": "vector1"
+    },
+    {
+      "name": "/actions/default/in/switchpov",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/grableft",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/grabright",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/options",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/highlight",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/switchturnbased",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/nexttarget",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/prevtarget",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/out/Haptic",
+      "type": "vibration"
+    }
+  ],
+  "action_sets": [
+    {
+      "name": "/actions/default",
+      "usage": "leftright"
+    }
+  ],
+  "default_bindings": [
+    {
+      "controller_type": "vive_controller",
+      "binding_url": "bindings_vive_controller.json"
+    },
+    {
+      "controller_type": "oculus_touch",
+      "binding_url": "bindings_oculus_touch.json"
+    },
+    {
+      "controller_type": "knuckles",
+      "binding_url": "bindings_knuckles.json"
+    },
+    {
+      "controller_type": "holographic_controller",
+      "binding_url": "bindings_holographic_controller.json"
+    },
+    {
+      "controller_type": "vive_cosmos_controller",
+      "binding_url": "bindings_vive_cosmos_controller.json"
+    },
+    {
+      "controller_type": "vive_cosmos",
+      "binding_url": "binding_vive_cosmos.json"
+    },
+    {
+      "controller_type": "vive",
+      "binding_url": "binding_vive.json"
+    },
+    {
+      "controller_type": "index_hmd",
+      "binding_url": "binding_index_hmd.json"
+    },
+    {
+      "controller_type": "vive_pro",
+      "binding_url": "binding_vive_pro.json"
+    },
+    {
+      "controller_type": "rift",
+      "binding_url": "binding_rift.json"
+    },
+    {
+      "controller_type": "holographic_hmd",
+      "binding_url": "binding_holographic_hmd.json"
+    },
+    {
+      "controller_type": "vive_tracker_camera",
+      "binding_url": "binding_vive_tracker_camera.json"
+    }
+  ],
+  "localization": [
+    {
+      "language_tag": "en_US",
+      "/actions/default/in/SkeletonLeftHand": "Skeleton (Left)",
+      "/actions/default/in/SkeletonRightHand": "Skeleton (Right)",
+      "/actions/default/out/Haptic": "Haptic",
+      "/actions/default/in/LeftHandPose": "Left Hand Pose",
+      "/actions/default/in/RightHandPose": "Right Hand Pose",
+      "/actions/default/in/decline": "Decline",
+      "/actions/default/in/confirm": "Confirm",
+      "/actions/default/in/actionbar": "Toggle Actionbar",
+      "/actions/default/in/pause": "Pause game",
+      "/actions/default/in/move": "Move",
+      "/actions/default/in/movecamera": "Move Camera",
+      "/actions/default/in/group": "Group",
+      "/actions/default/in/menus": "Menus",
+      "/actions/default/in/switchpov": "Switch POV",
+      "/actions/default/in/grableft": "Grab (Left)",
+      "/actions/default/in/grabright": "Grab (Right)",
+      "/actions/default/in/options": "Options menu",
+      "/actions/default/in/highlight": "Highlight Objects",
+      "/actions/default/in/switchturnbased": "Switch Turn Based",
+      "/actions/default/in/nexttarget": "Next Target",
+      "/actions/default/in/prevtarget": "Previous Target"
+    }
+  ]
+}
