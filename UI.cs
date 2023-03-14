@@ -13,6 +13,7 @@ using Rewired;
 using Rewired.Data;
 using Rewired.Data.Mapping;
 
+
 // 1. MenuManager -> CharacterUIs -> PlayerUI -> Canvas open canvas component and set its render thingy to world space, and set position to cam pos
 // 2. In Canvas -> GeneralPanels -> MainScreem -> VisualMainScreen -> Options Set pos to camera
 // 3. Set canvas scale to 0.01 for xyz then move it forward on Z +10
