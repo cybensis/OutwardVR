@@ -9,7 +9,9 @@ using UnityEngine;
 using Valve.VR;
 using UnityEngine.UI;
 using System.Reflection;
-
+using Rewired;
+using Rewired.Data;
+using Rewired.Data.Mapping;
 
 // 1. MenuManager -> CharacterUIs -> PlayerUI -> Canvas open canvas component and set its render thingy to world space, and set position to cam pos
 // 2. In Canvas -> GeneralPanels -> MainScreem -> VisualMainScreen -> Options Set pos to camera
@@ -61,14 +63,18 @@ namespace OutwardVR
         private static void CharacterCamera_Update(CharacterCamera __instance)
         {
             Canvas UICanvas = __instance.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
-            if (UICanvas) { 
+            if (UICanvas)
+            {
                 UICanvas.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.035f) + (Camera.main.transform.up * -0.025f);
                 UICanvas.transform.rotation = Camera.main.transform.rotation;
             }
         }
 
 
-       private static void SetupUIShader()
+
+
+
+        private static void SetupUIShader()
         {
             // Load bundle
             var bundle = AssetBundle.LoadFromFile(ASSETBUNDLE_PATH);
@@ -104,9 +110,10 @@ namespace OutwardVR
         [HarmonyPatch(typeof(CharacterUI), "Awake")]
         public static void FixUI(CharacterUI __instance, RectTransform ___m_gameplayPanelsHolder)
         {
-            Logs.WriteWarning("CHARACTERUI AWAKE");
+
             Canvas UICanvas = __instance.UIPanel.gameObject.GetComponent<Canvas>();
-            if (UICanvas && ___m_gameplayPanelsHolder.gameObject.GetActive()) {
+            if (UICanvas)
+            {
                 UICanvas.renderMode = RenderMode.WorldSpace;
                 UICanvas.transform.localScale = new Vector3(0.0003f, 0.0003f, 0.0003f);
                 Camera.main.cullingMask = -1;
@@ -117,22 +124,22 @@ namespace OutwardVR
 
 
         // Need to move this UI moving function somewhere else cos when the player moves or runs, the hud updates slowly so it keeps going into the userwwwww
-/*        [HarmonyPostfix]
-        [HarmonyPatch(typeof(CharacterUI), "Update")]
-        public static void PositionUI(CharacterUI __instance, RectTransform ___m_gameplayPanelsHolder)
-        {
-            // Move Canvas forward x 0.7 and to the right 0.1 I think??
-            // Camera.main.transform.position + Camera.main.transform.forward * 0.4f + Camera.main.transform.right * -0.03f;
+        /*        [HarmonyPostfix]
+                [HarmonyPatch(typeof(CharacterUI), "Update")]
+                public static void PositionUI(CharacterUI __instance, RectTransform ___m_gameplayPanelsHolder)
+                {
+                    // Move Canvas forward x 0.7 and to the right 0.1 I think??
+                    // Camera.main.transform.position + Camera.main.transform.forward * 0.4f + Camera.main.transform.right * -0.03f;
 
-            Canvas UICanvas = __instance.UIPanel.gameObject.GetComponent<Canvas>();
-            if (UICanvas && ___m_gameplayPanelsHolder.gameObject.GetActive())
-            {
-                UICanvas.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.035f)  + (Camera.main.transform.up * -0.025f);
-                UICanvas.transform.rotation = Camera.main.transform.rotation;
-            }
+                    Canvas UICanvas = __instance.UIPanel.gameObject.GetComponent<Canvas>();
+                    if (UICanvas && ___m_gameplayPanelsHolder.gameObject.GetActive())
+                    {
+                        UICanvas.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.035f)  + (Camera.main.transform.up * -0.025f);
+                        UICanvas.transform.rotation = Camera.main.transform.rotation;
+                    }
 
-            // Set HUD MainCharacterBars LocalPosition to 606.6805 300.9597. This thingy uses the CharacterBarListener class so maybe do something with that
-        }*/
+                    // Set HUD MainCharacterBars LocalPosition to 606.6805 300.9597. This thingy uses the CharacterBarListener class so maybe do something with that
+                }*/
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterBarListener), "Awake")]
@@ -141,7 +148,7 @@ namespace OutwardVR
             // Move Canvas forward x 0.7 and to the right 0.1 I think??
             // Camera.main.transform.position + Camera.main.transform.forward * 0.4f + Camera.main.transform.right * -0.03f;
 
-            __instance.RectTransform.localPosition = new Vector3(606f,300f,0f);
+            __instance.RectTransform.localPosition = new Vector3(606f, 300f, 0f);
 
             // Set HUD MainCharacterBars LocalPosition to 606.6805 300.9597. This thingy uses the CharacterBarListener class so maybe do something with that
         }
@@ -152,7 +159,7 @@ namespace OutwardVR
 
             try
             {
-                
+
             }
             catch (Exception e)
             {

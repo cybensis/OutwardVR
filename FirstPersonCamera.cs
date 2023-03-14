@@ -45,7 +45,6 @@ namespace OutwardVR
             public static bool Prefix(CharacterCamera __instance, Camera ___m_camera)
             {
 
-
                 if (cameraFixed
                     || !__instance.TargetCharacter
                     || !NetworkLevelLoader.Instance.IsOverallLoadingDone
@@ -58,10 +57,10 @@ namespace OutwardVR
 
                 try
                 {
-                        FixCamera(__instance, ___m_camera);
-                        __instance.transform.parent.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
-                        __instance.transform.parent.transform.parent.transform.GetChild(8).GetComponent<SkinnedMeshRenderer>().enabled = false;
-    
+                    FixCamera(__instance, ___m_camera);
+                    __instance.transform.parent.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
+                    __instance.transform.parent.transform.parent.transform.GetChild(8).GetComponent<SkinnedMeshRenderer>().enabled = false;
+
                 }
                 catch (Exception e)
                 {
@@ -76,7 +75,7 @@ namespace OutwardVR
         {
             Debug.Log("[InwardVR] setting up camera...");
             //Notes: TargetCharacter links to the Character class
-
+            Controllers.Init();
 
             // Get the character model head transform
             var headTrans = cameraScript.TargetCharacter.Visuals.Head.transform;
@@ -85,9 +84,10 @@ namespace OutwardVR
             var camHolder = camera.transform.parent;
             camHolder.localPosition = camera.transform.localPosition * -1;
             var pos = camHolder.localPosition;
+
             /*pos.x -= 0.05f;*/
             pos.y += 0.7f;
-           /* pos.z -= 0.05f;*/
+            /* pos.z -= 0.05f;*/
             camHolder.localPosition = pos;
 
             // get the root gameobject of the camera (parent of camHolder)
@@ -101,26 +101,26 @@ namespace OutwardVR
 
             cameraFixed = true;
             cameraScript.transform.Rotate(351f, 250f, 346f);
-            if (CameraManager.RightHand == null)
-            {
-                if (AssetLoader.LeftHandBase == null)
-                {
-                    new AssetLoader();
-                }
-                CameraManager.VROrigin = new GameObject();
-                Transform OriginalCameraParent = Camera.main.transform.parent;
-                CameraManager.VROrigin.transform.position = OriginalCameraParent.position;
-                CameraManager.VROrigin.transform.rotation = OriginalCameraParent.rotation;
-                CameraManager.VROrigin.transform.localScale = OriginalCameraParent.localScale;
+            //if (CameraManager.RightHand == null)
+            //{
+            //    if (AssetLoader.LeftHandBase == null)
+            //    {
+            //        new AssetLoader();
+            //    }
+            //    CameraManager.VROrigin = new GameObject();
+            //    Transform OriginalCameraParent = Camera.main.transform.parent;
+            //    CameraManager.VROrigin.transform.position = OriginalCameraParent.position;
+            //    CameraManager.VROrigin.transform.rotation = OriginalCameraParent.rotation;
+            //    CameraManager.VROrigin.transform.localScale = OriginalCameraParent.localScale;
 
-                CameraManager.VROrigin.transform.parent = OriginalCameraParent;
+            //    CameraManager.VROrigin.transform.parent = OriginalCameraParent;
 
-                    CameraManager.RightHand = GameObject.Instantiate(AssetLoader.RightHandBase, Vector3.zeroVector, Quaternion.identityQuaternion);
-                CameraManager.RightHand.transform.parent = OriginalCameraParent;
-                    CameraManager.LeftHand = GameObject.Instantiate(AssetLoader.LeftHandBase, Vector3.zeroVector, Quaternion.identityQuaternion);
-                CameraManager.LeftHand.transform.parent = OriginalCameraParent;
+            //        CameraManager.RightHand = GameObject.Instantiate(AssetLoader.RightHandBase, Vector3.zeroVector, Quaternion.identityQuaternion);
+            //    CameraManager.RightHand.transform.parent = OriginalCameraParent;
+            //        CameraManager.LeftHand = GameObject.Instantiate(AssetLoader.LeftHandBase, Vector3.zeroVector, Quaternion.identityQuaternion);
+            //    CameraManager.LeftHand.transform.parent = OriginalCameraParent;
 
-            }
+            //}
             Debug.Log("[InwardVR] done setting up camera.");
         }
 
@@ -137,7 +137,7 @@ namespace OutwardVR
 
         private static readonly Dictionary<UID, float> LastTurnTimes = new Dictionary<UID, float>();
 
-        
+
         [HarmonyPatch(typeof(LocalCharacterControl), "UpdateMovement")]
         public class LocalCharacterControl_UpdateMovement
         {
@@ -145,20 +145,7 @@ namespace OutwardVR
             public static bool Prefix(LocalCharacterControl __instance, ref Vector3 ___m_inputMoveVector, ref Vector3 ___m_modifMoveInput,
                 Transform ___m_horiControl, ref bool ___m_sprintFacing)
             {
-
-                if (CameraManager.RightHand)
-                {
-                    CameraManager.RightHand.transform.position = Camera.main.transform.parent.transform.position - Camera.main.transform.parent.transform.localPosition;
-                    CameraManager.RightHand.transform.localPosition = SteamVR_Actions._default.RightHandPose.localPosition;
-                    CameraManager.RightHand.transform.localRotation = SteamVR_Actions._default.RightHandPose.localRotation;
-
-                }
-                if (CameraManager.LeftHand)
-                {
-                    CameraManager.LeftHand.transform.position = Camera.main.transform.parent.position;
-                    CameraManager.LeftHand.transform.localPosition = SteamVR_Actions._default.LeftHandPose.localPosition;
-                    CameraManager.LeftHand.transform.localRotation = SteamVR_Actions._default.LeftHandPose.localRotation;
-                }
+                Controllers.Update();
                 var m_char = fi_m_character.GetValue(__instance) as Character;
                 var animator = m_char.Animator;
                 var targetSys = m_char.TargetingSystem;
@@ -318,9 +305,9 @@ namespace OutwardVR
                 }
 
                 // set values that we used manual reflection for
-               /* fi_localMoveVector.SetValue(__instance, movementVector);
-                fi_turnAllow.SetValue(__instance, turnAllow);
-                fi_slopeSpeed.SetValue(__instance, slopeSpeed);*/
+                /* fi_localMoveVector.SetValue(__instance, movementVector);
+                 fi_turnAllow.SetValue(__instance, turnAllow);
+                 fi_slopeSpeed.SetValue(__instance, slopeSpeed);*/
 
                 return false;
             }

@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "dgSpecHash": "4uR9TBBftHqCOKHmMsqziipTTLbznOHM1niQhHuRc1O37U6JT0qh7svahbXGmvvQ4W2kHhXp9NjecRoRT7Kkxg==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Guy\\Desktop\\gamedev\\r\\OutwardVR\\OutwardVR.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Guy\\.nuget\\packages\\bepinex.analyzers\\1.0.8\\bepinex.analyzers.1.0.8.nupkg.sha512",
+    "C:\\Users\\Guy\\.nuget\\packages\\bepinex.baselib\\5.4.20\\bepinex.baselib.5.4.20.nupkg.sha512",
+    "C:\\Users\\Guy\\.nuget\\packages\\bepinex.core\\5.4.21\\bepinex.core.5.4.21.nupkg.sha512",
+    "C:\\Users\\Guy\\.nuget\\packages\\bepinex.plugininfoprops\\2.1.0\\bepinex.plugininfoprops.2.1.0.nupkg.sha512",
+    "C:\\Users\\Guy\\.nuget\\packages\\harmonyx\\2.7.0\\harmonyx.2.7.0.nupkg.sha512",
+    "C:\\Users\\Guy\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.2\\microsoft.netframework.referenceassemblies.1.0.2.nupkg.sha512",
+    "C:\\Users\\Guy\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net472\\1.0.2\\microsoft.netframework.referenceassemblies.net472.1.0.2.nupkg.sha512",
+    "C:\\Users\\Guy\\.nuget\\packages\\mono.cecil\\0.11.4\\mono.cecil.0.11.4.nupkg.sha512",
+    "C:\\Users\\Guy\\.nuget\\packages\\monomod.runtimedetour\\21.12.13.1\\monomod.runtimedetour.21.12.13.1.nupkg.sha512",
+    "C:\\Users\\Guy\\.nuget\\packages\\monomod.utils\\21.12.13.1\\monomod.utils.21.12.13.1.nupkg.sha512",
+    "C:\\Users\\Guy\\.nuget\\packages\\unityengine.modules\\2018.4.4\\unityengine.modules.2018.4.4.nupkg.sha512"
+  ],
+  "logs": []
+}

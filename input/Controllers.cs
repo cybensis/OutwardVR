@@ -50,8 +50,8 @@ namespace OutwardVR
             vrControllers = RewiredAddons.CreateRewiredController();
             vrGameplayMap = RewiredAddons.CreateGameplayMap(vrControllers.id);
 
-                inputs = new BaseInput[]
-                {
+            inputs = new BaseInput[]
+            {
                     new VectorInput(SteamVR_Actions.default_move, 0, 1),
                     new VectorInput(SteamVR_Actions.default_movecamera, 2, 3),
                     new ButtonInput(SteamVR_Actions.default_confirm, 4),
@@ -65,7 +65,7 @@ namespace OutwardVR
                     new ButtonInput(SteamVR_Actions.default_switchturnbased, 12),
                     new ButtonInput(SteamVR_Actions.default_prevtarget, 13),
                     new ButtonInput(SteamVR_Actions.default_nexttarget, 14)
-                };
+            };
         }
 
         public static void Update()
@@ -75,18 +75,18 @@ namespace OutwardVR
                 Logs.WriteInfo("allPlayerCount: ");
                 Logs.WriteInfo(ReInput.players.allPlayerCount);
                 Player p = null;
-                //for (int i = 0; i < ReInput.players.allPlayerCount; i++)
-                //{
-                //    p = ReInput.players.AllPlayers[i];
-                //    if (p != null)
-                //    {
-                //        Logs.WriteInfo("found non null Player p with name: ");
-                //        Logs.WriteInfo(p.name);
-                //        break;
-                //    }
+                for (int i = 0; i < ReInput.players.allPlayerCount; i++)
+                {
+                    if (ReInput.players.AllPlayers[i] != null)
+                    {
+                        p = ReInput.players.AllPlayers[1];
+                        Logs.WriteInfo("found non null Player p with name: ");
+                        Logs.WriteInfo(p.name);
+                        //break;
+                    }
 
-                //}
-                p = Kingmaker.Assets.Console.GamepadInput.GamePad.Instance.Player;
+                }
+                //p = Kingmaker.Assets.Console.GamepadInput.GamePad.Instance.Player;
 
                 if (AddVRController(p))
                 {
@@ -118,7 +118,7 @@ namespace OutwardVR
 
         private static void UpdateVRInputs()
         {
-            
+
             foreach (BaseInput input in inputs)
             {
                 input.UpdateValues(vrControllers);
@@ -129,47 +129,5 @@ namespace OutwardVR
                 input.UpdateValues(vrControllers);
             }
         }
-
-
-        // For printing the flatscreen game binds
-        public static void LogAllGameActions(Rewired.Player player)
-        {
-            Logs.WriteInfo("LogAllGameActions started");
-            // All elements mapped to all joysticks in the player
-            foreach (Joystick j in player.controllers.Joysticks)
-            {
-
-                // Loop over all Joystick Maps in the Player for this Joystick
-                foreach (JoystickMap map in player.controllers.maps.GetMaps<JoystickMap>(j.id))
-                {
-
-                    // Loop over all button maps
-                    foreach (ActionElementMap aem in map.ButtonMaps)
-                    {
-                        Logs.WriteInfo(aem.elementIdentifierName + " is assigned to Button " + aem.elementIndex + " with the Action " + ReInput.mapping.GetAction(aem.actionId).name + " with actionId " + aem.actionId);
-                    }
-
-                    // Loop over all axis maps
-                    foreach (ActionElementMap aem in map.AxisMaps)
-                    {
-                        Logs.WriteInfo(aem.elementIdentifierName + " is assigned to Axis " + aem.elementIndex + " with the Action " + ReInput.mapping.GetAction(aem.actionId).name + " with actionId " + aem.actionId);
-                    }
-
-                    // Loop over all element maps of any type
-                    foreach (ActionElementMap aem in map.AllMaps)
-                    {
-                        if (aem.elementType == ControllerElementType.Axis)
-                        {
-                            Logs.WriteInfo(aem.elementIdentifierName + " is assigned to Axis " + aem.elementIndex + " with the Action " + ReInput.mapping.GetAction(aem.actionId).name + " with actionId " + aem.actionId);
-                        }
-                        else if (aem.elementType == ControllerElementType.Button)
-                        {
-                            Logs.WriteInfo(aem.elementIdentifierName + " is assigned to Button " + aem.elementIndex + " with the Action " + ReInput.mapping.GetAction(aem.actionId).name + " with actionId " + aem.actionId);
-                        }
-                    }
-                }
-            }
-            Logs.WriteInfo("LogAllGameActions ended");
-        } 
     }
 }

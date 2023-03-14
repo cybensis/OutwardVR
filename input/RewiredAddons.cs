@@ -3,12 +3,13 @@ using Rewired.Data;
 using Rewired.Data.Mapping;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace OutwardVR
 {
     internal static class RewiredAddons
     {
-        
+
         internal static CustomController CreateRewiredController()
         {
             HardwareControllerMap_Game hcMap = new HardwareControllerMap_Game(
@@ -106,13 +107,13 @@ namespace OutwardVR
 
         internal static CustomControllerMap CreateGameplayMap(int controllerID)
         {
-            
+
             List<ActionElementMap> defaultElementMaps = new List<ActionElementMap>()
             {
-                new ActionElementMap(0 , ControllerElementType.Axis  , 0 , Pole.Positive, AxisRange.Full, false), //MoveHor
-                new ActionElementMap(1 , ControllerElementType.Axis  , 1 , Pole.Positive, AxisRange.Full, false), //MoveVer
-                new ActionElementMap(2, ControllerElementType.Axis  , 2 , Pole.Positive, AxisRange.Full, false), //MoveCameraHor
-                new ActionElementMap(3, ControllerElementType.Axis  , 3 , Pole.Positive, AxisRange.Full, false), //MoveCameraVer
+                new ActionElementMap(63 , ControllerElementType.Axis  , 0 , Pole.Positive, AxisRange.Full, false), //MoveHor
+                new ActionElementMap(64 , ControllerElementType.Axis  , 1 , Pole.Positive, AxisRange.Full, false), //MoveVer
+                new ActionElementMap(124, ControllerElementType.Axis  , 2 , Pole.Positive, AxisRange.Full, false), //MoveCameraHor
+                new ActionElementMap(125, ControllerElementType.Axis  , 3 , Pole.Positive, AxisRange.Full, false), //MoveCameraVer
                 new ActionElementMap(8 , ControllerElementType.Button, 4 , Pole.Positive, AxisRange.Positive, false), //Confirm
                 new ActionElementMap(9 , ControllerElementType.Button, 5, Pole.Positive, AxisRange.Positive, false), //Decline
                 new ActionElementMap(10 , ControllerElementType.Button, 6, Pole.Positive, AxisRange.Positive, false), //Func01 = pause
@@ -127,11 +128,11 @@ namespace OutwardVR
             };
 
             return CreateCustomMap("VRDefault", 0, controllerID, defaultElementMaps);
-            
-        }
-        
 
-        
+        }
+
+
+
         private static CustomControllerMap CreateCustomMap(string mapName, int categoryId, int controllerId, List<ActionElementMap> actionElementMaps)
         {
             ReInput.UserData.CreateCustomControllerMap(categoryId, controllerId, 0);
@@ -152,9 +153,9 @@ namespace OutwardVR
                 newElementMap.invert = elementMap.invert;
             }
 
-            return ReInput.UserData.fmpEtOISxUiBDFMiRddLezwxpaK(categoryId, controllerId, 0);
+            return ReInput.UserData.ZkdVVpddavmruicKaOtoiXbLmnO(categoryId, controllerId, 0);
         }
-        
-        
+
+
     }
 }
