@@ -16,22 +16,27 @@ namespace OutwardVR
                 "VRControllers",
                 new ControllerElementIdentifier[]
                 {
-                    new ControllerElementIdentifier(0, "MoveX", "MoveXPos", "MoveXNeg", ControllerElementType.Axis, true),
-                    new ControllerElementIdentifier(1, "MoveY", "MoveYPos", "MoveYNeg", ControllerElementType.Axis, true),
-                    new ControllerElementIdentifier(2, "MoveCameraX", "MoveCameraXPos", "MoveCameraXNeg", ControllerElementType.Axis, true),
-                    new ControllerElementIdentifier(3, "MoveCameraY", "MoveCameraYPos", "MoveCameraYNeg", ControllerElementType.Axis, true),
-                    new ControllerElementIdentifier(4, "confirm", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(5, "decline", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(6, "pause", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(7, "actionbar", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(8, "group", "groupPos", "groupNeg", ControllerElementType.Axis, true),
-                    new ControllerElementIdentifier(9, "menus", "menusPos", "menusNeg", ControllerElementType.Axis, true),
-                    new ControllerElementIdentifier(10, "options", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(11, "highlight", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(12, "switchturnbased", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(13, "prevtarget", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(14, "nexttarget", "", "", ControllerElementType.Button, true)
+                    // The ID values here are from Controllers
+                    new ControllerElementIdentifier(Controllers.LeftJoyStickHor, "MoveX", "MoveXPos", "MoveXNeg", ControllerElementType.Axis, true),
+                    new ControllerElementIdentifier(Controllers.LeftJoyStickVert, "MoveY", "MoveYPos", "MoveYNeg", ControllerElementType.Axis, true),
+                    new ControllerElementIdentifier(Controllers.RightJoyStickHor, "MoveCameraX", "MoveCameraXPos", "MoveCameraXNeg", ControllerElementType.Axis, true),
+                    new ControllerElementIdentifier(Controllers.RightJoyStickVert, "MoveCameraY", "MoveCameraYPos", "MoveCameraYNeg", ControllerElementType.Axis, true),
+                    new ControllerElementIdentifier(Controllers.ButtonA, "ButtonA", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.ButtonB, "ButtonB", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.ButtonX, "ButtonX", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.ButtonY, "ButtonY", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.LeftTrigger, "LeftTrigger", "", "", ControllerElementType.Axis, true),
+                    new ControllerElementIdentifier(Controllers.RightTrigger, "RightTrigger", "", "", ControllerElementType.Axis, true),
+                    new ControllerElementIdentifier(Controllers.LeftGrip, "LeftGrip", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.ClickLeftJoystick, "ClickLeftJoystick", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.ClickRightJoystick, "ClickRightJoystick", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.RightGrip, "RightGrip", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.NorthDPAD, "NorthDPAD", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.EastDPAD, "EastDPAD", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.SouthDPAD, "SouthDPAD", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.WestDPAD, "WestDPAD", "", "", ControllerElementType.Button, true)
                 },
+           
                 new int[] { },
                 new int[] { },
                 new AxisCalibrationData[]
@@ -110,22 +115,71 @@ namespace OutwardVR
 
             List<ActionElementMap> defaultElementMaps = new List<ActionElementMap>()
             {
-                new ActionElementMap(63 , ControllerElementType.Axis  , 0 , Pole.Positive, AxisRange.Full, false), //MoveHor
-                new ActionElementMap(64 , ControllerElementType.Axis  , 1 , Pole.Positive, AxisRange.Full, false), //MoveVer
-                new ActionElementMap(124, ControllerElementType.Axis  , 2 , Pole.Positive, AxisRange.Full, false), //MoveCameraHor
-                new ActionElementMap(125, ControllerElementType.Axis  , 3 , Pole.Positive, AxisRange.Full, false), //MoveCameraVer
-                new ActionElementMap(8 , ControllerElementType.Button, 4 , Pole.Positive, AxisRange.Positive, false), //Confirm
-                new ActionElementMap(9 , ControllerElementType.Button, 5, Pole.Positive, AxisRange.Positive, false), //Decline
-                new ActionElementMap(10 , ControllerElementType.Button, 6, Pole.Positive, AxisRange.Positive, false), //Func01 = pause
-                new ActionElementMap(11 , ControllerElementType.Button, 7, Pole.Positive, AxisRange.Positive, false), //Func02 = Actionbar
-                new ActionElementMap(12 , ControllerElementType.Axis, 8, Pole.Positive, AxisRange.Positive, false), // LeftBottom = group
-                new ActionElementMap(13 , ControllerElementType.Axis, 9, Pole.Positive, AxisRange.Positive, false), // RightBottom = menus
-                new ActionElementMap(16 , ControllerElementType.Button, 10, Pole.Positive, AxisRange.Positive, false), //Options
-                new ActionElementMap(18 , ControllerElementType.Button, 11, Pole.Positive, AxisRange.Positive, false), //Higlight
-                new ActionElementMap(19 , ControllerElementType.Button, 12, Pole.Positive, AxisRange.Positive, false), //Switch Turn Based
-                new ActionElementMap(14 , ControllerElementType.Button, 13, Pole.Positive, AxisRange.Positive, false), //Prev Target
-                new ActionElementMap(15 , ControllerElementType.Button, 14, Pole.Positive, AxisRange.Positive, false) //Next Target
-            };
+                new ActionElementMap(MoveHorID , ControllerElementType.Axis  , Controllers.LeftJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveHor
+                new ActionElementMap(MoveVertID , ControllerElementType.Axis  , Controllers.LeftJoyStickVert , Pole.Positive, AxisRange.Full, false), //MoveVer
+                new ActionElementMap(CameraMoveHorID, ControllerElementType.Axis  , Controllers.RightJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveCameraHor
+                new ActionElementMap(CameraMoveVertID, ControllerElementType.Axis  , Controllers.RightJoyStickVert , Pole.Positive, AxisRange.Full, false), //MoveCameraVer
+                new ActionElementMap(AttackOneID , ControllerElementType.Button, Controllers.ButtonA , Pole.Positive, AxisRange.Positive, false), //Attack1
+                new ActionElementMap(AttackTwoID , ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false), //Attack2
+                new ActionElementMap(StealthID , ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false), //Stealth
+                new ActionElementMap(InteractID , ControllerElementType.Button, Controllers.ButtonY, Pole.Positive, AxisRange.Positive, false), //Interact
+                new ActionElementMap(QuickSlotToggleOneID , ControllerElementType.Axis, Controllers.LeftTrigger, Pole.Positive, AxisRange.Positive, false), // LeftTrigger
+                new ActionElementMap(QuickSlotToggleTwoID , ControllerElementType.Axis, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false), // RightTrigger
+                new ActionElementMap(AutoRunID , ControllerElementType.Button, Controllers.ClickLeftJoystick, Pole.Positive, AxisRange.Positive, false), //Click left joy
+                new ActionElementMap(LockToggleID , ControllerElementType.Button, Controllers.ClickRightJoystick, Pole.Positive, AxisRange.Positive, false), //Click right joy
+                new ActionElementMap(BlockID , ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false), 
+                new ActionElementMap(ChargeWeaponID , ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false), 
+                new ActionElementMap(DodgeID, ControllerElementType.Button, Controllers.LeftGrip, Pole.Positive, AxisRange.Positive, false), 
+                new ActionElementMap(SprintID, ControllerElementType.Button, Controllers.LeftGrip, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(HandleBagID, ControllerElementType.Button, Controllers.NorthDPAD, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(ToggleMapID, ControllerElementType.Button, Controllers.EastDPAD, Pole.Positive, AxisRange.Positive, false), 
+                new ActionElementMap(SheatheID, ControllerElementType.Button, Controllers.SouthDPAD, Pole.Positive, AxisRange.Positive, false), 
+                new ActionElementMap(ToggleLightsID, ControllerElementType.Button, Controllers.WestDPAD, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(ChargeWeaponID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(QuickActionID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(ShowOptionsID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(MenuVertID, ControllerElementType.Button, Controllers.NorthDPAD, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(MenuHorID, ControllerElementType.Button, Controllers.EastDPAD, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(MenuVertID, ControllerElementType.Button, Controllers.SouthDPAD, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(MenuHorID, ControllerElementType.Button, Controllers.WestDPAD, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(PreviousMenuID, ControllerElementType.Button, Controllers.LeftGrip, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(NextMenuID, ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(QuickDialogueID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(QuickDialogueID, ControllerElementType.Button, Controllers.ButtonY, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(TakeAllID, ControllerElementType.Button, Controllers.ButtonY, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(InfoID, ControllerElementType.Button, Controllers.ButtonY, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(DeleteID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(CompareID, ControllerElementType.Button, Controllers.ClickRightJoystick, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(ToggleDetailPanelID, ControllerElementType.Button, Controllers.ClickLeftJoystick, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(PreviousFilterID, ControllerElementType.Button, Controllers.LeftTrigger, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(NextFilterID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(MenuHorID, ControllerElementType.Button, Controllers.LeftJoyStickHor, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(MenuVertID, ControllerElementType.Button, Controllers.LeftJoyStickVert, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(QuickSlotOneID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(QuickSlotTwoID, ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(QuickSlotThreeID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(QuickSlotFourID, ControllerElementType.Button, Controllers.ButtonY, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(QuickSlotToggleOneID, ControllerElementType.Button, Controllers.LeftTrigger, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(QuickSlotToggleTwoID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(ConfirmDeployID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(CancelDeployID, ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(RotateDeployLeftID, ControllerElementType.Button, Controllers.LeftGrip, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(RotateDeployRightID, ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_LeftClickID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_RightClickID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_VertID, ControllerElementType.Button, Controllers.LeftJoyStickVert, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_HorID, ControllerElementType.Button, Controllers.LeftJoyStickHor, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_HorScrollID, ControllerElementType.Button, Controllers.RightJoyStickHor, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_VertScrollID, ControllerElementType.Button, Controllers.RightJoyStickVert, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(CancelID, ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(EnableSaveSelectionOneID, ControllerElementType.Button, Controllers.LeftGrip, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(EnableSaveSelectionTwoID, ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(EnableSaveSelectionThreeID, ControllerElementType.Button, Controllers.LeftTrigger, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(EnableSaveSelectionFourID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(EnableSaveSelectionFourID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(ToggleInventoryID, ControllerElementType.Button, Controllers.Back , Pole.Positive, AxisRange.Positive, false),
+                //new ActionElementMap(EnableSaveSelectionFiveID, ControllerElementType.Button, (This needs to be left stick right?), Pole.Positive, AxisRange.Positive, false),
+            };  
 
             return CreateCustomMap("VRDefault", 0, controllerID, defaultElementMaps);
 
@@ -152,9 +206,68 @@ namespace OutwardVR
                     newElementMap.axisRange = elementMap.axisRange;
                 newElementMap.invert = elementMap.invert;
             }
-
             return ReInput.UserData.ZkdVVpddavmruicKaOtoiXbLmnO(categoryId, controllerId, 0);
         }
+        // Rewired ActionID Mapping
+        public static int QuickActionID = 18;
+        public static int ShowOptionsID = 19;
+        public static int CancelID = 22;
+        public static int ToggleInventoryID = 24;
+        public static int QuickSlotToggleOneID = 35;
+        public static int QuickSlotToggleTwoID = 36;
+        public static int QuickSlotOneID = 37;
+        public static int QuickSlotTwoID = 38;
+        public static int QuickSlotThreeID = 39;
+        public static int QuickSlotFourID = 40;
+        public static int TakeAllID = 42;
+        public static int HelpID = 45;
+        public static int MenuVertID = 46;
+        public static int MenuHorID = 47;
+        public static int SwitchTargetHorID = 51;
+        public static int SwitchTargetVertID = 52;
+        public static int MoveHorID = 63;
+        public static int MoveVertID = 64;
+        public static int InteractID = 69;
+        public static int AttackOneID = 70;
+        public static int AttackTwoID = 71;
+        public static int DodgeID = 72;
+        public static int BlockID = 73;
+        public static int SprintID = 74;
+        public static int LockToggleID = 76;
+        public static int SheatheID = 79;
+        public static int StealthID = 80;
+        public static int ConfirmDeployID = 81;
+        public static int CancelDeployID = 82;
+        public static int PreviousMenuID = 87;
+        public static int NextMenuID = 88;
+        public static int QuickDialogueID = 89;
+        public static int ChargeWeaponID = 91;
+        public static int VC_LeftClickID = 92;
+        public static int VC_RightClickID = 93;
+        public static int VC_HorID = 95;
+        public static int VC_VertID = 96;
+        public static int AimID = 99;
+        public static int ToggleMapID = 103;
+        public static int VC_HorScrollID = 105;
+        public static int VC_VertScrollID = 106;
+        public static int InfoID = 109;
+        public static int ToggleLightsID = 111;
+        public static int HandleBagID = 112;
+        public static int AutoRunID = 114;
+        public static int DeleteID = 115;
+        public static int CameraMoveHorID = 124;
+        public static int CameraMoveVertID = 125;
+        public static int CompareID = 126;
+        public static int PreviousFilterID = 127;
+        public static int NextFilterID = 128;
+        public static int EnableSaveSelectionOneID = 129;
+        public static int EnableSaveSelectionTwoID = 130;
+        public static int EnableSaveSelectionThreeID = 131;
+        public static int EnableSaveSelectionFourID = 132;
+        public static int EnableSaveSelectionFiveID = 133;
+        public static int ToggleDetailPanelID = 135;
+        public static int RotateDeployLeftID = 136;
+        public static int RotateDeployRightID = 137;
 
 
     }

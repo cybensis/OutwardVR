@@ -19,67 +19,71 @@
       "type": "pose"
     },
     {
-      "name": "/actions/default/in/decline",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/default/in/confirm",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/default/in/actionbar",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/default/in/pause",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/default/in/move",
-      "type": "vector2"
-    },
-    {
-      "name": "/actions/default/in/movecamera",
-      "type": "vector2"
-    },
-    {
-      "name": "/actions/default/in/group",
+      "name": "/actions/default/in/LeftTrigger",
       "type": "vector1"
     },
     {
-      "name": "/actions/default/in/menus",
+      "name": "/actions/default/in/RightTrigger",
       "type": "vector1"
     },
     {
-      "name": "/actions/default/in/switchpov",
+      "name": "/actions/default/in/LeftGrip",
       "type": "boolean"
     },
     {
-      "name": "/actions/default/in/grableft",
+      "name": "/actions/default/in/RightGrip",
       "type": "boolean"
     },
     {
-      "name": "/actions/default/in/grabright",
+      "name": "/actions/default/in/LeftJoystick",
+      "type": "vector2"
+    },
+    {
+      "name": "/actions/default/in/RightJoystick",
+      "type": "vector2"
+    },
+    {
+      "name": "/actions/default/in/ClickLeftJoystick",
       "type": "boolean"
     },
     {
-      "name": "/actions/default/in/options",
+      "name": "/actions/default/in/ClickRightJoystick",
       "type": "boolean"
     },
     {
-      "name": "/actions/default/in/highlight",
+      "name": "/actions/default/in/ButtonB",
       "type": "boolean"
     },
     {
-      "name": "/actions/default/in/switchturnbased",
+      "name": "/actions/default/in/ButtonY",
       "type": "boolean"
     },
     {
-      "name": "/actions/default/in/nexttarget",
+      "name": "/actions/default/in/ButtonA",
       "type": "boolean"
     },
     {
-      "name": "/actions/default/in/prevtarget",
+      "name": "/actions/default/in/ButtonX",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/NorthDPAD",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/EastDPAD",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/SouthDPAD",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/WestDPAD",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/Back",
       "type": "boolean"
     },
     {
@@ -150,23 +154,7 @@
       "/actions/default/in/SkeletonRightHand": "Skeleton (Right)",
       "/actions/default/out/Haptic": "Haptic",
       "/actions/default/in/LeftHandPose": "Left Hand Pose",
-      "/actions/default/in/RightHandPose": "Right Hand Pose",
-      "/actions/default/in/decline": "Decline",
-      "/actions/default/in/confirm": "Confirm",
-      "/actions/default/in/actionbar": "Toggle Actionbar",
-      "/actions/default/in/pause": "Pause game",
-      "/actions/default/in/move": "Move",
-      "/actions/default/in/movecamera": "Move Camera",
-      "/actions/default/in/group": "Group",
-      "/actions/default/in/menus": "Menus",
-      "/actions/default/in/switchpov": "Switch POV",
-      "/actions/default/in/grableft": "Grab (Left)",
-      "/actions/default/in/grabright": "Grab (Right)",
-      "/actions/default/in/options": "Options menu",
-      "/actions/default/in/highlight": "Highlight Objects",
-      "/actions/default/in/switchturnbased": "Switch Turn Based",
-      "/actions/default/in/nexttarget": "Next Target",
-      "/actions/default/in/prevtarget": "Previous Target"
+      "/actions/default/in/RightHandPose": "Right Hand Pose"
     }
   ]
 }

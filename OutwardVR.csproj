@@ -42,6 +42,12 @@
     <Reference Include="netstandard">
       <HintPath>libs\netstandard.dll</HintPath>
     </Reference>
+    <Reference Include="Rewired_Core">
+      <HintPath>libs\Rewired_Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Rewired_Windows">
+      <HintPath>libs\Rewired_Windows.dll</HintPath>
+    </Reference>
     <Reference Include="SteamVR">
       <HintPath>libs\SteamVR.dll</HintPath>
     </Reference>

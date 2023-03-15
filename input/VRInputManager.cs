@@ -18,15 +18,10 @@ namespace OutwardVR
         public static void SetUpListeners()
         {
             // BOOLEANS
-            SteamVR_Actions._default.grabright.AddOnStateDownListener(GrabRightDown, SteamVR_Input_Sources.Any);
-            SteamVR_Actions._default.grabright.AddOnStateUpListener(GrabRightUp, SteamVR_Input_Sources.Any);
-            SteamVR_Actions._default.grableft.AddOnStateDownListener(GrabLeftDown, SteamVR_Input_Sources.Any);
-            SteamVR_Actions._default.grableft.AddOnStateUpListener(GrabLeftUp, SteamVR_Input_Sources.Any);
-            /*SteamVR_Actions._default.switchpov.AddOnStateDownListener(OnSwitchPOVDown, SteamVR_Input_Sources.Any);*/
 
             // VECTOR 2Ds
-            SteamVR_Actions._default.move.AddOnUpdateListener(OnLeftJoystickUpdate, SteamVR_Input_Sources.Any);
-            SteamVR_Actions._default.movecamera.AddOnUpdateListener(OnRightJoystickUpdate, SteamVR_Input_Sources.Any);
+            SteamVR_Actions._default.LeftJoystick.AddOnUpdateListener(OnLeftJoystickUpdate, SteamVR_Input_Sources.Any);
+            SteamVR_Actions._default.RightJoystick.AddOnUpdateListener(OnRightJoystickUpdate, SteamVR_Input_Sources.Any);
 
             // POSES
            /* SteamVR_Actions._default.RightHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateRightHand);
@@ -47,26 +42,7 @@ namespace OutwardVR
         //    LogBinds();
         //}
 
-        public static void GrabRightDown(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
-        {
-            CameraManager.RightHandGrab = true;
-        }
-
-        public static void GrabRightUp(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
-        {
-            CameraManager.RightHandGrab = false;
-        }
-
-        public static void GrabLeftDown(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
-        {
-            CameraManager.LeftHandGrab = true;
-        }
-
-        public static void GrabLeftUp(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
-        {
-            CameraManager.LeftHandGrab = false;
-        }
-
+ 
         // VECTOR 2Ds
         public static void OnLeftJoystickUpdate(SteamVR_Action_Vector2 fromAction, SteamVR_Input_Sources fromSource, Vector2 axis, Vector2 delta)
         {

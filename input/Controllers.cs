@@ -52,19 +52,25 @@ namespace OutwardVR
 
             inputs = new BaseInput[]
             {
-                    new VectorInput(SteamVR_Actions.default_move, 0, 1),
-                    new VectorInput(SteamVR_Actions.default_movecamera, 2, 3),
-                    new ButtonInput(SteamVR_Actions.default_confirm, 4),
-                    new ButtonInput(SteamVR_Actions.default_decline, 5),
-                    new ButtonInput(SteamVR_Actions.default_pause, 6),
-                    new ButtonInput(SteamVR_Actions.default_actionbar, 7),
-                    new AxisInput(SteamVR_Actions.default_group, 8),
-                    new AxisInput(SteamVR_Actions.default_menus, 9),
-                    new ButtonInput(SteamVR_Actions.default_options, 10),
-                    new ButtonInput(SteamVR_Actions.default_highlight, 11),
-                    new ButtonInput(SteamVR_Actions.default_switchturnbased, 12),
-                    new ButtonInput(SteamVR_Actions.default_prevtarget, 13),
-                    new ButtonInput(SteamVR_Actions.default_nexttarget, 14)
+                    new VectorInput(SteamVR_Actions._default.LeftJoystick, LeftJoyStickHor, LeftJoyStickVert), // left joystick
+                    new VectorInput(SteamVR_Actions._default.RightJoystick, RightJoyStickHor, RightJoyStickVert), // right joystick
+                    new ButtonInput(SteamVR_Actions._default.ButtonA, ButtonA), // right A button click
+                    new ButtonInput(SteamVR_Actions._default.ButtonB, ButtonB), // right B button click
+                    new ButtonInput(SteamVR_Actions._default.ButtonX, ButtonX), // left X button click
+                    new ButtonInput(SteamVR_Actions._default.ButtonY, ButtonY), // left Y button click
+                    new AxisInput(SteamVR_Actions._default.LeftTrigger, LeftTrigger), //  left trigger
+                    new AxisInput(SteamVR_Actions._default.RightTrigger, RightTrigger), //  right trigger
+                    new ButtonInput(SteamVR_Actions._default.LeftGrip, LeftGrip), // left Y button long press
+                    new ButtonInput(SteamVR_Actions._default.ClickLeftJoystick, ClickLeftJoystick), // click left joystick
+                    new ButtonInput(SteamVR_Actions._default.ClickRightJoystick, ClickRightJoystick), // click right joystick
+                    new ButtonInput(SteamVR_Actions._default.RightGrip, RightGrip),
+                    new ButtonInput(SteamVR_Actions._default.NorthDPAD, NorthDPAD),
+                    new ButtonInput(SteamVR_Actions._default.EastDPAD, EastDPAD),
+                    new ButtonInput(SteamVR_Actions._default.SouthDPAD, SouthDPAD),
+                    new ButtonInput(SteamVR_Actions._default.WestDPAD, WestDPAD),
+                    new ButtonInput(SteamVR_Actions._default.Back, Back)
+
+                    //new ButtonInput(SteamVR_Actions.default_nexttarget, 14) // right joystick in DPAD mode? pressed east
             };
         }
 
@@ -129,5 +135,24 @@ namespace OutwardVR
                 input.UpdateValues(vrControllers);
             }
         }
+        public static int LeftJoyStickHor = 0;
+        public static int LeftJoyStickVert = 1;
+        public static int RightJoyStickHor = 2;
+        public static int RightJoyStickVert = 3;
+        public static int ButtonA = 4;
+        public static int ButtonB = 5;
+        public static int ButtonX = 6;
+        public static int ButtonY = 7;
+        public static int LeftTrigger = 8;
+        public static int RightTrigger = 9;
+        public static int LeftGrip = 10;
+        public static int ClickLeftJoystick = 11;
+        public static int ClickRightJoystick = 12;
+        public static int RightGrip = 13;
+        public static int NorthDPAD = 14;
+        public static int EastDPAD = 15;
+        public static int SouthDPAD = 16;
+        public static int WestDPAD = 17;
+        public static int Back = 18;
     }
 }
