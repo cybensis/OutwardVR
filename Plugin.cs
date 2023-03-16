@@ -2,6 +2,7 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using System.Reflection;
+using UnityEngine;
 using Valve.VR;
 
 namespace OutwardVR;
@@ -13,13 +14,26 @@ public class Plugin : BaseUnityPlugin
     {
         // Plugin startup logic
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
+        PlayerPrefs.SetInt("XBOX_EN", 1);
         Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
-
         InitSteamVR();
+        
         // POSES
+        SteamVR_Actions._default.NorthDPAD.AddOnStateDownListener(test, SteamVR_Input_Sources.Any);
+        SteamVR_Actions._default.Back.AddOnStateDownListener(t3est, SteamVR_Input_Sources.Any);
         //SteamVR_Actions._default.RightHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateRightHand);
         //SteamVR_Actions._default.LeftHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateLeftHand);
         //SteamVR_Actions._default.switchpov.AddOnStateDownListener(OnSwitchPOVDown, SteamVR_Input_Sources.Any);
+    }
+    public void test(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource) {
+        Logs.WriteInfo("DPAD UP");
+        Logs.WriteInfo(fromAction.state);
+
+    }
+
+    public void t3est(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    {
+        Logs.WriteInfo("BACK");
     }
 
 

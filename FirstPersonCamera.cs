@@ -44,7 +44,14 @@ namespace OutwardVR
             [HarmonyPrefix]
             public static bool Prefix(CharacterCamera __instance, Camera ___m_camera)
             {
-
+                Canvas UICanvas = __instance.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
+                if (UICanvas)
+                {
+                    UICanvas.renderMode = RenderMode.WorldSpace;
+                    UICanvas.transform.localScale = new Vector3(0.0003f, 0.0003f, 0.0003f);
+                    UICanvas.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.035f) + (Camera.main.transform.up * -0.025f);
+                    UICanvas.transform.rotation = Camera.main.transform.rotation;
+                }
                 if (cameraFixed
                     || !__instance.TargetCharacter
                     || !NetworkLevelLoader.Instance.IsOverallLoadingDone
@@ -54,7 +61,6 @@ namespace OutwardVR
                 {
                     return false;
                 }
-
                 try
                 {
                     FixCamera(__instance, ___m_camera);
@@ -66,7 +72,6 @@ namespace OutwardVR
                 {
                     Debug.Log(e.ToString());
                 }
-
                 return false;
             }
         }
@@ -76,7 +81,8 @@ namespace OutwardVR
             Debug.Log("[InwardVR] setting up camera...");
             //Notes: TargetCharacter links to the Character class
             Controllers.Init();
-
+            Camera.main.cullingMask = -1;
+            Camera.main.nearClipPlane = 0.001f;
             // Get the character model head transform
             var headTrans = cameraScript.TargetCharacter.Visuals.Head.transform;
 
@@ -89,6 +95,7 @@ namespace OutwardVR
             pos.y += 0.7f;
             /* pos.z -= 0.05f;*/
             camHolder.localPosition = pos;
+            camHolder.localPosition = camHolder.localPosition + (camHolder.forward * 0.115f) + (camHolder.right * 0.09f);
 
             // get the root gameobject of the camera (parent of camHolder)
             var camRoot = camera.transform.root;

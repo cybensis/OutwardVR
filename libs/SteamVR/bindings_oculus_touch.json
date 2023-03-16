@@ -11,7 +11,43 @@
          "sources" : []
       },
       "/actions/default" : {
-         "chords" : [],
+         "chords" : [
+            {
+               "inputs" : [
+                  [ "/user/hand/right/input/grip", "click" ],
+                  [ "/user/hand/left/input/grip", "click" ]
+               ],
+               "output" : "/actions/default/in/back"
+            },
+            {
+               "inputs" : [
+                  [ "/user/hand/left/input/trigger", "click" ],
+                  [ "/user/hand/left/input/y", "click" ]
+               ],
+               "output" : "/actions/default/in/northdpad"
+            },
+            {
+               "inputs" : [
+                  [ "/user/hand/left/input/trigger", "click" ],
+                  [ "/user/hand/left/input/x", "click" ]
+               ],
+               "output" : "/actions/default/in/southdpad"
+            },
+            {
+               "inputs" : [
+                  [ "/user/hand/left/input/trigger", "click" ],
+                  [ "/user/hand/right/input/a", "click" ]
+               ],
+               "output" : "/actions/default/in/eastdpad"
+            },
+            {
+               "inputs" : [
+                  [ "/user/hand/left/input/trigger", "click" ],
+                  [ "/user/hand/right/input/b", "click" ]
+               ],
+               "output" : "/actions/default/in/westdpad"
+            }
+         ],
          "haptics" : [
             {
                "output" : "/actions/default/out/haptic",
@@ -129,36 +165,24 @@
             },
             {
                "inputs" : {
-                  "center" : {
-                     "output" : "/actions/default/in/clickrightjoystick"
-                  },
-                  "east" : {
-                     "output" : "/actions/default/in/eastdpad"
-                  },
-                  "north" : {
-                     "output" : "/actions/default/in/northdpad"
-                  },
-                  "south" : {
-                     "output" : "/actions/default/in/southdpad"
-                  },
-                  "west" : {
-                     "output" : "/actions/default/in/westdpad"
-                  }
-               },
-               "mode" : "dpad",
-               "parameters" : {
-                  "sub_mode" : "click"
-               },
-               "path" : "/user/hand/right/input/joystick"
-            },
-            {
-               "inputs" : {
                   "click" : {
                      "output" : "/actions/default/in/back"
                   }
                },
                "mode" : "button",
                "path" : "/user/hand/left/input/system"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/default/in/clickrightjoystick"
+                  },
+                  "position" : {
+                     "output" : "/actions/default/in/rightjoystick"
+                  }
+               },
+               "mode" : "joystick",
+               "path" : "/user/hand/right/input/joystick"
             }
          ]
       },
@@ -174,7 +198,7 @@
    "controller_type" : "oculus_touch",
    "description" : "",
    "interaction_profile" : "",
-   "name" : "Saved My project (2)we [Testing] configuration for Oculus Touch Controller",
+   "name" : "My My project (2)we [Testing] configuration for Oculus Touch Controller",
    "options" : {},
    "simulated_actions" : []
 }

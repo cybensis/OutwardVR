@@ -59,17 +59,21 @@ namespace OutwardVR
 
         //======== UI FIXES ======== //
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(CharacterCamera), "Update")]
-        private static void CharacterCamera_Update(CharacterCamera __instance)
-        {
-            Canvas UICanvas = __instance.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
-            if (UICanvas)
-            {
-                UICanvas.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.035f) + (Camera.main.transform.up * -0.025f);
-                UICanvas.transform.rotation = Camera.main.transform.rotation;
-            }
-        }
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(CharacterCamera), "Update")]
+        //private static void CharacterCamera_Update(CharacterCamera __instance)
+        //{
+        //    Canvas UICanvas = __instance.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
+        //    if (UICanvas)
+        //    {
+        //        UICanvas.renderMode = RenderMode.WorldSpace;
+        //        UICanvas.transform.localScale = new Vector3(0.0003f, 0.0003f, 0.0003f);
+        //        Camera.main.cullingMask = -1;
+        //        Camera.main.nearClipPlane = 0.001f;
+        //        UICanvas.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.035f) + (Camera.main.transform.up * -0.025f);
+        //        UICanvas.transform.rotation = Camera.main.transform.rotation;
+        //    }
+        //}
 
 
 
@@ -106,7 +110,7 @@ namespace OutwardVR
         //    }
         //}
 
-
+/*
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterUI), "Awake")]
         public static void FixUI(CharacterUI __instance, RectTransform ___m_gameplayPanelsHolder)
@@ -121,7 +125,7 @@ namespace OutwardVR
                 Camera.main.nearClipPlane = 0.001f;
             }
         }
-
+*/
 
 
         // Need to move this UI moving function somewhere else cos when the player moves or runs, the hud updates slowly so it keeps going into the userwwwww
@@ -154,64 +158,72 @@ namespace OutwardVR
             // Set HUD MainCharacterBars LocalPosition to 606.6805 300.9597. This thingy uses the CharacterBarListener class so maybe do something with that
         }
 
-        private static void SetupCharacterUI()
-        {
-            Debug.Log("[InwardVR] setting up UI...");
 
-            try
-            {
-
-            }
-            catch (Exception e)
-            {
-                Debug.Log("ERROR setting up InwardVR UI...");
-                Debug.Log(e);
-            }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ControlsInput), "IsLastActionGamepad")]
+        public static bool SetUsingGamepad(ref bool __result) {
+            __result = true;
+            return false;
         }
 
+        //private static void SetupCharacterUI()
+        //{
+        //    Debug.Log("[InwardVR] setting up UI...");
 
-        //// Fix for GroupItemDisplays
+        //    try
+        //    {
 
-        [HarmonyPatch(typeof(ItemGroupDisplay), "AddItemToGroup")]
-        public class ItemGroupDisplay_AddItemToGroup
-        {
-            [HarmonyPostfix]
-            public static void Postfix(ItemGroupDisplay __instance)
-            {
-                FixUIMaterials(__instance.GetComponentsInChildren<Image>(true),
-                               __instance.GetComponentsInChildren<Text>(true));
-            }
-        }
-
-        private static void FixUIMaterials(Image[] images, Text[] texts)
-        {
-            foreach (var image in images)
-            {
-                if (image.material.name == "Default UI Material")
-                {
-                    image.material = AlwaysOnTopMaterial;
-                }
-            }
-            foreach (var text in texts)
-            {
-                if (text.material.name == "Default UI Material")
-                {
-                    text.material = AlwaysOnTopMaterial;
-                }
-            }
-        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Debug.Log("ERROR setting up InwardVR UI...");
+        //        Debug.Log(e);
+        //    }
+        //}
 
 
-        //// Fix MenuManager when character removed
+        ////// Fix for GroupItemDisplays
 
-        [HarmonyPatch(typeof(SplitScreenManager), "RemoveLocalPlayer", new Type[] { typeof(SplitPlayer), typeof(string) })]
-        public class SplitScreenManager_RemoveLocalPlayer
-        {
-            [HarmonyPostfix]
-            public static void Postfix(SplitPlayer _player)
-            {
-                // todo, check if main player
-            }
-        }
+        //[HarmonyPatch(typeof(ItemGroupDisplay), "AddItemToGroup")]
+        //public class ItemGroupDisplay_AddItemToGroup
+        //{
+        //    [HarmonyPostfix]
+        //    public static void Postfix(ItemGroupDisplay __instance)
+        //    {
+        //        FixUIMaterials(__instance.GetComponentsInChildren<Image>(true),
+        //                       __instance.GetComponentsInChildren<Text>(true));
+        //    }
+        //}
+
+        //private static void FixUIMaterials(Image[] images, Text[] texts)
+        //{
+        //    foreach (var image in images)
+        //    {
+        //        if (image.material.name == "Default UI Material")
+        //        {
+        //            image.material = AlwaysOnTopMaterial;
+        //        }
+        //    }
+        //    foreach (var text in texts)
+        //    {
+        //        if (text.material.name == "Default UI Material")
+        //        {
+        //            text.material = AlwaysOnTopMaterial;
+        //        }
+        //    }
+        //}
+
+
+        ////// Fix MenuManager when character removed
+
+        //[HarmonyPatch(typeof(SplitScreenManager), "RemoveLocalPlayer", new Type[] { typeof(SplitPlayer), typeof(string) })]
+        //public class SplitScreenManager_RemoveLocalPlayer
+        //{
+        //    [HarmonyPostfix]
+        //    public static void Postfix(SplitPlayer _player)
+        //    {
+        //        // todo, check if main player
+        //    }
+        //}
     }
 }

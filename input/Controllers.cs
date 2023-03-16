@@ -78,22 +78,7 @@ namespace OutwardVR
         {
             if (!initializedMainPlayer)
             {
-                Logs.WriteInfo("allPlayerCount: ");
-                Logs.WriteInfo(ReInput.players.allPlayerCount);
-                Player p = null;
-                for (int i = 0; i < ReInput.players.allPlayerCount; i++)
-                {
-                    if (ReInput.players.AllPlayers[i] != null)
-                    {
-                        p = ReInput.players.AllPlayers[1];
-                        Logs.WriteInfo("found non null Player p with name: ");
-                        Logs.WriteInfo(p.name);
-                        //break;
-                    }
-
-                }
-                //p = Kingmaker.Assets.Console.GamepadInput.GamePad.Instance.Player;
-
+                Player p = ReInput.players.AllPlayers[1];
                 if (AddVRController(p))
                 {
                     initializedMainPlayer = true;
@@ -122,6 +107,8 @@ namespace OutwardVR
             return inputPlayer.controllers.ContainsController(vrControllers) && inputPlayer.controllers.maps.GetAllMaps(ControllerType.Custom).ToList().Count >= 1;
         }
 
+        // Good idea to fix the bindings issue is to split them up into their own objects, so one object for gameplay then one for inv, one for menus,etc, then 
+        // check which if the menu/inv/whatever is active, if so update the controls for that objects
         private static void UpdateVRInputs()
         {
 

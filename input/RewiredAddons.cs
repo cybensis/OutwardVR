@@ -34,7 +34,8 @@ namespace OutwardVR
                     new ControllerElementIdentifier(Controllers.NorthDPAD, "NorthDPAD", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.EastDPAD, "EastDPAD", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.SouthDPAD, "SouthDPAD", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(Controllers.WestDPAD, "WestDPAD", "", "", ControllerElementType.Button, true)
+                    new ControllerElementIdentifier(Controllers.WestDPAD, "WestDPAD", "", "", ControllerElementType.Button, true),
+                     new ControllerElementIdentifier(Controllers.Back, "Back", "", "", ControllerElementType.Button, true)
                 },
            
                 new int[] { },
@@ -115,7 +116,9 @@ namespace OutwardVR
 
             List<ActionElementMap> defaultElementMaps = new List<ActionElementMap>()
             {
-                new ActionElementMap(MoveHorID , ControllerElementType.Axis  , Controllers.LeftJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveHor
+                // All bindings are active at the same time, need to find some way to disable them when they're not needed
+                //new ActionElementMap(MoveHorID , ControllerElementType.Axis  , Controllers.LeftJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveHor
+                new ActionElementMap(MoveHorID , ControllerElementType.Axis  , Controllers.RightJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveHor
                 new ActionElementMap(MoveVertID , ControllerElementType.Axis  , Controllers.LeftJoyStickVert , Pole.Positive, AxisRange.Full, false), //MoveVer
                 new ActionElementMap(CameraMoveHorID, ControllerElementType.Axis  , Controllers.RightJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveCameraHor
                 new ActionElementMap(CameraMoveVertID, ControllerElementType.Axis  , Controllers.RightJoyStickVert , Pole.Positive, AxisRange.Full, false), //MoveCameraVer
