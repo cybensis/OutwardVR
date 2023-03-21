@@ -59,21 +59,28 @@ namespace OutwardVR
 
         //======== UI FIXES ======== //
 
-        //[HarmonyPostfix]
-        //[HarmonyPatch(typeof(CharacterCamera), "Update")]
-        //private static void CharacterCamera_Update(CharacterCamera __instance)
-        //{
-        //    Canvas UICanvas = __instance.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
-        //    if (UICanvas)
-        //    {
-        //        UICanvas.renderMode = RenderMode.WorldSpace;
-        //        UICanvas.transform.localScale = new Vector3(0.0003f, 0.0003f, 0.0003f);
-        //        Camera.main.cullingMask = -1;
-        //        Camera.main.nearClipPlane = 0.001f;
-        //        UICanvas.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.035f) + (Camera.main.transform.up * -0.025f);
-        //        UICanvas.transform.rotation = Camera.main.transform.rotation;
-        //    }
-        //}
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CharacterCamera), "Update")]
+        private static void CharacterCamera_Update(CharacterCamera __instance, Camera ___m_camera)
+        {
+            // Maybe change this so it tracks the whole MenuManager to the camera??
+            Canvas UICanvas = __instance.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
+            if (UICanvas)
+            {
+                UICanvas.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.035f) + (Camera.main.transform.up * -0.025f);
+                UICanvas.transform.rotation = Camera.main.transform.rotation;
+                var camHolder = ___m_camera.transform.parent;
+                camHolder.localPosition = ___m_camera.transform.localPosition * -1;
+                var pos = camHolder.localPosition;
+
+                /*pos.x -= 0.05f;*/
+                pos.y += 0.7f;
+                /* pos.z -= 0.05f;*/
+                camHolder.localPosition = pos;
+                camHolder.localPosition = camHolder.localPosition + (camHolder.forward * 0.115f) + (camHolder.right * 0.09f);
+
+            }
+        }
 
 
 
@@ -152,12 +159,18 @@ namespace OutwardVR
         {
             // Move Canvas forward x 0.7 and to the right 0.1 I think??
             // Camera.main.transform.position + Camera.main.transform.forward * 0.4f + Camera.main.transform.right * -0.03f;
-
-            __instance.RectTransform.localPosition = new Vector3(606f, 300f, 0f);
+            __instance.RectTransform.localPosition = new Vector3(281f, -150, 0f);
 
             // Set HUD MainCharacterBars LocalPosition to 606.6805 300.9597. This thingy uses the CharacterBarListener class so maybe do something with that
         }
 
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CharacterBarDisplayHolder), "FreeDisplay")]
+        public static void PositionEnemyHealth(CharacterBarDisplayHolder __instance)
+        {
+            __instance.RectTransform.localPosition = new Vector3(-650f, -970, 0f);
+        }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ControlsInput), "IsLastActionGamepad")]
@@ -165,6 +178,104 @@ namespace OutwardVR
             __result = true;
             return false;
         }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(QuickSlotPanelSwitcher), "StartInit")]
+        public static void PositionQuickSlots(QuickSlotPanelSwitcher __instance)
+        {
+            Vector3 newPos = __instance.transform.localPosition;
+            newPos.x = -355f;
+            __instance.transform.localPosition = newPos;
+        }
+
+        // This only needs to be a onetime thing, find someway to change it so its not on update
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UICompass), "Update")]
+        public static void PositionCompass(UICompass __instance)
+        {
+            Vector3 newPos = __instance.transform.localPosition;
+            newPos.y = -450f;
+            __instance.transform.localPosition = newPos;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(StatusEffectPanel), "AwakeInit")]
+        public static void PositionStatusEffectPanel(StatusEffectPanel __instance)
+        {
+            Vector3 newPos = __instance.transform.localPosition;
+            newPos.y = 250f;
+            __instance.transform.localPosition = new Vector3(-365f, 200f, 0f);
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(NeedsDisplay), "AwakeInit")]
+        public static void PositionNeeds(NeedsDisplay __instance)
+        {
+            __instance.transform.parent.parent.localPosition = new Vector3(411f,100f,0f);
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(NotificationDisplay), "AwakeInit")]
+        public static void PositionNotifications(NotificationDisplay __instance)
+        {
+            Vector3 newPos = __instance.transform.localPosition;
+            newPos.x = -293f;
+            __instance.transform.localPosition = newPos;
+        }
+
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(TemperatureExposureDisplay), "StartInit")]
+        public static void PositionTempDisplay(TemperatureExposureDisplay __instance)
+        {
+            __instance.transform.localPosition = new Vector3(-208f, -490f, 0f);
+        }
+
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ItemDisplayDropGround), "Init")]
+        public static void PositionMenus(ItemDisplayDropGround __instance)
+        {
+            __instance.transform.parent.localPosition = new Vector3(-200f, -200f, 0f);
+            __instance.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
+        }
+
+        // I don't think this needs its own patch, could probably just change the Z pos of the main HUD patch
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BlackFade), "Awake")]
+        public static void PositionHUD(BlackFade __instance)
+        {
+            Vector3 newPos = __instance.transform.localPosition;
+            newPos.z = 400f;
+            __instance.transform.localPosition = newPos;
+        }
+
+        // QuickSlotPanelSwitcher
+        // x -355
+
+        // UICompass
+        // Y -450
+
+        //StatusEffectPanel
+        // Y 250
+
+
+        // NeedsDisplay.RectTransform.parent.parent
+        // 411.7643 100 0
+
+
+        //NotificationDisplay
+        // x -293
+
+        // TemperatureExposureDisplay
+        // -208.6015 -490.5 0
+
+        //ItemDisplayDropGround.transform.parent
+        // -175.0001 -300 0
+        // scale = 0.8 0.8 0.8
+
+        // Blackfade.gameObject.transform
+        // Z 400
 
         //private static void SetupCharacterUI()
         //{

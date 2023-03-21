@@ -20,7 +20,11 @@ namespace OutwardVR
 
         internal override void UpdateValues(CustomController vrController)
         {
-            vrController.SetAxisValueById(MyAxisID, MyAxisAction.axis);
+            //Make it so the joystick movements only register beyond .3
+            if (MyAxisAction.axis < -0.3f || MyAxisAction.axis > 0.3f)
+                vrController.SetAxisValueById(MyAxisID, MyAxisAction.axis);
+            else
+                vrController.SetAxisValueById(MyAxisID, 0f);
         }
     }
 }
