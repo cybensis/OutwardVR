@@ -1,2 +1,2 @@
 # OutwardVR
-VR mod for Outward
+Currently a work-in-progress and not really in a playable state at the moment, but I'm getting there :) 
