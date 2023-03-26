@@ -28,6 +28,8 @@ namespace OutwardVR
                     new ControllerElementIdentifier(Controllers.LeftTrigger, "LeftTrigger", "", "", ControllerElementType.Axis, true),
                     new ControllerElementIdentifier(Controllers.RightTrigger, "RightTrigger", "", "", ControllerElementType.Axis, true),
                     new ControllerElementIdentifier(Controllers.LeftGrip, "LeftGrip", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.LeftGripDouble, "LeftGripDouble", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.LeftGripHold, "LeftGripHold", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.ClickLeftJoystick, "ClickLeftJoystick", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.ClickRightJoystick, "ClickRightJoystick", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.RightGrip, "RightGrip", "", "", ControllerElementType.Button, true),
@@ -109,36 +111,28 @@ namespace OutwardVR
 
             return customController;
         }
-
-
-        internal static CustomControllerMap CreateGameplayMap(int controllerID)
-        {
-
-            List<ActionElementMap> defaultElementMaps = new List<ActionElementMap>()
-            {
-                // All bindings are active at the same time, need to find some way to disable them when they're not needed
-                //new ActionElementMap(MoveHorID , ControllerElementType.Axis  , Controllers.LeftJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveHor
-                new ActionElementMap(MoveHorID , ControllerElementType.Axis  , Controllers.RightJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveHor
-                new ActionElementMap(MoveVertID , ControllerElementType.Axis  , Controllers.LeftJoyStickVert , Pole.Positive, AxisRange.Full, false), //MoveVer
-                new ActionElementMap(CameraMoveHorID, ControllerElementType.Axis  , Controllers.RightJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveCameraHor
-                new ActionElementMap(CameraMoveVertID, ControllerElementType.Axis  , Controllers.RightJoyStickVert , Pole.Positive, AxisRange.Full, false), //MoveCameraVer
-                new ActionElementMap(AttackOneID , ControllerElementType.Button, Controllers.ButtonA , Pole.Positive, AxisRange.Positive, false), //Attack1
+        internal static CustomControllerMap CreateGameplayMap(int controllerID) {
+            List<ActionElementMap> t2 = new List<ActionElementMap>() {
+                  new ActionElementMap(AttackOneID , ControllerElementType.Button, Controllers.ButtonA , Pole.Positive, AxisRange.Positive, false), //Attack1
                 new ActionElementMap(AttackTwoID , ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false), //Attack2
                 new ActionElementMap(StealthID , ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false), //Stealth
-                new ActionElementMap(InteractID , ControllerElementType.Button, Controllers.ButtonY, Pole.Positive, AxisRange.Positive, false), //Interact
-                new ActionElementMap(QuickSlotToggleOneID , ControllerElementType.Axis, Controllers.LeftTrigger, Pole.Positive, AxisRange.Positive, false), // LeftTrigger
-                new ActionElementMap(QuickSlotToggleTwoID , ControllerElementType.Axis, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false), // RightTrigger
-                new ActionElementMap(AutoRunID , ControllerElementType.Button, Controllers.ClickLeftJoystick, Pole.Positive, AxisRange.Positive, false), //Click left joy
-                new ActionElementMap(LockToggleID , ControllerElementType.Button, Controllers.ClickRightJoystick, Pole.Positive, AxisRange.Positive, false), //Click right joy
-                new ActionElementMap(BlockID , ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false), 
-                new ActionElementMap(ChargeWeaponID , ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false), 
-                new ActionElementMap(DodgeID, ControllerElementType.Button, Controllers.LeftGrip, Pole.Positive, AxisRange.Positive, false), 
-                new ActionElementMap(SprintID, ControllerElementType.Button, Controllers.LeftGrip, Pole.Positive, AxisRange.Positive, false),
+                                new ActionElementMap(InteractID , ControllerElementType.Button, Controllers.ButtonY, Pole.Positive, AxisRange.Positive, false), //Interact
+                                  new ActionElementMap(LockToggleID , ControllerElementType.Button, Controllers.ClickRightJoystick, Pole.Positive, AxisRange.Positive, false), //Click right joy
+                new ActionElementMap(BlockID , ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(ChargeWeaponID , ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(DodgeID, ControllerElementType.Button, Controllers.LeftGripDouble, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(SprintID, ControllerElementType.Button, Controllers.ClickLeftJoystick, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(HandleBagID, ControllerElementType.Button, Controllers.NorthDPAD, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(ToggleMapID, ControllerElementType.Button, Controllers.EastDPAD, Pole.Positive, AxisRange.Positive, false), 
-                new ActionElementMap(SheatheID, ControllerElementType.Button, Controllers.SouthDPAD, Pole.Positive, AxisRange.Positive, false), 
+                new ActionElementMap(SheatheID, ControllerElementType.Button, Controllers.SouthDPAD, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(ToggleLightsID, ControllerElementType.Button, Controllers.WestDPAD, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(ChargeWeaponID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
+            };
+            return CreateCustomMap("VRDefault", 5, controllerID, t2);
+        }
+
+        internal static CustomControllerMap CreateMenuMap(int controllerID)
+        {
+            List<ActionElementMap> t2 = new List<ActionElementMap>() {
                 new ActionElementMap(QuickActionID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(ShowOptionsID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(MenuVertID, ControllerElementType.Button, Controllers.NorthDPAD, Pole.Positive, AxisRange.Positive, false),
@@ -158,43 +152,110 @@ namespace OutwardVR
                 new ActionElementMap(NextFilterID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(MenuHorID, ControllerElementType.Button, Controllers.LeftJoyStickHor, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(MenuVertID, ControllerElementType.Button, Controllers.LeftJoyStickVert, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(QuickSlotOneID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_HorScrollID, ControllerElementType.Button, Controllers.RightJoyStickHor, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_VertScrollID, ControllerElementType.Button, Controllers.RightJoyStickVert, Pole.Positive, AxisRange.Positive, false),
+                 new ActionElementMap(VC_RightClickID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
+
+            };
+            return CreateCustomMap("VRDefault", 2, controllerID, t2);
+        }
+
+
+        internal static CustomControllerMap CreateQuickSlotMap(int controllerID)
+        {
+            List<ActionElementMap> t2 = new List<ActionElementMap>() {
+                 new ActionElementMap(QuickSlotOneID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(QuickSlotTwoID, ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(QuickSlotThreeID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(QuickSlotFourID, ControllerElementType.Button, Controllers.ButtonY, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(QuickSlotToggleOneID, ControllerElementType.Button, Controllers.LeftTrigger, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(QuickSlotToggleTwoID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(ConfirmDeployID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
+
+            };
+            return CreateCustomMap("VRDefault", 3, controllerID, t2);
+        }
+
+        internal static CustomControllerMap CreateVCMap(int controllerID)
+        {
+            List<ActionElementMap> t2 = new List<ActionElementMap>() {
+                       new ActionElementMap(VC_LeftClickID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_VertID, ControllerElementType.Button, Controllers.LeftJoyStickVert, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_HorID, ControllerElementType.Button, Controllers.LeftJoyStickHor, Pole.Positive, AxisRange.Positive, false),
+                                new ActionElementMap(VC_HorScrollID, ControllerElementType.Button, Controllers.RightJoyStickHor, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_VertScrollID, ControllerElementType.Button, Controllers.RightJoyStickVert, Pole.Positive, AxisRange.Positive, false),
+                 new ActionElementMap(VC_RightClickID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
+            };
+            return CreateCustomMap("VRDefault", 7, controllerID, t2);
+        }
+
+        internal static CustomControllerMap CreateDeployMap(int controllerID)
+        {
+            List<ActionElementMap> t2 = new List<ActionElementMap>() {
+                 new ActionElementMap(ConfirmDeployID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(CancelDeployID, ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(RotateDeployLeftID, ControllerElementType.Button, Controllers.LeftGrip, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(RotateDeployRightID, ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(VC_LeftClickID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(VC_RightClickID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(VC_VertID, ControllerElementType.Button, Controllers.LeftJoyStickVert, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(VC_HorID, ControllerElementType.Button, Controllers.LeftJoyStickHor, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(VC_HorScrollID, ControllerElementType.Button, Controllers.RightJoyStickHor, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(VC_VertScrollID, ControllerElementType.Button, Controllers.RightJoyStickVert, Pole.Positive, AxisRange.Positive, false),
+            };
+            return CreateCustomMap("VRDefault", 6, controllerID, t2);
+        }
+
+
+        internal static CustomControllerMap CreateCameraMoveMap(int controllerID)
+        {
+            List<ActionElementMap> t2 = new List<ActionElementMap>() {
+                new ActionElementMap(CameraMoveHorID, ControllerElementType.Axis  , Controllers.RightJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveCameraHor
+                new ActionElementMap(CameraMoveVertID, ControllerElementType.Axis  , Controllers.RightJoyStickVert , Pole.Positive, AxisRange.Full, false), //MoveCameraVer
+            };
+            return CreateCustomMap("VRDefault", 9, controllerID, t2);
+        }
+
+
+
+        internal static CustomControllerMap CreateOtherControlsMap(int controllerID)
+        {
+            List<ActionElementMap> t2 = new List<ActionElementMap>() {
+                // This uses start button on a controller, find something to remap this to
+                //new ActionElementMap(HelpID, ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(CancelID, ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(EnableSaveSelectionOneID, ControllerElementType.Button, Controllers.LeftGrip, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(EnableSaveSelectionTwoID, ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(EnableSaveSelectionThreeID, ControllerElementType.Button, Controllers.LeftTrigger, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(EnableSaveSelectionFourID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(EnableSaveSelectionFourID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(ToggleInventoryID, ControllerElementType.Button, Controllers.Back , Pole.Positive, AxisRange.Positive, false),
-                //new ActionElementMap(EnableSaveSelectionFiveID, ControllerElementType.Button, (This needs to be left stick right?), Pole.Positive, AxisRange.Positive, false),
-            };  
+            };
+            return CreateCustomMap("VRDefault", 0, controllerID, t2);
+        }
 
-            return CreateCustomMap("VRDefault", 0, controllerID, defaultElementMaps);
+
+        internal static CustomControllerMap CreateOtherDPADMap(int controllerID)
+        {
+            List<ActionElementMap> t2 = new List<ActionElementMap>() {
+                new ActionElementMap(ToggleInventoryID, ControllerElementType.Button, Controllers.Back , Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(ToggleMapID, ControllerElementType.Button, Controllers.EastDPAD, Pole.Positive, AxisRange.Positive, false),
+            };
+            return CreateCustomMap("VRDefault", 11, controllerID, t2);
+        }
+
+
+        internal static CustomControllerMap CreateMovementMap(int controllerID)
+        {
+            List<ActionElementMap> t1 = new List<ActionElementMap>() {
+                new ActionElementMap(MoveHorID , ControllerElementType.Axis  , Controllers.RightJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveHor
+                new ActionElementMap(MoveVertID , ControllerElementType.Axis  , Controllers.LeftJoyStickVert , Pole.Positive, AxisRange.Full, false), //MoveVer
+            };
+            return CreateCustomMap("VRDefaultd", 4, controllerID, t1);
 
         }
+
+        
 
 
 
         private static CustomControllerMap CreateCustomMap(string mapName, int categoryId, int controllerId, List<ActionElementMap> actionElementMaps)
         {
+            //ReInput.UserData.CreateCustomControllerMap(categoryId, controllerId, 0);
             ReInput.UserData.CreateCustomControllerMap(categoryId, controllerId, 0);
-
             ControllerMap_Editor newMap = ReInput.UserData.customControllerMaps.Last();
+
             newMap.name = mapName;
 
             foreach (ActionElementMap elementMap in actionElementMaps)

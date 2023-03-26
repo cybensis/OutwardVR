@@ -20,7 +20,23 @@ namespace OutwardVR
 
         internal override void UpdateValues(CustomController vrController)
         {
-            vrController.SetButtonValueById(buttonID, buttonAction.state);
+            // If the left grip is held down, then you can't use any button besides LeftGrip, RightGrip, A, B, X, Y and Back (To open inv since its left+right grip)
+
+            if (buttonID >= 12 && buttonID <= 20)
+            {
+                vrController.SetButtonValueById(buttonID, buttonAction.state);
+            }
+            else { 
+
+                if (!SteamVR_Actions._default.LeftGrip.GetState(SteamVR_Input_Sources.Any))
+                {
+                    vrController.SetButtonValueById(buttonID, buttonAction.state);
+                }
+                else
+                {
+                    vrController.SetButtonValueById(buttonID, false);
+                }
+            }
             //Logs.WriteInfo("Is Button down?: ");
             //Logs.WriteInfo(vrController.GetButtonDownById(buttonID));
         }

@@ -87,6 +87,14 @@
       "type": "boolean"
     },
     {
+      "name": "/actions/default/in/LeftGripDouble",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/LeftGripHold",
+      "type": "boolean"
+    },
+    {
       "name": "/actions/default/out/Haptic",
       "type": "vibration"
     }

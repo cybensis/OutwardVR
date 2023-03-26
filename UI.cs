@@ -44,6 +44,9 @@ namespace OutwardVR
         private static Canvas uiWorldCanvas;
         private static RawImage uiRawImage;
         private static readonly RenderTexture uiRenderTexture = new RenderTexture(1920, 1080, 0);
+        private static GameObject statusBars;
+        private static GameObject quickSlots;
+
 
 
         /*  [HarmonyPatch(typeof(MainScreen), "FirstUpdate")]
@@ -59,30 +62,42 @@ namespace OutwardVR
 
         //======== UI FIXES ======== //
 
+        /*  [HarmonyPostfix]
+          [HarmonyPatch(typeof(CharacterCamera), "Update")]
+          private static void CharacterCamera_Update(CharacterCamera __instance, Camera ___m_camera)
+          {
+              // Maybe change this so it tracks the whole MenuManager to the camera??
+              Canvas UICanvas = __instance.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
+              if (UICanvas)
+              {
+                  //UICanvas.transform.root.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.1f) + (Camera.main.transform.right * -0.48f) + (Camera.main.transform.up * -0.1f);
+                  UICanvas.transform.root.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.1f) + (Camera.main.transform.right * -0.5f) + (Camera.main.transform.up * -0.1f);
+                  UICanvas.transform.root.rotation = Camera.main.transform.rotation;
+
+                  //UICanvas.transform.root.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.035f) + (Camera.main.transform.up * -0.025f);
+                  //UICanvas.transform.root.rotation = Camera.main.transform.rotation;
+              }
+          }
+  */
+
+        private static int i = 1;
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(CharacterCamera), "Update")]
-        private static void CharacterCamera_Update(CharacterCamera __instance, Camera ___m_camera)
+        [HarmonyPatch(typeof(MenuManager), "Update")]
+        private static void CharacterCamera_Update(MenuManager __instance, RectTransform ___m_characterUIHolder)
         {
             // Maybe change this so it tracks the whole MenuManager to the camera??
-            Canvas UICanvas = __instance.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
-            if (UICanvas)
-            {
-                UICanvas.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.035f) + (Camera.main.transform.up * -0.025f);
-                UICanvas.transform.rotation = Camera.main.transform.rotation;
-                var camHolder = ___m_camera.transform.parent;
-                camHolder.localPosition = ___m_camera.transform.localPosition * -1;
-                var pos = camHolder.localPosition;
 
-                /*pos.x -= 0.05f;*/
-                pos.y += 0.7f;
-                /* pos.z -= 0.05f;*/
-                camHolder.localPosition = pos;
-                camHolder.localPosition = camHolder.localPosition + (camHolder.forward * 0.115f) + (camHolder.right * 0.09f);
-
+            //__instance.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.1f) + (Camera.main.transform.right * -0.5f) + (Camera.main.transform.up * -0.1f);
+            if (i == 1) {
+                //__instance.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+                __instance.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.5f) + (Camera.main.transform.right * -0.05f) + (Camera.main.transform.up * 0.05f);
+                __instance.transform.rotation = Camera.main.transform.rotation;
+                //___m_characterUIHolder.position = __instance.transform.position;
+                //i++;
             }
+
+
         }
-
-
 
 
 
@@ -157,11 +172,16 @@ namespace OutwardVR
         [HarmonyPatch(typeof(CharacterBarListener), "Awake")]
         public static void PositionCharacterBar(CharacterBarListener __instance)
         {
-            // Move Canvas forward x 0.7 and to the right 0.1 I think??
-            // Camera.main.transform.position + Camera.main.transform.forward * 0.4f + Camera.main.transform.right * -0.03f;
-            __instance.RectTransform.localPosition = new Vector3(281f, -150, 0f);
+            
 
-            // Set HUD MainCharacterBars LocalPosition to 606.6805 300.9597. This thingy uses the CharacterBarListener class so maybe do something with that
+            //__instance.RectTransform.localPosition = new Vector3(281f, -150, 0f);
+            __instance.RectTransform.localPosition = new Vector3(281f, -400, 0f);
+            if (__instance.gameObject.name == "MainCharacterBars") { 
+                statusBars = __instance.gameObject;
+                Logs.WriteWarning("Character bars found");
+
+            }
+
         }
 
 
@@ -169,7 +189,8 @@ namespace OutwardVR
         [HarmonyPatch(typeof(CharacterBarDisplayHolder), "FreeDisplay")]
         public static void PositionEnemyHealth(CharacterBarDisplayHolder __instance)
         {
-            __instance.RectTransform.localPosition = new Vector3(-650f, -970, 0f);
+            __instance.RectTransform.localPosition = new Vector3(-650f, -1000, 0f);
+           
         }
 
         [HarmonyPrefix]
@@ -186,7 +207,36 @@ namespace OutwardVR
             Vector3 newPos = __instance.transform.localPosition;
             newPos.x = -355f;
             __instance.transform.localPosition = newPos;
+            if (__instance.transform.parent.gameObject.name == "QuickSlot") { 
+                quickSlots = __instance.transform.parent.gameObject;
+                quickSlots.SetActive(false);
+                Logs.WriteWarning("Quick Slot Found");
+            }
         }
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CharacterUI), "Update")]
+        public static void DisplayQuickSlots(CharacterUI __instance)
+        {
+            //Logs.WriteInfo(SteamVR_Actions._default.LeftTrigger.GetAxis(SteamVR_Input_Sources.Any));
+            if (SteamVR_Actions._default.LeftTrigger.GetAxis(SteamVR_Input_Sources.Any) > 0.3f || SteamVR_Actions._default.RightTrigger.GetAxis(SteamVR_Input_Sources.Any) > 0.3f)
+            {
+                if (quickSlots != null)
+                    quickSlots.gameObject.SetActive(true);
+                if (statusBars != null)
+                    statusBars.SetActive(false);
+            }
+            else {
+                if (quickSlots != null)
+                    quickSlots.gameObject.SetActive(false);
+                if (statusBars != null)
+                    statusBars.SetActive(true);
+            }
+
+        }
+
+
 
         // This only needs to be a onetime thing, find someway to change it so its not on update
         [HarmonyPrefix]
@@ -236,18 +286,18 @@ namespace OutwardVR
         [HarmonyPatch(typeof(ItemDisplayDropGround), "Init")]
         public static void PositionMenus(ItemDisplayDropGround __instance)
         {
-            __instance.transform.parent.localPosition = new Vector3(-200f, -200f, 0f);
-            __instance.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
+            __instance.transform.parent.localPosition = new Vector3(-150f, -350f, 0f);
+            __instance.transform.parent.localScale = new Vector3(0.8f, 0.8f, 0.8f);
         }
 
-        // I don't think this needs its own patch, could probably just change the Z pos of the main HUD patch
+
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(BlackFade), "Awake")]
-        public static void PositionHUD(BlackFade __instance)
+        [HarmonyPatch(typeof(MapDisplay), "AwakeInit")]
+        public static void PositionGeneralMenus(MapDisplay __instance)
         {
-            Vector3 newPos = __instance.transform.localPosition;
-            newPos.z = 400f;
-            __instance.transform.localPosition = newPos;
+            Transform GeneralMenus = __instance.transform.parent;
+            GeneralMenus.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+            GeneralMenus.transform.localRotation = Quaternion.identity;
         }
 
         // QuickSlotPanelSwitcher

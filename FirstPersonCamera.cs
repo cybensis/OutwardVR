@@ -45,22 +45,17 @@ namespace OutwardVR
             [HarmonyPrefix]
             public static bool Prefix(CharacterCamera __instance, Camera ___m_camera)
             {
-                //Canvas UICanvas = __instance.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
-                //if (UICanvas && cameraFixed)
-                //{
-                //    UICanvas.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.035f) + (Camera.main.transform.up * -0.025f);
-                //    UICanvas.transform.rotation = Camera.main.transform.rotation;
-                var camHolder = ___m_camera.transform.parent;
-                camHolder.localPosition = ___m_camera.transform.localPosition * -1;
-                var pos = camHolder.localPosition;
 
-                /*pos.x -= 0.05f;*/
-                pos.y += 0.7f;
-                /* pos.z -= 0.05f;*/
-                camHolder.localPosition = pos;
-                camHolder.localPosition = camHolder.localPosition + (camHolder.forward * 0.115f) + (camHolder.right * 0.09f);
+                //var camHolder = ___m_camera.transform.parent;
+                //camHolder.localPosition = ___m_camera.transform.localPosition * -1;
+                //var pos = camHolder.localPosition;
 
-                //}
+                ///*pos.x -= 0.05f;*/
+                //pos.y += 0.7f;
+                ///* pos.z -= 0.05f;*/
+                //camHolder.localPosition = pos;
+                //camHolder.localPosition = camHolder.localPosition + (camHolder.forward * 0.115f) + (camHolder.right * 0.09f);
+
                 if (cameraFixed
                     || !__instance.TargetCharacter
                     || !NetworkLevelLoader.Instance.IsOverallLoadingDone
@@ -75,6 +70,7 @@ namespace OutwardVR
                     FixCamera(__instance, ___m_camera);
                     __instance.transform.parent.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
                     __instance.transform.parent.transform.parent.transform.GetChild(8).GetComponent<SkinnedMeshRenderer>().enabled = false;
+                    
 
                 }
                 catch (Exception e)
@@ -93,8 +89,12 @@ namespace OutwardVR
             Camera.main.cullingMask = -1;
             Camera.main.nearClipPlane = 0.001f;
             Canvas UICanvas = cameraScript.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
+
+            cameraScript.TargetCharacter.CharacterUI.transform.parent.localRotation = Quaternion.identity;
+
+
             UICanvas.renderMode = RenderMode.WorldSpace;
-            UICanvas.transform.localScale = new Vector3(0.0006f, 0.0006f, 0.0006f);
+            //UICanvas.transform.localScale = new Vector3(0.0006f, 0.0006f, 0.0006f);
             // Get the character model head transform
             var headTrans = cameraScript.TargetCharacter.Visuals.Head.transform;
 
@@ -119,6 +119,27 @@ namespace OutwardVR
 
             cameraFixed = true;
             cameraScript.transform.Rotate(351f, 250f, 346f);
+
+            if (UICanvas)
+            {
+                cameraScript.TargetCharacter.CharacterUI.transform.parent.localPosition = Vector3.zero;
+                cameraScript.TargetCharacter.CharacterUI.transform.parent.localScale = new Vector3(1f,1f,1f);
+                //UICanvas.transform.root.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.1f) + (Camera.main.transform.up * -0.075f);
+                //UICanvas.transform.root.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.25f);
+                //UICanvas.transform.root.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.25f) + (Camera.main.transform.right * -0.65f) + (Camera.main.transform.up * 0.555f);
+                //UICanvas.transform.root.rotation = Camera.main.transform.rotation;
+                UICanvas.transform.root.localScale = new Vector3(0.0006f, 0.0006f, 0.0006f);
+                //UICanvas.transform.root.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+            }
+            Transform GeneralMenus = UICanvas.transform.root.GetChild(2);
+            if (GeneralMenus.name == "GeneralMenus") { 
+                GeneralMenus.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+                //GeneralMenus.transform.localPosition = Vector3.zero;
+                GeneralMenus.transform.position = UICanvas.transform.position;
+                GeneralMenus.transform.rotation = Camera.main.transform.rotation;
+                GeneralMenus.transform.localScale = new Vector3(1, 1, 1);
+            } 
+
             //if (CameraManager.RightHand == null)
             //{
             //    if (AssetLoader.LeftHandBase == null)
@@ -200,9 +221,6 @@ namespace OutwardVR
                 // turn speed override
                 else if (___m_modifMoveInput.x != 0 && !targetSys.Locked)
                 {
-                    Logs.WriteInfo("test");
-                    Logs.WriteInfo(___m_modifMoveInput.x);
-                    Logs.WriteInfo(___m_modifMoveInput.y);
                     if (___m_modifMoveInput.y < 0.25f)
                     {
                         ___m_modifMoveInput.y = 0.25f;
@@ -339,11 +357,14 @@ namespace OutwardVR
                     {
                         __instance.transform.Rotate(0f, -5f, 0f);
                         Camera.main.transform.parent.parent.Rotate(0f, 5f, 0f, Space.World);
+                        Camera.main.transform.parent.parent.localPosition = Camera.main.transform.parent.parent.localPosition + Camera.main.transform.parent.parent.right * -0.01f;
+
                     }
                     else if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) < -10f)
                     {
                         __instance.transform.Rotate(0f, 5f, 0f);
-                        Camera.main.transform.parent.parent.Rotate(0f, -5f, 0f, Space.World);
+                        Camera.main.transform.parent.parent.parent.Rotate(0f, -5f, 0f, Space.World);
+                        Camera.main.transform.parent.parent.localPosition = Camera.main.transform.parent.parent.localPosition + Camera.main.transform.parent.parent.right * 0.01f;
                         //x = 0.09
                         //z = -0.1128
                         //w = 0.309

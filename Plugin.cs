@@ -1,6 +1,9 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using Rewired;
+using System;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using Valve.VR;
@@ -17,56 +20,23 @@ public class Plugin : BaseUnityPlugin
         PlayerPrefs.SetInt("XBOX_EN", 1);
         Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
         InitSteamVR();
-        
+
         // POSES
-        SteamVR_Actions._default.NorthDPAD.AddOnStateDownListener(test, SteamVR_Input_Sources.Any);
-        SteamVR_Actions._default.Back.AddOnStateDownListener(t3est, SteamVR_Input_Sources.Any);
-        //SteamVR_Actions._default.RightHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateRightHand);
-        //SteamVR_Actions._default.LeftHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateLeftHand);
-        //SteamVR_Actions._default.switchpov.AddOnStateDownListener(OnSwitchPOVDown, SteamVR_Input_Sources.Any);
-    }
-    public void test(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource) {
-        Logs.WriteInfo("DPAD UP");
-        Logs.WriteInfo(fromAction.state);
-
+        
+        SteamVR_Actions._default.RightGrip.AddOnStateDownListener(TriggerLeftDown, SteamVR_Input_Sources.Any);
     }
 
-    public void t3est(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    public static void TriggerLeftDown(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
     {
-        Logs.WriteInfo("BACK");
+        //Logs.WriteInfo("TriggerLeft is Down");
+        LogBinds();
     }
 
-
-    // BOOLEANS
-    //    public void OnSwitchPOVDown(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
-    //{
-    //    Logger.LogInfo("wdwdwWDWDWD");
-    //    if (AssetLoader.LeftHandBase == null) {
-    //        new AssetLoader();
-    //    }
-    //    CameraManager.SwitchPOV();
-    //    CameraManager.SpawnHands();
-    //}
-    //
-    //public void UpdateRightHand(SteamVR_Action_Pose fromAction, SteamVR_Input_Sources fromSource)
-    //{
-    //    if (CameraManager.RightHand)
-    //    {
-    //        CameraManager.RightHand.transform.localPosition = fromAction.localPosition;
-    //        CameraManager.RightHand.transform.localRotation = fromAction.localRotation;
-
-    //    }
-
-    //}
-
-    //public static void UpdateLeftHand(SteamVR_Action_Pose fromAction, SteamVR_Input_Sources fromSource)
-    //{
-    //    if (CameraManager.LeftHand)
-    //    {
-    //        CameraManager.LeftHand.transform.localPosition = fromAction.localPosition;
-    //        CameraManager.LeftHand.transform.localRotation = fromAction.localRotation;
-    //    }
-    //}
+    public static void LogBinds()
+    {
+        
+        Controllers.LogAllGameActions(ReInput.players.AllPlayers[1]);
+    }
 
     private static void InitSteamVR()
     {
