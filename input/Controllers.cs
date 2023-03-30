@@ -229,8 +229,8 @@ namespace OutwardVR
             Logs.WriteInfo("LogAllGameActions ended");
         }
 
-
-    public static int LeftJoyStickHor = 0;
+        // Controller ID's
+        public static int LeftJoyStickHor = 0;
         public static int LeftJoyStickVert = 1;
         public static int RightJoyStickHor = 2;
         public static int RightJoyStickVert = 3;
@@ -252,6 +252,7 @@ namespace OutwardVR
         public static int LeftGripDouble = 19;
         public static int LeftGripHold = 20;
 
+        // ReWired custom controller category ID's
         public static int OtherControlsMapID = 0;
         public static int MenuMapID = 2;
         public static int QuickSlotMapID = 3;

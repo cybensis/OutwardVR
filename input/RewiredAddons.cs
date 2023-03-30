@@ -113,11 +113,11 @@ namespace OutwardVR
         }
         internal static CustomControllerMap CreateGameplayMap(int controllerID) {
             List<ActionElementMap> t2 = new List<ActionElementMap>() {
-                  new ActionElementMap(AttackOneID , ControllerElementType.Button, Controllers.ButtonA , Pole.Positive, AxisRange.Positive, false), //Attack1
-                new ActionElementMap(AttackTwoID , ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false), //Attack2
-                new ActionElementMap(StealthID , ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false), //Stealth
-                                new ActionElementMap(InteractID , ControllerElementType.Button, Controllers.ButtonY, Pole.Positive, AxisRange.Positive, false), //Interact
-                                  new ActionElementMap(LockToggleID , ControllerElementType.Button, Controllers.ClickRightJoystick, Pole.Positive, AxisRange.Positive, false), //Click right joy
+                new ActionElementMap(AttackOneID , ControllerElementType.Button, Controllers.ButtonA , Pole.Positive, AxisRange.Positive, false), 
+                new ActionElementMap(AttackTwoID , ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false), 
+                new ActionElementMap(StealthID , ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false), 
+                new ActionElementMap(InteractID , ControllerElementType.Button, Controllers.ButtonY, Pole.Positive, AxisRange.Positive, false), 
+                new ActionElementMap(LockToggleID , ControllerElementType.Button, Controllers.ClickRightJoystick, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(BlockID , ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(ChargeWeaponID , ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(DodgeID, ControllerElementType.Button, Controllers.LeftGripDouble, Pole.Positive, AxisRange.Positive, false),
@@ -126,8 +126,9 @@ namespace OutwardVR
                 new ActionElementMap(SheatheID, ControllerElementType.Button, Controllers.SouthDPAD, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(ToggleLightsID, ControllerElementType.Button, Controllers.WestDPAD, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(ChargeWeaponID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
+                // Missing Aim and AutoRun
             };
-            return CreateCustomMap("VRDefault", 5, controllerID, t2);
+            return CreateCustomMap("Gameplay", 5, controllerID, t2);
         }
 
         internal static CustomControllerMap CreateMenuMap(int controllerID)
@@ -154,10 +155,10 @@ namespace OutwardVR
                 new ActionElementMap(MenuVertID, ControllerElementType.Button, Controllers.LeftJoyStickVert, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(VC_HorScrollID, ControllerElementType.Button, Controllers.RightJoyStickHor, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(VC_VertScrollID, ControllerElementType.Button, Controllers.RightJoyStickVert, Pole.Positive, AxisRange.Positive, false),
-                 new ActionElementMap(VC_RightClickID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_RightClickID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
 
             };
-            return CreateCustomMap("VRDefault", 2, controllerID, t2);
+            return CreateCustomMap("Menu", 2, controllerID, t2);
         }
 
 
@@ -172,31 +173,31 @@ namespace OutwardVR
                 new ActionElementMap(QuickSlotToggleTwoID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
 
             };
-            return CreateCustomMap("VRDefault", 3, controllerID, t2);
+            return CreateCustomMap("QuickSlot", 3, controllerID, t2);
         }
 
         internal static CustomControllerMap CreateVCMap(int controllerID)
         {
             List<ActionElementMap> t2 = new List<ActionElementMap>() {
-                       new ActionElementMap(VC_LeftClickID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_LeftClickID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(VC_VertID, ControllerElementType.Button, Controllers.LeftJoyStickVert, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(VC_HorID, ControllerElementType.Button, Controllers.LeftJoyStickHor, Pole.Positive, AxisRange.Positive, false),
-                                new ActionElementMap(VC_HorScrollID, ControllerElementType.Button, Controllers.RightJoyStickHor, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_HorScrollID, ControllerElementType.Button, Controllers.RightJoyStickHor, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(VC_VertScrollID, ControllerElementType.Button, Controllers.RightJoyStickVert, Pole.Positive, AxisRange.Positive, false),
-                 new ActionElementMap(VC_RightClickID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(VC_RightClickID, ControllerElementType.Button, Controllers.ButtonX, Pole.Positive, AxisRange.Positive, false),
             };
-            return CreateCustomMap("VRDefault", 7, controllerID, t2);
+            return CreateCustomMap("VC", 7, controllerID, t2);
         }
 
         internal static CustomControllerMap CreateDeployMap(int controllerID)
         {
             List<ActionElementMap> t2 = new List<ActionElementMap>() {
-                 new ActionElementMap(ConfirmDeployID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(ConfirmDeployID, ControllerElementType.Button, Controllers.ButtonA, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(CancelDeployID, ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(RotateDeployLeftID, ControllerElementType.Button, Controllers.LeftGrip, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(RotateDeployRightID, ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
             };
-            return CreateCustomMap("VRDefault", 6, controllerID, t2);
+            return CreateCustomMap("Deploy", 6, controllerID, t2);
         }
 
 
@@ -206,7 +207,7 @@ namespace OutwardVR
                 new ActionElementMap(CameraMoveHorID, ControllerElementType.Axis  , Controllers.RightJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveCameraHor
                 new ActionElementMap(CameraMoveVertID, ControllerElementType.Axis  , Controllers.RightJoyStickVert , Pole.Positive, AxisRange.Full, false), //MoveCameraVer
             };
-            return CreateCustomMap("VRDefault", 9, controllerID, t2);
+            return CreateCustomMap("Camera", 9, controllerID, t2);
         }
 
 
@@ -222,7 +223,7 @@ namespace OutwardVR
                 new ActionElementMap(EnableSaveSelectionThreeID, ControllerElementType.Button, Controllers.LeftTrigger, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(EnableSaveSelectionFourID, ControllerElementType.Button, Controllers.RightTrigger, Pole.Positive, AxisRange.Positive, false),
             };
-            return CreateCustomMap("VRDefault", 0, controllerID, t2);
+            return CreateCustomMap("Other", 0, controllerID, t2);
         }
 
 
@@ -232,7 +233,7 @@ namespace OutwardVR
                 new ActionElementMap(ToggleInventoryID, ControllerElementType.Button, Controllers.Back , Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(ToggleMapID, ControllerElementType.Button, Controllers.EastDPAD, Pole.Positive, AxisRange.Positive, false),
             };
-            return CreateCustomMap("VRDefault", 11, controllerID, t2);
+            return CreateCustomMap("OtherDPAD", 11, controllerID, t2);
         }
 
 
@@ -242,7 +243,7 @@ namespace OutwardVR
                 new ActionElementMap(MoveHorID , ControllerElementType.Axis  , Controllers.RightJoyStickHor , Pole.Positive, AxisRange.Full, false), //MoveHor
                 new ActionElementMap(MoveVertID , ControllerElementType.Axis  , Controllers.LeftJoyStickVert , Pole.Positive, AxisRange.Full, false), //MoveVer
             };
-            return CreateCustomMap("VRDefaultd", 4, controllerID, t1);
+            return CreateCustomMap("Movement", 4, controllerID, t1);
 
         }
 

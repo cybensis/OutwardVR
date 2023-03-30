@@ -1,14 +1,17 @@
-[Info   : Unity Log] LogAllGameActions started
+[Warning: Unity Log] Starting joystick 0        
+[Warning: Unity Log] Starting map  ID 43 layoutID 0 Category ID 4
 [Info   : Unity Log] Left Stick X is assigned to Axis 0 with the Action MoveHorizontal with actionId 63
 [Info   : Unity Log] Left Stick Y is assigned to Axis 1 with the Action MoveVertical with actionId 64
-[Info   : Unity Log] Right Stick X is assigned to Axis 2 with the Action CameraMoveHorizontal with actionId 124
-[Info   : Unity Log] Right Stick Y is assigned to Axis 3 with the Action CameraMoveVertical with actionId 125
 [Info   : Unity Log] Right Stick X is assigned to Axis 2 with the Action SwitchTargetHorizontal with actionId 51
 [Info   : Unity Log] Right Stick Y is assigned to Axis 3 with the Action SwitchTargetVertical with actionId 52
+
+
+[Warning: Unity Log] Starting map  44 0 5
 [Info   : Unity Log] A is assigned to Button 0 with the Action Attack1 with actionId 70
 [Info   : Unity Log] X is assigned to Button 2 with the Action Attack2 with actionId 71
 [Info   : Unity Log] B is assigned to Button 1 with the Action Stealth with actionId 80
 [Info   : Unity Log] X is assigned to Button 2 with the Action Aim with actionId 99
+[Info   : Unity Log] Right Trigger is assigned to Axis 5 with the Action ChargeWeapon with actionId 91
 [Info   : Unity Log] Right Shoulder is assigned to Button 5 with the Action Block with actionId 73
 [Info   : Unity Log] Right Shoulder is assigned to Button 5 with the Action ChargeWeapon with actionId 91
 [Info   : Unity Log] Left Shoulder is assigned to Button 4 with the Action Dodge with actionId 72
@@ -19,8 +22,11 @@
 [Info   : Unity Log] D-Pad Left is assigned to Button 14 with the Action ToggleLights with actionId 111
 [Info   : Unity Log] Y is assigned to Button 3 with the Action Interact with actionId 69
 [Info   : Unity Log] Left Stick Button is assigned to Button 9 with the Action AutoRun with actionId 114
-[Info   : Unity Log] Right Trigger is assigned to Axis 5 with the Action ChargeWeapon with actionId 91
+
+
+[Warning: Unity Log] Starting map  45 0 2
 [Info   : Unity Log] A is assigned to Button 0 with the Action QuickAction with actionId 18
+[Info   : Unity Log] X is assigned to Button 2 with the Action VC_RightClick with actionId 93
 [Info   : Unity Log] X is assigned to Button 2 with the Action ShowOptions with actionId 19
 [Info   : Unity Log] D-Pad Right is assigned to Button 12 with the Action MenuHorizontal with actionId 47
 [Info   : Unity Log] D-Pad Left is assigned to Button 14 with the Action MenuHorizontal with actionId 47
@@ -37,32 +43,59 @@
 [Info   : Unity Log] Left Stick Button is assigned to Button 9 with the Action ToggleDetailPanel with actionId 135
 [Info   : Unity Log] Left Trigger is assigned to Axis 4 with the Action PreviousFilter with actionId 127
 [Info   : Unity Log] Right Trigger is assigned to Axis 5 with the Action NextFilter with actionId 128
+[Info   : Unity Log] Right Stick Y is assigned to Axis 3 with the Action VC_VerticalScroll with actionId 106
+[Info   : Unity Log] Right Stick X is assigned to Axis 2 with the Action VC_HorizontalScroll with actionId 105
 [Info   : Unity Log] Left Stick X is assigned to Axis 0 with the Action MenuHorizontal with actionId 47
 [Info   : Unity Log] Left Stick Y is assigned to Axis 1 with the Action MenuVertical with actionId 46
+
+
+[Warning: Unity Log] Starting map  46 0 3
 [Info   : Unity Log] A is assigned to Button 0 with the Action QuickSlot1 with actionId 37
 [Info   : Unity Log] B is assigned to Button 1 with the Action QuickSlot2 with actionId 38
 [Info   : Unity Log] X is assigned to Button 2 with the Action QuickSlot3 with actionId 39
 [Info   : Unity Log] Y is assigned to Button 3 with the Action QuickSlot4 with actionId 40
 [Info   : Unity Log] Left Trigger is assigned to Axis 4 with the Action QuickSlotToggle1 with actionId 35
 [Info   : Unity Log] Right Trigger is assigned to Axis 5 with the Action QuickSlotToggle2 with actionId 36
+[Info   : Unity Log] Right Trigger is assigned to Axis 5 with the Action QuickSlotToggle2 with actionId 36
+
+
+[Warning: Unity Log] Starting map  47 0 6
 [Info   : Unity Log] A is assigned to Button 0 with the Action ConfirmDeploy with actionId 81
 [Info   : Unity Log] B is assigned to Button 1 with the Action CancelDeploy with actionId 82
 [Info   : Unity Log] Left Shoulder is assigned to Button 4 with the Action RotateDeployLeft with actionId 136
 [Info   : Unity Log] Right Shoulder is assigned to Button 5 with the Action RotateDeployRight with actionId 137
+
+
+
+[Warning: Unity Log] Starting map  48 0 7
 [Info   : Unity Log] A is assigned to Button 0 with the Action VC_LeftClick with actionId 92
 [Info   : Unity Log] X is assigned to Button 2 with the Action VC_RightClick with actionId 93
+[Info   : Unity Log] Left Stick X is assigned to Axis 0 with the Action VC_Horizontal with actionId 95
 [Info   : Unity Log] Left Stick Y is assigned to Axis 1 with the Action VC_Vertical with actionId 96
 [Info   : Unity Log] Right Stick X is assigned to Axis 2 with the Action VC_HorizontalScroll with actionId 105
 [Info   : Unity Log] Right Stick Y is assigned to Axis 3 with the Action VC_VerticalScroll with actionId 106
-[Info   : Unity Log] Left Stick X is assigned to Axis 0 with the Action VC_Horizontal with actionId 95
+
+
+
+[Warning: Unity Log] Starting map  49 0 9
+[Info   : Unity Log] Right Stick X is assigned to Axis 2 with the Action CameraMoveHorizontal with actionId 124
+[Info   : Unity Log] Right Stick Y is assigned to Axis 3 with the Action CameraMoveVertical with actionId 125
+
+
+[Warning: Unity Log] Starting map  50 0 0 
 [Info   : Unity Log] Start is assigned to Button 7 with the Action Help with actionId 45
 [Info   : Unity Log] B is assigned to Button 1 with the Action Cancel with actionId 22
 [Info   : Unity Log] Left Shoulder is assigned to Button 4 with the Action EnableSaveSelection1 with actionId 129
 [Info   : Unity Log] Right Shoulder is assigned to Button 5 with the Action EnableSaveSelection3 with actionId 131
 [Info   : Unity Log] Left Trigger is assigned to Axis 4 with the Action EnableSaveSelection2 with actionId 130
 [Info   : Unity Log] Right Trigger is assigned to Axis 5 with the Action EnableSaveSelection4 with actionId 132
+[Info   : Unity Log] Right Trigger is assigned to Axis 5 with the Action EnableSaveSelection4 with actionId 132
 [Info   : Unity Log] Left Stick Right is assigned to Axis 0 with the Action EnableSaveSelection5 with actionId 133
+
+
+
+[Warning: Unity Log] Starting map  51 0 11
 [Info   : Unity Log] Back is assigned to Button 6 with the Action ToggleInventory with actionId 24
 [Info   : Unity Log] D-Pad Right is assigned to Button 12 with the Action ToggleMap with actionId 103
-[Info   : Unity Log] LogAllGameActions ended
-   
+
+[Info   : Unity Log] LogAllGameActions ended    

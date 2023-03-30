@@ -10,7 +10,7 @@ namespace OutwardVR
 {
     class AssetLoader
     {
-        private const string assetsDir = "VRMakerAssets/AssetBundles/";
+        private const string assetsDir = "OutwardVRAssets/AssetBundles/";
 
         public static GameObject Skybox;
         public static GameObject LeftHandBase;

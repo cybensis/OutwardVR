@@ -14,6 +14,7 @@ namespace OutwardVR
     public class FirstPersonCamera
     {
         private static bool cameraFixed = true;
+        public static bool enemyTargetActive = false;
 
         [HarmonyPatch(typeof(NetworkLevelLoader), "MidLoadLevel")]
         public class NetworkLevelLoader_MidLoadLevel
@@ -45,17 +46,6 @@ namespace OutwardVR
             [HarmonyPrefix]
             public static bool Prefix(CharacterCamera __instance, Camera ___m_camera)
             {
-
-                //var camHolder = ___m_camera.transform.parent;
-                //camHolder.localPosition = ___m_camera.transform.localPosition * -1;
-                //var pos = camHolder.localPosition;
-
-                ///*pos.x -= 0.05f;*/
-                //pos.y += 0.7f;
-                ///* pos.z -= 0.05f;*/
-                //camHolder.localPosition = pos;
-                //camHolder.localPosition = camHolder.localPosition + (camHolder.forward * 0.115f) + (camHolder.right * 0.09f);
-
                 if (cameraFixed
                     || !__instance.TargetCharacter
                     || !NetworkLevelLoader.Instance.IsOverallLoadingDone
@@ -63,13 +53,17 @@ namespace OutwardVR
                     || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue
                     || MenuManager.Instance.IsReturningToMainMenu)
                 {
+                    Vector3 camHolderPos = ___m_camera.transform.parent.localPosition;
+                    camHolderPos = ___m_camera.transform.localPosition * -1;
+                    camHolderPos.y += 0.7f;
+                    ___m_camera.transform.parent.localPosition = camHolderPos;
                     return false;
                 }
                 try
                 {
                     FixCamera(__instance, ___m_camera);
-                    __instance.transform.parent.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
-                    __instance.transform.parent.transform.parent.transform.GetChild(8).GetComponent<SkinnedMeshRenderer>().enabled = false;
+                    __instance.transform.parent.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false; // disable the head
+                    __instance.transform.parent.transform.parent.transform.GetChild(8).GetComponent<SkinnedMeshRenderer>().enabled = false; // I think this is for head armor, but this will only work in tutorial so change this later
                     
 
                 }
@@ -86,27 +80,22 @@ namespace OutwardVR
             Debug.Log("[InwardVR] setting up camera...");
             //Notes: TargetCharacter links to the Character class
             Controllers.Init();
-            Camera.main.cullingMask = -1;
-            Camera.main.nearClipPlane = 0.001f;
+            Camera.main.cullingMask = -1; // Culling mask needs to be -1, otherwise worldspace HUD doesn't show up
+            Camera.main.nearClipPlane = 0.001f; // Reduce near clipping plane so the HUD can be seen when its close to the camera
             Canvas UICanvas = cameraScript.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
 
-            cameraScript.TargetCharacter.CharacterUI.transform.parent.localRotation = Quaternion.identity;
+            cameraScript.TargetCharacter.CharacterUI.transform.parent.localRotation = Quaternion.identity; 
 
 
             UICanvas.renderMode = RenderMode.WorldSpace;
-            //UICanvas.transform.localScale = new Vector3(0.0006f, 0.0006f, 0.0006f);
-            // Get the character model head transform
-            var headTrans = cameraScript.TargetCharacter.Visuals.Head.transform;
+            var headTrans = cameraScript.TargetCharacter.Visuals.Head.transform; // Get the character model head transform
 
             // set camera position and cancel out actual camera position
-            var camHolder = camera.transform.parent;
+            var camHolder = camera.transform.parent; 
             camHolder.localPosition = camera.transform.localPosition * -1;
             var pos = camHolder.localPosition;
-            /*pos.x -= 0.05f;*/
-            pos.y += 0.7f;
-            /* pos.z -= 0.05f;*/
-            camHolder.localPosition = pos;
-            camHolder.localPosition = camHolder.localPosition + (camHolder.forward * 0.115f) + (camHolder.right * 0.09f);
+            pos.y += 0.7f; // This offset places the camera at the right height
+            camHolder.localPosition = pos + (camHolder.forward * 0.115f) + (camHolder.right * 0.09f);
 
             // get the root gameobject of the camera (parent of camHolder)
             var camRoot = camera.transform.root;
@@ -122,49 +111,21 @@ namespace OutwardVR
 
             if (UICanvas)
             {
-                cameraScript.TargetCharacter.CharacterUI.transform.parent.localPosition = Vector3.zero;
-                cameraScript.TargetCharacter.CharacterUI.transform.parent.localScale = new Vector3(1f,1f,1f);
-                //UICanvas.transform.root.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.4f) + (Camera.main.transform.right * -0.1f) + (Camera.main.transform.up * -0.075f);
-                //UICanvas.transform.root.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.25f);
-                //UICanvas.transform.root.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.25f) + (Camera.main.transform.right * -0.65f) + (Camera.main.transform.up * 0.555f);
-                //UICanvas.transform.root.rotation = Camera.main.transform.rotation;
-                UICanvas.transform.root.localScale = new Vector3(0.0006f, 0.0006f, 0.0006f);
-                //UICanvas.transform.root.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+                cameraScript.TargetCharacter.CharacterUI.transform.parent.localPosition = Vector3.zero; // Set localPosition to zero to position HUD correctly
+                cameraScript.TargetCharacter.CharacterUI.transform.parent.localScale = new Vector3(1f,1f,1f); // localScale is like 111.11 for some reason, so set it all to 1
+                UICanvas.transform.root.localScale = new Vector3(0.0006f, 0.0006f, 0.0006f); // The MenuManager is huge in world space as 1,1,1 so reduce it to 0.0006
+
             }
-            Transform GeneralMenus = UICanvas.transform.root.GetChild(2);
+            Transform GeneralMenus = UICanvas.transform.root.GetChild(2); // Maybe change this to loop over all children, its place might change
             if (GeneralMenus.name == "GeneralMenus") { 
                 GeneralMenus.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
                 //GeneralMenus.transform.localPosition = Vector3.zero;
                 GeneralMenus.transform.position = UICanvas.transform.position;
-                GeneralMenus.transform.rotation = Camera.main.transform.rotation;
+                GeneralMenus.transform.rotation = Quaternion.identity;
                 GeneralMenus.transform.localScale = new Vector3(1, 1, 1);
             } 
 
-            //if (CameraManager.RightHand == null)
-            //{
-            //    if (AssetLoader.LeftHandBase == null)
-            //    {
-            //        new AssetLoader();
-            //    }
-            //    CameraManager.VROrigin = new GameObject();
-            //    Transform OriginalCameraParent = Camera.main.transform.parent;
-            //    CameraManager.VROrigin.transform.position = OriginalCameraParent.position;
-            //    CameraManager.VROrigin.transform.rotation = OriginalCameraParent.rotation;
-            //    CameraManager.VROrigin.transform.localScale = OriginalCameraParent.localScale;
-
-            //    CameraManager.VROrigin.transform.parent = OriginalCameraParent;
-
-            //        CameraManager.RightHand = GameObject.Instantiate(AssetLoader.RightHandBase, Vector3.zeroVector, Quaternion.identityQuaternion);
-            //    CameraManager.RightHand.transform.parent = OriginalCameraParent;
-            //        CameraManager.LeftHand = GameObject.Instantiate(AssetLoader.LeftHandBase, Vector3.zeroVector, Quaternion.identityQuaternion);
-            //    CameraManager.LeftHand.transform.parent = OriginalCameraParent;
-
-            //}
             Debug.Log("[InwardVR] done setting up camera.");
-            Logs.WriteInfo(camHolder.root.name);
-            Logs.WriteInfo(camHolder.parent.name);
-            Logs.WriteInfo(camHolder.parent.parent.name);
-            Logs.WriteInfo(camHolder.parent.parent.parent.name);
         }
 
         // Make CharacterControl less sharp turning
@@ -198,6 +159,8 @@ namespace OutwardVR
 
                 var turnAllow = (int)fi_turnAllow.GetValue(__instance);
                 var slopeSpeed = (float)fi_slopeSpeed.GetValue(__instance);
+
+                enemyTargetActive = targetSys.Locked;
 
                 // ~~~~~~~~~~~ custom turn speed override ~~~~~~~~~~~
 
@@ -238,7 +201,7 @@ namespace OutwardVR
 
                 // ~~~~~~~~~~~~~~~~~~~ end custom ~~~~~~~~~~~~~~~~~~~
 
-                // ========= all vanilla =========
+                // ========= vanilla =========
                 float moveModif = 4f;
 
                 if (Vector3.Angle(___m_inputMoveVector, ___m_modifMoveInput) > 160f)
@@ -349,15 +312,20 @@ namespace OutwardVR
                 fi_turnAllow.SetValue(__instance, turnAllow);
                 fi_slopeSpeed.SetValue(__instance, slopeSpeed);
 
-                // Rotate body to match camera position - Needs some work
-                if (!targetSys.Locked) { 
+
+
+                // ========= more custom =========
+
+                if (!targetSys.Locked) { // dont rotate if the player is locked on
+
+                    // Rotate body to match camera position - Needs some work
                     Vector3 vrRot = Camera.main.transform.rotation.eulerAngles;
                     Vector3 bodyRot = __instance.transform.rotation.eulerAngles;
-                    if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) > 10f)
+                    if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) > 10f) // If there is a difference of 10f between the body and camera rotation
                     {
-                        __instance.transform.Rotate(0f, -5f, 0f);
-                        Camera.main.transform.parent.parent.Rotate(0f, 5f, 0f, Space.World);
-                        Camera.main.transform.parent.parent.localPosition = Camera.main.transform.parent.parent.localPosition + Camera.main.transform.parent.parent.right * -0.01f;
+                        __instance.transform.Rotate(0f, -5f, 0f); // rotate body
+                        Camera.main.transform.parent.parent.Rotate(0f, 5f, 0f, Space.World); // rotate camera's parents parent the same amount in the reverse direction to offset the rotation of its parent
+                        Camera.main.transform.parent.parent.localPosition = Camera.main.transform.parent.parent.localPosition + Camera.main.transform.parent.parent.right * -0.01f; // dunno if I need this anymore
 
                     }
                     else if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) < -10f)
@@ -365,37 +333,12 @@ namespace OutwardVR
                         __instance.transform.Rotate(0f, 5f, 0f);
                         Camera.main.transform.parent.parent.parent.Rotate(0f, -5f, 0f, Space.World);
                         Camera.main.transform.parent.parent.localPosition = Camera.main.transform.parent.parent.localPosition + Camera.main.transform.parent.parent.right * 0.01f;
-                        //x = 0.09
-                        //z = -0.1128
-                        //w = 0.309
                     }
                 
                 }
 
                 return false;
             }
-        }
-
-        private static float determineYRotaton(float yEulerAngle) {
-            float yRot = 0f;
-            if (yEulerAngle >= 0 || yEulerAngle < 90 ) {
-                yRot = Quaternion.Euler(0f, 90f, 0f).y;
-            }
-            else if (yEulerAngle >= 90 || yEulerAngle < 180)
-            {
-                yRot = Quaternion.Euler(0f, 180f, 0f).y;
-            }
-            else if (yEulerAngle >= 180 || yEulerAngle < 270)
-            {
-                yRot = Quaternion.Euler(0f, 270f, 0f).y;
-            }
-            else if (yEulerAngle >= 270 || yEulerAngle < 360)
-            {
-                yRot = Quaternion.Euler(0f, 360f, 0f).y;
-            }
-            Logs.WriteInfo("Y Euler" + yEulerAngle );
-            Logs.WriteInfo("Y Rot" + yRot);
-            return yRot;
         }
     }
 }
