@@ -53,10 +53,15 @@ namespace OutwardVR
                     || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue
                     || MenuManager.Instance.IsReturningToMainMenu)
                 {
-                    Vector3 camHolderPos = ___m_camera.transform.parent.localPosition;
-                    camHolderPos = ___m_camera.transform.localPosition * -1;
-                    camHolderPos.y += 0.7f;
-                    ___m_camera.transform.parent.localPosition = camHolderPos;
+                    //Vector3 camHolderPos = ___m_camera.transform.parent.localPosition;
+                    //camHolderPos = ___m_camera.transform.localPosition * -1;
+                    ////camHolderPos.y += 0.7f;
+                    //camHolderPos.y += 0.65f;
+                    //___m_camera.transform.parent.localPosition = camHolderPos + (___m_camera.transform.parent.forward * 0.115f) + (___m_camera.transform.parent.right * 0.09f);
+
+                    // if cameraScript.TargetCharacter.Sneaking then only set y pos to 0.2 instead of 0.7, i.e. take 0.5 off to correct for crouched height
+
+
                     return false;
                 }
                 try
@@ -107,7 +112,8 @@ namespace OutwardVR
             camRoot.rotation = cameraScript.TargetCharacter.transform.rotation;
 
             cameraFixed = true;
-            cameraScript.transform.Rotate(351f, 250f, 346f);
+            //cameraScript.transform.Rotate(351f, 250f, 346f);
+            cameraScript.transform.Rotate(348.42f, 250f, 341.36f);
 
             if (UICanvas)
             {
@@ -181,21 +187,26 @@ namespace OutwardVR
                     }
                     ___m_modifMoveInput.y = 0f;
                 }
-                // turn speed override
+                // turn speed
+                // 
                 else if (___m_modifMoveInput.x != 0 && !targetSys.Locked)
                 {
-                    if (___m_modifMoveInput.y < 0.25f)
-                    {
+
+                    // If the player is moving ___m_modifMoveInput.y will be greater than 0.25f which makes turning super slow, but for first person
+                    // the turning rate should be the same when moving as it is when you're still. Sprinting for some reason speeds up turning rate so use
+                    // this value to make it slower
+                    if (m_char.Sprinting)
+                        ___m_modifMoveInput.y = 0.5f;
+                    else
                         ___m_modifMoveInput.y = 0.25f;
-                    }
 
                     float yAmount = ___m_modifMoveInput.y;
-                    if (yAmount < 0) yAmount *= -1;
+                    if (yAmount < 0) yAmount *= -1;                   
 
                     // typical Y input will be 0 to 3.2
                     var yRatio = (float)((decimal)yAmount / (decimal)3.2f);
-                    float hMod = Mathf.Lerp(0.01f, 0.05f, yRatio);
-
+                    //float hMod = Mathf.Lerp(0.01f, 0.05f, yRatio);
+                    float hMod = Mathf.Lerp(0.01f, 0.015f, yRatio);
                     ___m_modifMoveInput.x *= hMod;
                 }
 
@@ -221,19 +232,63 @@ namespace OutwardVR
                     ___m_modifMoveInput,
                     Vector2.Distance(___m_inputMoveVector, ___m_modifMoveInput) * moveModif * Time.deltaTime);
 
+                float test = (Camera.main.transform.forward.z - 0.5f) * -10;
+                //Logs.WriteWarning(Camera.main.transform.forward.x + " " + Camera.main.transform.forward.y + " "  + Camera.main.transform.forward.z);
+                //if (test > 0.5f) {
+                //    ___m_inputMoveVector.y = test;
+                //}
+                Vector3 camDistanceFromBody = __instance.transform.InverseTransformPoint(Camera.main.transform.position);
+                camDistanceFromBody.z -= 0.2f;
+                Logs.WriteWarning(camDistanceFromBody.x + " " + camDistanceFromBody.y + " " + camDistanceFromBody.z);
+                //Logs.WriteWarning(camDistanceFromBody.x + " " + camDistanceFromBody.y + " " + camDistanceFromBody.z);
+                if (camDistanceFromBody.x >= 0.1f || camDistanceFromBody.x <= -0.1f) {
+                    ___m_inputMoveVector.x += camDistanceFromBody.x * 2f;
+                    Vector3 right = __instance.transform.right;
+                    right.y = 0f;
+                    Camera.main.transform.parent.position += (right * (camDistanceFromBody.x * -0.1f));
+                    //Camera.main.transform.parent.position += (Camera.main.transform.parent.transform.right * (camDistanceFromBody.x * -1f));
+                    //Camera.main.transform.parent.position = Vector3.MoveTowards(Camera.main.transform.parent.position, __instance.transform.position, Time.deltaTime * 1);
+                    //Camera.main.transform.parent.Translate(camDistanceFromBody.x * -0.5f, 0f, 0f, Space.World);
+                    // Try and move camera left or right here
+                }
+                if (camDistanceFromBody.z > 0.1f || camDistanceFromBody.z <= -0.1f) {
+                    ___m_inputMoveVector.y += camDistanceFromBody.z * 2f;
+                    Vector3 forward = __instance.transform.forward;
+                    forward.y = 0f;
+                    Camera.main.transform.parent.position += (forward * (camDistanceFromBody.z * -0.1f));
+                    //Camera.main.transform.parent.position = Camera.main.transform.parent.position + (Camera.main.transform.parent.forward * (camDistanceFromBody.z * -1f));
+                    // Try and move camera forward or back here
+                }
+                Vector3 lockHeight = Camera.main.transform.parent.localPosition;
+                lockHeight.y = Camera.main.transform.localPosition.y * -1f;
+                if (__instance.Character.Sneaking)
+                {
+                    lockHeight.y += 0.2f;
+                    //lockHeight += __instance.transform.right * -0.01f;
+                }
+                else
+                    lockHeight.y += 0.65f;
+                Camera.main.transform.parent.localPosition = lockHeight;
+
+                //Logs.WriteWarning(__instance.transform.InverseTransformPoint(Camera.main.transform.position));
                 var transformMove = (___m_horiControl.forward * ___m_inputMoveVector.y) + (___m_horiControl.right * ___m_inputMoveVector.x);
+                
+                //Logs.WriteWarning(Vector3.Distance(Camera.main.transform.position,__instance.transform.position));
+                // setting y to positive will move character forward, negative moves backward
+                // setting x to postiive will move him right, negative will move left
+                //Logs.WriteWarning("---------");
+                //Logs.WriteWarning(Camera.main.transform.position - __instance.transform.position);
+                //Logs.WriteWarning(Camera.main.transform.right);
+
 
                 if (m_charControl.enabled)
-                {
                     m_charControl.Move(new Vector3(0f, -3f, 0f) * Time.deltaTime);
-                }
 
                 Vector3 inverseMove = __instance.transform.InverseTransformDirection(transformMove) * slopeSpeed;
                 inverseMove.x *= 0.8f;
                 if (inverseMove.z < 0f)
-                {
                     inverseMove.z *= 0.6f;
-                }
+
                 var movementVector = inverseMove;
 
                 if (m_char.AnimatorInitialized)
@@ -242,8 +297,7 @@ namespace OutwardVR
                     animator.SetFloat("moveForward", inverseMove.z);
                 }
 
-                if (m_char.Sliding || m_char.Falling)
-                {
+                if (m_char.Sliding || m_char.Falling) {
                     m_charControl.Move(transformMove * Time.deltaTime);
                 }
 
@@ -255,6 +309,7 @@ namespace OutwardVR
 
                 if (!m_char.Sliding)
                 {
+
                     Vector2 inputOne;
                     Vector2 inputTwo = inputOne = new Vector2(__instance.transform.forward.x, __instance.transform.forward.z);
 
@@ -267,14 +322,10 @@ namespace OutwardVR
                         if (!__instance.FaceLikeCamera || m_char.Dodging || ___m_sprintFacing)
                         {
                             if (___m_modifMoveInput.magnitude > 0.2f)
-                            {
                                 inputOne = new Vector2(transformMove.x, transformMove.z);
-                            }
                         }
                         else if (!targetSys.Locked || m_char.CharacterCamera.InDeployBuildingMode)
-                        {
                             inputOne = new Vector2(___m_horiControl.forward.x, ___m_horiControl.forward.z);
-                        }
                         else
                         {
                             var targetDiff = targetSys.AdjustedLockedPointPos - __instance.transform.position;
@@ -283,22 +334,35 @@ namespace OutwardVR
                     }
 
                     float angleDiff = Vector2.Angle(inputTwo, inputOne);
-
                     if (Vector3.Cross(inputTwo, inputOne).z > 0f)
-                    {
                         angleDiff = 0f - angleDiff;
-                    }
 
                     float clampedDiff = Mathf.Clamp(angleDiff, -10f, 10f) * 50f * Time.deltaTime;
                     if (!(angleDiff > 0f))
-                    {
                         clampedDiff = Mathf.Clamp(clampedDiff, angleDiff, 0f - angleDiff);
-                    }
                     else
-                    {
                         clampedDiff = Mathf.Clamp(clampedDiff, 0f - angleDiff, angleDiff);
-                    }
 
+                    // ========= custom code for rotating body when looking around =========
+                    if (!targetSys.Locked)
+                    {
+                        // Rotate body to match camera position - Needs some work
+                        Vector3 vrRot = Camera.main.transform.rotation.eulerAngles;
+                        Vector3 bodyRot = __instance.transform.rotation.eulerAngles;
+                        if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) > 10f) // If there is a difference of 10f between the body and camera rotation
+                        {
+                            // for every 10 degrees of difference in body and camera rotation, rotate the player x * -2f to rotate left or x * 2f to rotate right
+                            clampedDiff = -2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / 10);
+                            // rotate camera's parents parent the same amount in the reverse direction to offset the rotation of its parent
+                            Camera.main.transform.parent.parent.Rotate(0f, clampedDiff * -1, 0f, Space.World);
+                        }
+                        else if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) < -10f)
+                        {
+                            clampedDiff = 2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / -10);
+                            Camera.main.transform.parent.parent.Rotate(0f, clampedDiff * -1, 0f, Space.World);
+                        }
+
+                    }
                     __instance.transform.Rotate(0f, clampedDiff, 0f);
                 }
 
@@ -313,29 +377,29 @@ namespace OutwardVR
                 fi_slopeSpeed.SetValue(__instance, slopeSpeed);
 
 
-
-                // ========= more custom =========
-
-                if (!targetSys.Locked) { // dont rotate if the player is locked on
-
-                    // Rotate body to match camera position - Needs some work
-                    Vector3 vrRot = Camera.main.transform.rotation.eulerAngles;
-                    Vector3 bodyRot = __instance.transform.rotation.eulerAngles;
-                    if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) > 10f) // If there is a difference of 10f between the body and camera rotation
-                    {
-                        __instance.transform.Rotate(0f, -5f, 0f); // rotate body
-                        Camera.main.transform.parent.parent.Rotate(0f, 5f, 0f, Space.World); // rotate camera's parents parent the same amount in the reverse direction to offset the rotation of its parent
-                        Camera.main.transform.parent.parent.localPosition = Camera.main.transform.parent.parent.localPosition + Camera.main.transform.parent.parent.right * -0.01f; // dunno if I need this anymore
-
-                    }
-                    else if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) < -10f)
-                    {
-                        __instance.transform.Rotate(0f, 5f, 0f);
-                        Camera.main.transform.parent.parent.parent.Rotate(0f, -5f, 0f, Space.World);
-                        Camera.main.transform.parent.parent.localPosition = Camera.main.transform.parent.parent.localPosition + Camera.main.transform.parent.parent.right * 0.01f;
-                    }
+                //camHolderPos = Camera.main.transform.localPosition * -1;
+                ////camHolderPos.y += 0.7f;
+                //camHolderPos.y += 0.65f;
+                //Camera.main.transform.parent.localPosition = camHolderPos + (Camera.main.transform.parent.forward * 0.05f);
+                ////}
+                //camDistanceFromBody = __instance.transform.InverseTransformPoint(Camera.main.transform.position);
                 
-                }
+                //if (camDistanceFromBody.x >= 0.1f || camDistanceFromBody.x <= -0.1f)
+                //{
+                //    //___m_inputMoveVector.x += camDistanceFromBody.x * 2f;
+                //    Vector3 right = __instance.transform.right;
+                //    right.y = 0f;
+                //    Camera.main.transform.parent.position += (right * (camDistanceFromBody.x * -0.1f));
+                //}
+                //if (camDistanceFromBody.z > 0.1f || camDistanceFromBody.z <= -0.1f)
+                //{
+                //    Vector3 forward = __instance.transform.forward;
+                //    forward.y = 0f;
+                //    Camera.main.transform.parent.position += (forward * (camDistanceFromBody.z * -0.1f));
+                //    //Camera.main.transform.parent.position = Camera.main.transform.parent.position + (Camera.main.transform.parent.forward * (camDistanceFromBody.z * -1f));
+                //    // Try and move camera forward or back here
+                //}
+
 
                 return false;
             }

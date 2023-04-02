@@ -69,7 +69,7 @@ namespace OutwardVR
         [HarmonyPatch(typeof(MenuManager), "Update")]
         private static void CharacterCamera_Update(MenuManager __instance, RectTransform ___m_characterUIHolder)
         {
-
+            
             // I find these values work nicely
            
             __instance.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.5f) + (Camera.main.transform.right * -0.05f) + (Camera.main.transform.up * 0.05f);
