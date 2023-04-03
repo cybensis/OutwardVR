@@ -69,11 +69,18 @@ namespace OutwardVR
         [HarmonyPatch(typeof(MenuManager), "Update")]
         private static void CharacterCamera_Update(MenuManager __instance, RectTransform ___m_characterUIHolder)
         {
-            
-            // I find these values work nicely
-           
-            __instance.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.5f) + (Camera.main.transform.right * -0.05f) + (Camera.main.transform.up * 0.05f);
-            __instance.transform.rotation = Camera.main.transform.rotation;
+
+            // I find these values work nicely for positioning the HUD
+            LocalCharacterControl characterController = Camera.main.transform.root.GetComponent<LocalCharacterControl>();
+            if (characterController != null && characterController.Character.Sneaking)
+                __instance.transform.position = characterController.transform.position + (characterController.transform.right * 0.1f) + (characterController.transform.forward * 0.7f) + (characterController.transform.up * 1.2f);
+            else
+                __instance.transform.position = characterController.transform.position + (characterController.transform.forward * 0.6f) + (characterController.transform.up * 1.675f);
+            if (characterController.Character.Sprinting)
+                __instance.transform.position += (characterController.transform.forward * 0.2f);
+
+            //__instance.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.5f) + (Camera.main.transform.right * -0.05f) + (Camera.main.transform.up * 0.05f);
+            __instance.transform.rotation = characterController.transform.rotation;
         }
 
 

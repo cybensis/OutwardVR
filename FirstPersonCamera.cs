@@ -151,6 +151,7 @@ namespace OutwardVR
         [HarmonyPatch(typeof(LocalCharacterControl), "UpdateMovement")]
         public class LocalCharacterControl_UpdateMovement
         {
+            private static bool startedSneaking = false;
             [HarmonyPrefix]
             public static bool Prefix(LocalCharacterControl __instance, ref Vector3 ___m_inputMoveVector, ref Vector3 ___m_modifMoveInput,
                 Transform ___m_horiControl, ref bool ___m_sprintFacing)
@@ -238,6 +239,10 @@ namespace OutwardVR
                 //    ___m_inputMoveVector.y = test;
                 //}
                 Vector3 camDistanceFromBody = __instance.transform.InverseTransformPoint(Camera.main.transform.position);
+                // When sneaking, the player models head moves to the right, so I move the camera to the right to fix this which creates an offset
+                // of 0.1 for the X axis, so use this to negate that
+                if (__instance.Character.Sneaking)
+                    camDistanceFromBody.x -= 0.1f;
                 camDistanceFromBody.z -= 0.2f;
                 Logs.WriteWarning(camDistanceFromBody.x + " " + camDistanceFromBody.y + " " + camDistanceFromBody.z);
                 //Logs.WriteWarning(camDistanceFromBody.x + " " + camDistanceFromBody.y + " " + camDistanceFromBody.z);
@@ -246,28 +251,34 @@ namespace OutwardVR
                     Vector3 right = __instance.transform.right;
                     right.y = 0f;
                     Camera.main.transform.parent.position += (right * (camDistanceFromBody.x * -0.1f));
-                    //Camera.main.transform.parent.position += (Camera.main.transform.parent.transform.right * (camDistanceFromBody.x * -1f));
-                    //Camera.main.transform.parent.position = Vector3.MoveTowards(Camera.main.transform.parent.position, __instance.transform.position, Time.deltaTime * 1);
-                    //Camera.main.transform.parent.Translate(camDistanceFromBody.x * -0.5f, 0f, 0f, Space.World);
-                    // Try and move camera left or right here
                 }
                 if (camDistanceFromBody.z > 0.1f || camDistanceFromBody.z <= -0.1f) {
                     ___m_inputMoveVector.y += camDistanceFromBody.z * 2f;
                     Vector3 forward = __instance.transform.forward;
                     forward.y = 0f;
                     Camera.main.transform.parent.position += (forward * (camDistanceFromBody.z * -0.1f));
-                    //Camera.main.transform.parent.position = Camera.main.transform.parent.position + (Camera.main.transform.parent.forward * (camDistanceFromBody.z * -1f));
-                    // Try and move camera forward or back here
                 }
                 Vector3 lockHeight = Camera.main.transform.parent.localPosition;
                 lockHeight.y = Camera.main.transform.localPosition.y * -1f;
                 if (__instance.Character.Sneaking)
                 {
                     lockHeight.y += 0.2f;
-                    //lockHeight += __instance.transform.right * -0.01f;
+                    // Don't want the X axis to be locked in so only set the X axis crouching offset the one time
+                    if (startedSneaking == false) {
+                        startedSneaking = true;
+                        lockHeight += __instance.transform.right * -0.25f;
+                        lockHeight += __instance.transform.forward * -0.35f;
+                    }
                 }
-                else
+                else { 
                     lockHeight.y += 0.65f;
+                    // Return the players X axis position back to normal after returning from crouching
+                    if (startedSneaking) { 
+                        startedSneaking = false;
+                        lockHeight += __instance.transform.right * 0.25f;
+                        lockHeight += __instance.transform.forward * 0.35f;
+                    }
+                }
                 Camera.main.transform.parent.localPosition = lockHeight;
 
                 //Logs.WriteWarning(__instance.transform.InverseTransformPoint(Camera.main.transform.position));
@@ -349,16 +360,16 @@ namespace OutwardVR
                         // Rotate body to match camera position - Needs some work
                         Vector3 vrRot = Camera.main.transform.rotation.eulerAngles;
                         Vector3 bodyRot = __instance.transform.rotation.eulerAngles;
-                        if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) > 10f) // If there is a difference of 10f between the body and camera rotation
+                        if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) > 25f) // If there is a difference of 10f between the body and camera rotation
                         {
                             // for every 10 degrees of difference in body and camera rotation, rotate the player x * -2f to rotate left or x * 2f to rotate right
-                            clampedDiff = -2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / 10);
+                            clampedDiff = -2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / 25);
                             // rotate camera's parents parent the same amount in the reverse direction to offset the rotation of its parent
                             Camera.main.transform.parent.parent.Rotate(0f, clampedDiff * -1, 0f, Space.World);
                         }
-                        else if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) < -10f)
+                        else if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) < -25f)
                         {
-                            clampedDiff = 2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / -10);
+                            clampedDiff = 2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / -25);
                             Camera.main.transform.parent.parent.Rotate(0f, clampedDiff * -1, 0f, Space.World);
                         }
 

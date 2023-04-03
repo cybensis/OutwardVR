@@ -1,5 +1,5 @@
 #ToDo
-- Using the same DeltaAngle stuff for rotating the body, make it so the HUD stays in the same x (i think) coord, then when you've looked beyond a certain point, recenter it. Also make it so the HUD doesn't rotate up or down, keep it centered. This will all help with reducing the need to strain to look at the corners of the UI by keeping the HUD in place
+- Moving and looking around to rotate the body is doing some funky stuff, fix that
 - Rework the helmet mesh hiding thing, im pretty sure it would only work on the tutorial since it relies on the helmet being at index 8 or something
 - Figure out how to make the character move side to side instead of just forwards. Character can move sideways when locked on so look at that for ideas
 - Can't use inv properly when using arrows, as opening inv nocks an arrow and prevents you from switching it out
@@ -14,10 +14,12 @@
 	- To do this maybe just have the UI update patcher stop updating HUD position when a menu is open so it freezes in place. I don't think it would be possible to freeze just the menu and not the rest of the HUD
 - Make the main menu screen work in VR and move the controller init and update functions to somewhere they can be used in the main menu
 - You can access the X button context menu when looting something, find a fix to prevent that
-- Position camera slightly to the right and forward when crouched
 - Make the inventory context menu pop up next to the inv item you're using it on
+- Fix camera during crouch movement
 
 ### Done
+- ~~Using the same DeltaAngle stuff for rotating the body, make it so the HUD stays in the same x (i think) coord, then when you've looked beyond a certain point, recenter it. Also make it so the HUD doesn't rotate up or down, keep it centered. This will all help with reducing the need to strain to look at the corners of the UI by keeping the HUD in place~~
+- ~~Position camera slightly to the right and forward when crouched~~
 - ~~Lock the camera Y axis to the player body, and for the X and Z axis, make it so moving the headset left/right or forward/backwards moves the player too~~
 - ~~Work on the player body rotating left and right when looking around with headset. Right now it's much too jaggy~~
 - ~~Change the X look rotation multiplier when stationary, its way too high right now~~
@@ -33,3 +35,4 @@
 - For pickup item HUD elements, maybe track them to the actual object and make it rotate around the object facing the player
 - Maybe add a laser pointer for the controller when in menus like the inventory or pause menu
 	- Tried doing this but to work with normal raycasts UI elements need a collider which these ones don't have. You can use EventSystem.current.raycastAll() or GraphicRaycaster apparently but I couldn't get them to work with a worldspace UI
+- Maybe add the laser pointer for picking up items instead. It will be 100 times easier than the UI stuff since its interacting with real world objects
