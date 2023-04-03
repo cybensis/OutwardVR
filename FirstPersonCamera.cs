@@ -233,19 +233,15 @@ namespace OutwardVR
                     ___m_modifMoveInput,
                     Vector2.Distance(___m_inputMoveVector, ___m_modifMoveInput) * moveModif * Time.deltaTime);
 
-                float test = (Camera.main.transform.forward.z - 0.5f) * -10;
-                //Logs.WriteWarning(Camera.main.transform.forward.x + " " + Camera.main.transform.forward.y + " "  + Camera.main.transform.forward.z);
-                //if (test > 0.5f) {
-                //    ___m_inputMoveVector.y = test;
-                //}
+                // ========= More custom =========
                 Vector3 camDistanceFromBody = __instance.transform.InverseTransformPoint(Camera.main.transform.position);
                 // When sneaking, the player models head moves to the right, so I move the camera to the right to fix this which creates an offset
                 // of 0.1 for the X axis, so use this to negate that
                 if (__instance.Character.Sneaking)
                     camDistanceFromBody.x -= 0.1f;
+                // Camera is positioned slightly forward from the bodies center, so use this to offset that
                 camDistanceFromBody.z -= 0.2f;
-                Logs.WriteWarning(camDistanceFromBody.x + " " + camDistanceFromBody.y + " " + camDistanceFromBody.z);
-                //Logs.WriteWarning(camDistanceFromBody.x + " " + camDistanceFromBody.y + " " + camDistanceFromBody.z);
+
                 if (camDistanceFromBody.x >= 0.1f || camDistanceFromBody.x <= -0.1f) {
                     ___m_inputMoveVector.x += camDistanceFromBody.x * 2f;
                     Vector3 right = __instance.transform.right;
@@ -258,39 +254,43 @@ namespace OutwardVR
                     forward.y = 0f;
                     Camera.main.transform.parent.position += (forward * (camDistanceFromBody.z * -0.1f));
                 }
-                Vector3 lockHeight = Camera.main.transform.parent.localPosition;
-                lockHeight.y = Camera.main.transform.localPosition.y * -1f;
-                if (__instance.Character.Sneaking)
-                {
-                    lockHeight.y += 0.2f;
+
+                // This if/else statement locks the characters Y axis to the perfect position, then also when the player crouches or uncrouches, it changes the position
+                // a little bit since the crouching head is more to the right and forward
+                Vector3 camPosition = Camera.main.transform.parent.localPosition;
+                camPosition.y = Camera.main.transform.localPosition.y * -1f;
+                if (__instance.Character.Sneaking) {
+                    camPosition.y += 0.2f;
                     // Don't want the X axis to be locked in so only set the X axis crouching offset the one time
                     if (startedSneaking == false) {
                         startedSneaking = true;
-                        lockHeight += __instance.transform.right * -0.25f;
-                        lockHeight += __instance.transform.forward * -0.35f;
+                        camPosition += __instance.transform.right * -0.25f;
+                        camPosition += __instance.transform.forward * -0.35f;
                     }
                 }
-                else { 
-                    lockHeight.y += 0.65f;
+                else {
+                    camPosition.y += 0.65f;
                     // Return the players X axis position back to normal after returning from crouching
                     if (startedSneaking) { 
                         startedSneaking = false;
-                        lockHeight += __instance.transform.right * 0.25f;
-                        lockHeight += __instance.transform.forward * 0.35f;
+                        camPosition += __instance.transform.right * 0.25f;
+                        camPosition += __instance.transform.forward * 0.35f;
                     }
                 }
-                Camera.main.transform.parent.localPosition = lockHeight;
+                Camera.main.transform.parent.localPosition = camPosition;
+                // This allows the player to move side to side only if a menu isn't open and they're not moving forward because it makes the
+                // camera turn around when you move forward and try to side step
+                if (!m_char.CharacterUI.IsMenuFocused && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y < 0.4)
+                {
+                    if (SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x > 0.4 || SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x < -0.4)
+                        ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
+                }
 
-                //Logs.WriteWarning(__instance.transform.InverseTransformPoint(Camera.main.transform.position));
-                var transformMove = (___m_horiControl.forward * ___m_inputMoveVector.y) + (___m_horiControl.right * ___m_inputMoveVector.x);
-                
-                //Logs.WriteWarning(Vector3.Distance(Camera.main.transform.position,__instance.transform.position));
+                // ========= End of custom =========
+
                 // setting y to positive will move character forward, negative moves backward
-                // setting x to postiive will move him right, negative will move left
-                //Logs.WriteWarning("---------");
-                //Logs.WriteWarning(Camera.main.transform.position - __instance.transform.position);
-                //Logs.WriteWarning(Camera.main.transform.right);
-
+                // setting x to postiive will move character right, negative will move left
+                var transformMove = (___m_horiControl.forward * ___m_inputMoveVector.y) + (___m_horiControl.right * ___m_inputMoveVector.x);
 
                 if (m_charControl.enabled)
                     m_charControl.Move(new Vector3(0f, -3f, 0f) * Time.deltaTime);
@@ -386,31 +386,6 @@ namespace OutwardVR
                 fi_localMoveVector.SetValue(__instance, movementVector);
                 fi_turnAllow.SetValue(__instance, turnAllow);
                 fi_slopeSpeed.SetValue(__instance, slopeSpeed);
-
-
-                //camHolderPos = Camera.main.transform.localPosition * -1;
-                ////camHolderPos.y += 0.7f;
-                //camHolderPos.y += 0.65f;
-                //Camera.main.transform.parent.localPosition = camHolderPos + (Camera.main.transform.parent.forward * 0.05f);
-                ////}
-                //camDistanceFromBody = __instance.transform.InverseTransformPoint(Camera.main.transform.position);
-                
-                //if (camDistanceFromBody.x >= 0.1f || camDistanceFromBody.x <= -0.1f)
-                //{
-                //    //___m_inputMoveVector.x += camDistanceFromBody.x * 2f;
-                //    Vector3 right = __instance.transform.right;
-                //    right.y = 0f;
-                //    Camera.main.transform.parent.position += (right * (camDistanceFromBody.x * -0.1f));
-                //}
-                //if (camDistanceFromBody.z > 0.1f || camDistanceFromBody.z <= -0.1f)
-                //{
-                //    Vector3 forward = __instance.transform.forward;
-                //    forward.y = 0f;
-                //    Camera.main.transform.parent.position += (forward * (camDistanceFromBody.z * -0.1f));
-                //    //Camera.main.transform.parent.position = Camera.main.transform.parent.position + (Camera.main.transform.parent.forward * (camDistanceFromBody.z * -1f));
-                //    // Try and move camera forward or back here
-                //}
-
 
                 return false;
             }

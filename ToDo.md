@@ -1,7 +1,7 @@
 #ToDo
 - Moving and looking around to rotate the body is doing some funky stuff, fix that
+- Looking around with hmd then rotating cam with joystick is also doing some funky stuff
 - Rework the helmet mesh hiding thing, im pretty sure it would only work on the tutorial since it relies on the helmet being at index 8 or something
-- Figure out how to make the character move side to side instead of just forwards. Character can move sideways when locked on so look at that for ideas
 - Can't use inv properly when using arrows, as opening inv nocks an arrow and prevents you from switching it out
 - Make it so looking up or down rotates the character backwards or forwards so if there are two items on the same X axis but ones above the other, then you can look up or down to choose which one to pick up
 - try to make it so when the player bends over to pick something up or crouches, the camera moves with it
@@ -18,6 +18,7 @@
 - Fix camera during crouch movement
 
 ### Done
+- ~~Figure out how to make the character move side to side instead of just forwards. Character can move sideways when locked on so look at that for ideas~~
 - ~~Using the same DeltaAngle stuff for rotating the body, make it so the HUD stays in the same x (i think) coord, then when you've looked beyond a certain point, recenter it. Also make it so the HUD doesn't rotate up or down, keep it centered. This will all help with reducing the need to strain to look at the corners of the UI by keeping the HUD in place~~
 - ~~Position camera slightly to the right and forward when crouched~~
 - ~~Lock the camera Y axis to the player body, and for the X and Z axis, make it so moving the headset left/right or forward/backwards moves the player too~~

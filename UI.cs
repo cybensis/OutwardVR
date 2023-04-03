@@ -73,7 +73,7 @@ namespace OutwardVR
             // I find these values work nicely for positioning the HUD
             LocalCharacterControl characterController = Camera.main.transform.root.GetComponent<LocalCharacterControl>();
             if (characterController != null && characterController.Character.Sneaking)
-                __instance.transform.position = characterController.transform.position + (characterController.transform.right * 0.1f) + (characterController.transform.forward * 0.7f) + (characterController.transform.up * 1.2f);
+                __instance.transform.position = characterController.transform.position + (characterController.transform.right * 0.05f) + (characterController.transform.forward * 0.7f) + (characterController.transform.up * 1.2f);
             else
                 __instance.transform.position = characterController.transform.position + (characterController.transform.forward * 0.6f) + (characterController.transform.up * 1.675f);
             if (characterController.Character.Sprinting)
