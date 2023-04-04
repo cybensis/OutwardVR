@@ -37,7 +37,9 @@ namespace OutwardVR
                     new ControllerElementIdentifier(Controllers.EastDPAD, "EastDPAD", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.SouthDPAD, "SouthDPAD", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.WestDPAD, "WestDPAD", "", "", ControllerElementType.Button, true),
-                     new ControllerElementIdentifier(Controllers.Back, "Back", "", "", ControllerElementType.Button, true)
+                    new ControllerElementIdentifier(Controllers.Back, "Back", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.RightJoyStickUp, "RightJoystickUp", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.Start, "Start", "", "", ControllerElementType.Button, true)
                 },
            
                 new int[] { },
@@ -120,7 +122,7 @@ namespace OutwardVR
                 new ActionElementMap(LockToggleID , ControllerElementType.Button, Controllers.ClickRightJoystick, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(BlockID , ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(ChargeWeaponID , ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),
-                new ActionElementMap(DodgeID, ControllerElementType.Button, Controllers.LeftGripDouble, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(DodgeID, ControllerElementType.Button, Controllers.RightJoyStickUp, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(SprintID, ControllerElementType.Button, Controllers.ClickLeftJoystick, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(HandleBagID, ControllerElementType.Button, Controllers.NorthDPAD, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(SheatheID, ControllerElementType.Button, Controllers.SouthDPAD, Pole.Positive, AxisRange.Positive, false),
@@ -216,7 +218,7 @@ namespace OutwardVR
         {
             List<ActionElementMap> t2 = new List<ActionElementMap>() {
                 // This uses start button on a controller, find something to remap this to
-                //new ActionElementMap(HelpID, ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(HelpID, ControllerElementType.Button, Controllers.Start, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(CancelID, ControllerElementType.Button, Controllers.ButtonB, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(EnableSaveSelectionOneID, ControllerElementType.Button, Controllers.LeftGrip, Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(EnableSaveSelectionTwoID, ControllerElementType.Button, Controllers.RightGrip, Pole.Positive, AxisRange.Positive, false),

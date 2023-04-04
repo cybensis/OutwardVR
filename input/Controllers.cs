@@ -54,39 +54,41 @@ namespace OutwardVR
 
         private static void SetupControllerInputs()
         {
-            vrControllers = RewiredAddons.CreateRewiredController();
+            vrControllers =         RewiredAddons.CreateRewiredController();
 
-            vrGameplayMap = RewiredAddons.CreateGameplayMap(vrControllers.id);
-            vrOtherControlsMap = RewiredAddons.CreateOtherControlsMap(vrControllers.id);
-            vrMenuMap = RewiredAddons.CreateMenuMap(vrControllers.id);
-            vrMovementMap = RewiredAddons.CreateMovementMap(vrControllers.id);
-            vrQuickSlotMap = RewiredAddons.CreateQuickSlotMap(vrControllers.id);
-            vrDeployMap = RewiredAddons.CreateDeployMap(vrControllers.id);
-            vrVCMap = RewiredAddons.CreateVCMap(vrControllers.id);
-        vrCameraMoveMap = RewiredAddons.CreateCameraMoveMap(vrControllers.id);
-            vrOtherDPADMap = RewiredAddons.CreateOtherDPADMap(vrControllers.id);
+            vrGameplayMap =         RewiredAddons.CreateGameplayMap(vrControllers.id);
+            vrOtherControlsMap =    RewiredAddons.CreateOtherControlsMap(vrControllers.id);
+            vrMenuMap =             RewiredAddons.CreateMenuMap(vrControllers.id);
+            vrMovementMap =         RewiredAddons.CreateMovementMap(vrControllers.id);
+            vrQuickSlotMap =        RewiredAddons.CreateQuickSlotMap(vrControllers.id);
+            vrDeployMap =           RewiredAddons.CreateDeployMap(vrControllers.id);
+            vrVCMap =               RewiredAddons.CreateVCMap(vrControllers.id);
+            vrCameraMoveMap =       RewiredAddons.CreateCameraMoveMap(vrControllers.id);
+            vrOtherDPADMap =        RewiredAddons.CreateOtherDPADMap(vrControllers.id);
 
             inputs = new BaseInput[]
             {
-                    new VectorInput(SteamVR_Actions._default.LeftJoystick, LeftJoyStickHor, LeftJoyStickVert), // left joystick
-                    new VectorInput(SteamVR_Actions._default.RightJoystick, RightJoyStickHor, RightJoyStickVert), // right joystick
-                    new ButtonInput(SteamVR_Actions._default.ButtonA, ButtonA), // right A button click
-                    new ButtonInput(SteamVR_Actions._default.ButtonB, ButtonB), // right B button click
-                    new ButtonInput(SteamVR_Actions._default.ButtonX, ButtonX), // left X button click
-                    new ButtonInput(SteamVR_Actions._default.ButtonY, ButtonY), // left Y button click
-                    new AxisInput(SteamVR_Actions._default.LeftTrigger, LeftTrigger), //  left trigger
-                    new AxisInput(SteamVR_Actions._default.RightTrigger, RightTrigger), //  right trigger
+                    new VectorInput(SteamVR_Actions._default.LeftJoystick, LeftJoyStickHor, LeftJoyStickVert),
+                    new VectorInput(SteamVR_Actions._default.RightJoystick, RightJoyStickHor, RightJoyStickVert),
+                    new ButtonInput(SteamVR_Actions._default.ButtonA, ButtonA),
+                    new ButtonInput(SteamVR_Actions._default.ButtonB, ButtonB),
+                    new ButtonInput(SteamVR_Actions._default.ButtonX, ButtonX),
+                    new ButtonInput(SteamVR_Actions._default.ButtonY, ButtonY),
+                    new AxisInput(SteamVR_Actions._default.LeftTrigger, LeftTrigger),
+                    new AxisInput(SteamVR_Actions._default.RightTrigger, RightTrigger),
                     new ButtonInput(SteamVR_Actions._default.LeftGrip, LeftGrip),
-                    new ButtonInput(SteamVR_Actions._default.LeftGripDouble, LeftGripDouble),
-                    new ButtonInput(SteamVR_Actions._default.LeftGripHold, LeftGripHold), // click right joystick
-                    new ButtonInput(SteamVR_Actions._default.ClickLeftJoystick, ClickLeftJoystick), // click left joystick
-                    new ButtonInput(SteamVR_Actions._default.ClickRightJoystick, ClickRightJoystick), // click right joystick
+                    //new ButtonInput(SteamVR_Actions._default.LeftGripDouble, LeftGripDouble),
+                    //new ButtonInput(SteamVR_Actions._default.LeftGripHold, LeftGripHold),
+                    new ButtonInput(SteamVR_Actions._default.ClickLeftJoystick, ClickLeftJoystick),
+                    new ButtonInput(SteamVR_Actions._default.ClickRightJoystick, ClickRightJoystick),
                     new ButtonInput(SteamVR_Actions._default.RightGrip, RightGrip),
                     new ButtonInput(SteamVR_Actions._default.NorthDPAD, NorthDPAD),
                     new ButtonInput(SteamVR_Actions._default.EastDPAD, EastDPAD),
                     new ButtonInput(SteamVR_Actions._default.SouthDPAD, SouthDPAD),
                     new ButtonInput(SteamVR_Actions._default.WestDPAD, WestDPAD),
-                    new ButtonInput(SteamVR_Actions._default.Back, Back)
+                    new ButtonInput(SteamVR_Actions._default.Back, Back),
+                    new VectorButton(SteamVR_Actions._default.RightJoystick, RightJoyStickUp),
+                    new ButtonInput(SteamVR_Actions._default.Start, Start)
 
                     //new ButtonInput(SteamVR_Actions.default_nexttarget, 14) // right joystick in DPAD mode? pressed east
             };
@@ -251,6 +253,9 @@ namespace OutwardVR
         public static int Back = 18;
         public static int LeftGripDouble = 19;
         public static int LeftGripHold = 20;
+        public static int RightJoyStickUp = 21;
+        public static int Start = 22;
+
 
         // ReWired custom controller category ID's
         public static int OtherControlsMapID = 0;

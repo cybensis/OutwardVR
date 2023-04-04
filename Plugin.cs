@@ -103,7 +103,10 @@ public class Plugin : BaseUnityPlugin
     public static void InventoryMenuTrigger(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
     {
 
-        if (UI.characterUIInstance != null && UI.characterUIInstance.CurrentSelectedGameObject != null && UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
+        if (UI.characterUIInstance != null &&
+            UI.characterUIInstance.IsMenuFocused &&
+            UI.characterUIInstance.CurrentSelectedGameObject != null && 
+            UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
         {
             ItemDisplayClick invItem = UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
             PointerEventData _data = new PointerEventData(EventSystem.current);

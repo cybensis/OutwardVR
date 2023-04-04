@@ -131,6 +131,9 @@
                "inputs" : {
                   "click" : {
                      "output" : "/actions/default/in/buttonx"
+                  },
+                  "long" : {
+                     "output" : "/actions/default/in/start"
                   }
                },
                "mode" : "button",
@@ -140,6 +143,9 @@
                "inputs" : {
                   "click" : {
                      "output" : "/actions/default/in/buttony"
+                  },
+                  "long" : {
+                     "output" : "/actions/default/in/back"
                   }
                },
                "mode" : "button",
@@ -157,7 +163,7 @@
             {
                "inputs" : {
                   "click" : {
-                     "output" : "/actions/default/in/back"
+                     "output" : "/actions/default/in/start"
                   }
                },
                "mode" : "button",
@@ -198,7 +204,7 @@
    "controller_type" : "oculus_touch",
    "description" : "",
    "interaction_profile" : "",
-   "name" : "Saved My project (2)we [Testing] configuration for Oculus Touch Controller",
+   "name" : "My My project (2)we [Testing] configuration for Oculus Touch Controller",
    "options" : {},
    "simulated_actions" : []
 }

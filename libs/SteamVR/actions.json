@@ -87,11 +87,7 @@
       "type": "boolean"
     },
     {
-      "name": "/actions/default/in/LeftGripDouble",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/default/in/LeftGripHold",
+      "name": "/actions/default/in/Start",
       "type": "boolean"
     },
     {

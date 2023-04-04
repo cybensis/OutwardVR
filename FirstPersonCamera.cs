@@ -188,8 +188,7 @@ namespace OutwardVR
                     }
                     ___m_modifMoveInput.y = 0f;
                 }
-                // turn speed
-                // 
+                //turn speed
                 else if (___m_modifMoveInput.x != 0 && !targetSys.Locked)
                 {
 
@@ -280,7 +279,7 @@ namespace OutwardVR
                 Camera.main.transform.parent.localPosition = camPosition;
                 // This allows the player to move side to side only if a menu isn't open and they're not moving forward because it makes the
                 // camera turn around when you move forward and try to side step
-                if (!m_char.CharacterUI.IsMenuFocused && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y < 0.4)
+                if (!m_char.CharacterUI.IsMenuFocused && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y <= 0.3)
                 {
                     if (SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x > 0.4 || SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x < -0.4)
                         ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
