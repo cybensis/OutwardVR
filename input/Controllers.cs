@@ -88,6 +88,7 @@ namespace OutwardVR
                     new ButtonInput(SteamVR_Actions._default.WestDPAD, WestDPAD),
                     new ButtonInput(SteamVR_Actions._default.Back, Back),
                     new VectorButton(SteamVR_Actions._default.RightJoystick, RightJoyStickUp),
+                    new VectorButton(SteamVR_Actions._default.RightJoystick, RightJoyStickDown),
                     new ButtonInput(SteamVR_Actions._default.Start, Start)
 
                     //new ButtonInput(SteamVR_Actions.default_nexttarget, 14) // right joystick in DPAD mode? pressed east
@@ -167,8 +168,6 @@ namespace OutwardVR
             return inputPlayer.controllers.ContainsController(vrControllers) && inputPlayer.controllers.maps.GetAllMaps(ControllerType.Custom).ToList().Count >= 1;
         }
 
-        // Good idea to fix the bindings issue is to split them up into their own objects, so one object for gameplay then one for inv, one for menus,etc, then 
-        // check which if the menu/inv/whatever is active, if so update the controls for that objects
         private static void UpdateVRInputs()
         {
 
@@ -182,54 +181,7 @@ namespace OutwardVR
                 input.UpdateValues(vrControllers);
             }
         }
-
-        // For printing the flatscreen game binds
-        public static void LogAllGameActions(Rewired.Player player)
-        {
-            Logs.WriteInfo("LogAllGameActions started");
-            foreach (ControllerMap m in player.controllers.maps.GetAllMaps())
-            {
-                Logs.WriteWarning(m);
-            }
-            // All elements mapped to all joysticks in the player
-            foreach (Joystick j in player.controllers.Joysticks)
-            {
-                Logs.WriteWarning("Starting joystick " + j.id);
-
-
-                // Loop over all Joystick Maps in the Player for this Joystick
-                foreach (JoystickMap map in player.controllers.maps.GetMaps<JoystickMap>(j.id))
-                {
-                    Logs.WriteWarning("Starting map " + map.name + " " + map.id + " " + map.layoutId + " " + map.categoryId);
-
-                    // Loop over all button maps
-                    foreach (ActionElementMap aem in map.ButtonMaps)
-                    {
-                        Logs.WriteInfo(aem.elementIdentifierName + " is assigned to Button " + aem.elementIndex + " with the Action " + ReInput.mapping.GetAction(aem.actionId).name + " with actionId " + aem.actionId);
-                    }
-
-                    // Loop over all axis maps
-                    foreach (ActionElementMap aem in map.AxisMaps)
-                    {
-                        Logs.WriteInfo(aem.elementIdentifierName + " is assigned to Axis " + aem.elementIndex + " with the Action " + ReInput.mapping.GetAction(aem.actionId).name + " with actionId " + aem.actionId);
-                    }
-
-                    // Loop over all element maps of any type
-                    foreach (ActionElementMap aem in map.AllMaps)
-                    {
-                        if (aem.elementType == ControllerElementType.Axis)
-                        {
-                            Logs.WriteInfo(aem.elementIdentifierName + " is assigned to Axis " + aem.elementIndex + " with the Action " + ReInput.mapping.GetAction(aem.actionId).name + " with actionId " + aem.actionId);
-                        }
-                        else if (aem.elementType == ControllerElementType.Button)
-                        {
-                            Logs.WriteInfo(aem.elementIdentifierName + " is assigned to Button " + aem.elementIndex + " with the Action " + ReInput.mapping.GetAction(aem.actionId).name + " with actionId " + aem.actionId);
-                        }
-                    }
-                }
-            }
-            Logs.WriteInfo("LogAllGameActions ended");
-        }
+ 
 
         // Controller ID's
         public static int LeftJoyStickHor = 0;
@@ -254,7 +206,8 @@ namespace OutwardVR
         public static int LeftGripDouble = 19;
         public static int LeftGripHold = 20;
         public static int RightJoyStickUp = 21;
-        public static int Start = 22;
+        public static int RightJoyStickDown = 22;
+        public static int Start = 23;
 
 
         // ReWired custom controller category ID's

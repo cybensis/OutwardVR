@@ -27,8 +27,11 @@ public class Plugin : BaseUnityPlugin
         InitSteamVR();
 
         // POSES
-
+        // Use when eventually trying to get motion controls going
         //SteamVR_Actions._default.ClickRightJoystick.AddOnStateDownListener(ww, SteamVR_Input_Sources.Any);
+        //SteamVR_Actions._default.RightHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateRightHand);
+        //SteamVR_Actions._default.LeftHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateLeftHand);
+
 
 
 
@@ -36,8 +39,6 @@ public class Plugin : BaseUnityPlugin
         SteamVR_Actions._default.ButtonX.AddOnStateDownListener(InventoryMenuTrigger, SteamVR_Input_Sources.Any);
         SteamVR_Actions._default.ButtonB.AddOnStateDownListener(RemoveActiveButton, SteamVR_Input_Sources.Any);
 
-        SteamVR_Actions._default.RightHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateRightHand);
-        SteamVR_Actions._default.LeftHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateLeftHand);
     }
 
     public static void ww(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
@@ -111,6 +112,7 @@ public class Plugin : BaseUnityPlugin
             ItemDisplayClick invItem = UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
             PointerEventData _data = new PointerEventData(EventSystem.current);
             _data.pointerPress = invItem.gameObject;
+            // Figure out how to set this value based on the items positon in the inventory canvas
             _data.position = new Vector2(1019f, 1143f);
 
             var reflection = invItem.GetType().GetMethod("RightClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -125,10 +127,6 @@ public class Plugin : BaseUnityPlugin
         UI.button = null;
     }
 
-    public static void LogBinds()
-    {
-        Controllers.LogAllGameActions(ReInput.players.AllPlayers[1]);
-    }
 
     private static void InitSteamVR()
     {

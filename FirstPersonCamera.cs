@@ -174,19 +174,19 @@ namespace OutwardVR
                 // turn around 
                 if (___m_modifMoveInput.y < 0f && !targetSys.Locked)
                 {
-                    if (!LastTurnTimes.ContainsKey(m_char.UID))
-                    {
-                        LastTurnTimes.Add(m_char.UID, float.MinValue);
-                    }
-                    if (Time.time - LastTurnTimes[m_char.UID] > 1f)
-                    {
-                        LastTurnTimes[m_char.UID] = Time.time;
+                    //if (!LastTurnTimes.ContainsKey(m_char.UID))
+                    //{
+                    //    LastTurnTimes.Add(m_char.UID, float.MinValue);
+                    //}
+                    //if (Time.time - LastTurnTimes[m_char.UID] > 1f)
+                    //{
+                    //    LastTurnTimes[m_char.UID] = Time.time;
 
-                        var rot = m_char.transform.localEulerAngles;
-                        rot.y += 180f;
-                        m_char.transform.localEulerAngles = rot;
-                    }
-                    ___m_modifMoveInput.y = 0f;
+                    //    var rot = m_char.transform.localEulerAngles;
+                    //    rot.y += 180f;
+                    //    m_char.transform.localEulerAngles = rot;
+                    //}
+                    //___m_modifMoveInput.y = 0f;
                 }
                 //turn speed
                 else if (___m_modifMoveInput.x != 0 && !targetSys.Locked)
@@ -279,9 +279,10 @@ namespace OutwardVR
                 Camera.main.transform.parent.localPosition = camPosition;
                 // This allows the player to move side to side only if a menu isn't open and they're not moving forward because it makes the
                 // camera turn around when you move forward and try to side step
-                if (!m_char.CharacterUI.IsMenuFocused && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y <= 0.3)
+                //if (!m_char.CharacterUI.IsMenuFocused && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y <= 0.3)
+                if (!m_char.CharacterUI.IsMenuFocused)
                 {
-                    if (SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x > 0.4 || SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x < -0.4)
+                    if (SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x > 0 || SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x < 0)
                         ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
                 }
 
@@ -331,8 +332,9 @@ namespace OutwardVR
                     {
                         if (!__instance.FaceLikeCamera || m_char.Dodging || ___m_sprintFacing)
                         {
-                            if (___m_modifMoveInput.magnitude > 0.2f)
-                                inputOne = new Vector2(transformMove.x, transformMove.z);
+                            //(!m_char.CharacterUI.IsMenuFocused)
+                            //if (___m_modifMoveInput.magnitude > 0.2f)
+                            //    inputOne = new Vector2(transformMove.x, transformMove.z);
                         }
                         else if (!targetSys.Locked || m_char.CharacterCamera.InDeployBuildingMode)
                             inputOne = new Vector2(___m_horiControl.forward.x, ___m_horiControl.forward.z);
@@ -373,6 +375,7 @@ namespace OutwardVR
                         }
 
                     }
+                    clampedDiff += SteamVR_Actions._default.RightJoystick.axis.x * 4f;
                     __instance.transform.Rotate(0f, clampedDiff, 0f);
                 }
 

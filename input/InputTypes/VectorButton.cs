@@ -21,10 +21,18 @@ namespace OutwardVR
         internal override void UpdateValues(CustomController vrController)
         {
             // Make it so the right joystick up only registers when its definitely being pushed up on purpose
-            if (vectorAction.axis.y > 0.7f)
-                vrController.SetButtonValueById(buttonID, true);
-            else
-                vrController.SetButtonValueById(buttonID, false);
+            if (this.buttonID == Controllers.RightJoyStickUp) { 
+                if (vectorAction.axis.y > 0.7f)
+                    vrController.SetButtonValueById(buttonID, true);
+                else
+                    vrController.SetButtonValueById(buttonID, false);
+            }
+            else if(this.buttonID == Controllers.RightJoyStickDown) {
+                if (vectorAction.axis.y < -0.7f)
+                    vrController.SetButtonValueById(buttonID, true);
+                else
+                    vrController.SetButtonValueById(buttonID, false);
+            }
         }
     }
 }
