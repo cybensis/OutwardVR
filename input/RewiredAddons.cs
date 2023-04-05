@@ -28,8 +28,6 @@ namespace OutwardVR
                     new ControllerElementIdentifier(Controllers.LeftTrigger, "LeftTrigger", "", "", ControllerElementType.Axis, true),
                     new ControllerElementIdentifier(Controllers.RightTrigger, "RightTrigger", "", "", ControllerElementType.Axis, true),
                     new ControllerElementIdentifier(Controllers.LeftGrip, "LeftGrip", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(Controllers.LeftGripDouble, "LeftGripDouble", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(Controllers.LeftGripHold, "LeftGripHold", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.ClickLeftJoystick, "ClickLeftJoystick", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.ClickRightJoystick, "ClickRightJoystick", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.RightGrip, "RightGrip", "", "", ControllerElementType.Button, true),
@@ -39,7 +37,9 @@ namespace OutwardVR
                     new ControllerElementIdentifier(Controllers.WestDPAD, "WestDPAD", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.Back, "Back", "", "", ControllerElementType.Button, true),
                     new ControllerElementIdentifier(Controllers.RightJoyStickUp, "RightJoystickUp", "", "", ControllerElementType.Button, true),
-                    new ControllerElementIdentifier(Controllers.Start, "Start", "", "", ControllerElementType.Button, true)
+                    new ControllerElementIdentifier(Controllers.Start, "Start", "", "", ControllerElementType.Button, true),
+                    new ControllerElementIdentifier(Controllers.RightJoyStickDown, "RightJoyStickDown", "", "", ControllerElementType.Button, true),
+
                 },
            
                 new int[] { },
@@ -232,7 +232,9 @@ namespace OutwardVR
         internal static CustomControllerMap CreateOtherDPADMap(int controllerID)
         {
             List<ActionElementMap> t2 = new List<ActionElementMap>() {
-                new ActionElementMap(ToggleInventoryID, ControllerElementType.Button, Controllers.Back , Pole.Positive, AxisRange.Positive, false),
+                    
+                //new ActionElementMap(ToggleInventoryID, ControllerElementType.Button, Controllers.Back , Pole.Positive, AxisRange.Positive, false),
+                new ActionElementMap(ToggleInventoryID, ControllerElementType.Button, Controllers.RightJoyStickDown , Pole.Positive, AxisRange.Positive, false),
                 new ActionElementMap(ToggleMapID, ControllerElementType.Button, Controllers.EastDPAD, Pole.Positive, AxisRange.Positive, false),
             };
             return CreateCustomMap("OtherDPAD", 11, controllerID, t2);

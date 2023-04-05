@@ -52,59 +52,74 @@ namespace OutwardVR
 
 
 
-        /*  [HarmonyPatch(typeof(MainScreen), "FirstUpdate")]
-          public class MainScreen_FirstUpdate
-          {
-              [HarmonyFinalizer]
-              public static Exception Finalizer()
-              {
-                  SetupCharacterUI();
-                  return null;
-              }
-          }*/
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CharacterVisuals), "EquipVisuals")]
+        public static void DisableHelmet(CharacterVisuals __instance)
+        {
+            if (__instance.ActiveVisualsHelmOrHead != null)
+                __instance.ActiveVisualsHelmOrHead.Renderer.enabled = false;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ArmorVisuals), "Awake")]
+        public static void DisableHelmetd(ArmorVisuals __instance)
+        {
+            CharacterVisuals visuals = __instance.transform.parent.GetComponent<CharacterVisuals>();
+            visuals.ActiveVisualsHelmOrHead.Renderer.enabled = false;
+        }
 
         //======== UI FIXES ======== //
 
         [HarmonyPostfix]
+        [HarmonyPatch(typeof(MainScreen), "FirstUpdate")]
+        private static void SetMainMenuPlacement(MainScreen __instance)
+        {
+            Logs.WriteWarning("MainScreen FirstUpdate");
+            Controllers.Init();
+            Canvas menuCanvas = __instance.CharacterUI.transform.parent.GetComponent<Canvas>();
+            menuCanvas.renderMode = RenderMode.WorldSpace;
+            menuCanvas.transform.root.position = new Vector3(-9.7117f, -3.2f, 4.8f);
+            menuCanvas.transform.root.rotation = Quaternion.identity;
+            menuCanvas.transform.root.localScale = new Vector3(0.005f, 0.005f, 0.005f);
+
+            //menuCanvas.transform.root.GetChild(2).GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+
+            GameObject menuCamHolder = new GameObject();
+            Camera.main.transform.parent = menuCamHolder.transform;
+            Camera.main.cullingMask = -1;
+            Camera.main.nearClipPlane = 0.01f;
+            menuCamHolder.transform.position = new Vector3(-3.0527f, -2.6422f, 0.1139f);
+            menuCamHolder.transform.rotation = new Quaternion(0, 0.342f, 0, 0.9397f);
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MainScreen), "Update")]
+        private static void UpdateControllersOnMainMenu(MainScreen __instance) {
+            Controllers.Update();
+        }
+
+            // On MainScreen.Update, update controller inputs
+
+            [HarmonyPostfix]
         [HarmonyPatch(typeof(MenuManager), "Update")]
-        private static void CharacterCamera_Update(MenuManager __instance, RectTransform ___m_characterUIHolder)
+        private static void CharacterCameraUpdate(MenuManager __instance)
         {
 
             // I find these values work nicely for positioning the HUD
             LocalCharacterControl characterController = Camera.main.transform.root.GetComponent<LocalCharacterControl>();
-            if (characterController != null && characterController.Character.Sneaking)
-                __instance.transform.position = characterController.transform.position + (characterController.transform.right * 0.05f) + (characterController.transform.forward * 0.7f) + (characterController.transform.up * 1.2f);
-            else
-                __instance.transform.position = characterController.transform.position + (characterController.transform.forward * 0.6f) + (characterController.transform.up * 1.675f);
-            if (characterController.Character.Sprinting)
-                __instance.transform.position += (characterController.transform.forward * 0.2f);
+            if (characterController != null ) {
+                if (characterController.Character.Sneaking)
+                    __instance.transform.position = characterController.transform.position + (characterController.transform.right * 0.05f) + (characterController.transform.forward * 0.7f) + (characterController.transform.up * 1.2f);
+                else
+                    __instance.transform.position = characterController.transform.position + (characterController.transform.forward * 0.6f) + (characterController.transform.up * 1.675f);
+                if (characterController.Character.Sprinting)
+                    __instance.transform.position += (characterController.transform.forward * 0.2f);
 
-            //__instance.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.5f) + (Camera.main.transform.right * -0.05f) + (Camera.main.transform.up * 0.05f);
-            __instance.transform.rotation = characterController.transform.rotation;
+                //__instance.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.5f) + (Camera.main.transform.right * -0.05f) + (Camera.main.transform.up * 0.05f);
+                __instance.transform.rotation = characterController.transform.rotation;
+            }
         }
 
-
-
-        //private static void SetupUIShader()
-        //{
-        //    // Load bundle
-        //    var bundle = AssetBundle.LoadFromFile(ASSETBUNDLE_PATH);
-        //    AlwaysOnTopMaterial = bundle.LoadAsset<Material>("UI_AlwaysOnTop");
-
-        //    //// Fix loaded images and text
-
-        //    //FixUIMaterials(Resources.FindObjectsOfTypeAll<Image>(),
-        //    //               Resources.FindObjectsOfTypeAll<Text>());
-
-        //    //// Fix UIUtilities prefabs
-
-        //    //var prefabs = new MonoBehaviour[] { UIUtilities.ItemDisplayPrefab, UIUtilities.ItemDetailPanel };
-        //    //foreach (var obj in prefabs)
-        //    //{
-        //    //    FixUIMaterials(obj.GetComponentsInChildren<Image>(true),
-        //    //                   obj.GetComponentsInChildren<Text>(true));
-        //    //}
-        //}
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterBarListener), "Awake")]
@@ -277,46 +292,10 @@ namespace OutwardVR
                 invItem = null;
         }
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(ItemDisplayClick), "RightClick")]
-        public static void PositwionBandwwage(ItemDisplayClick __instance, object[] __args)
-        {
-            //Logs.WriteInfo(__args[0]);
-           
-        }
-
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(Panel), "OnShowInvokeFocus")]
-        public static void PositwionBanwdwwage(Panel __instance)
-        {
-            Logs.WriteInfo("FOCUS");
-
-        }
-
-
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(CharacterUI), "ToggleMenu")]
-        public static void PositwionBanwdwwwage(Panel __instance, object[] __args)
-        {
-            
-            //CharacterUI.MenuScreens t = __args[0] as CharacterUI.MenuScreens;
-            Logs.WriteInfo("Toggle");
-
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(EventTrigger), "OnPointerEnter")]
-        public static void FixContexteMenu(EventTrigger __instance, object[] __args)
-        {
-            //PointerEventData t = __args[0] as PointerEventData;
-            //Logs.WriteWarning(t);
-        }
-
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterUI), "get_EventSystemCurrentSelectedGo")]
-        //public static void FixContedxtMenu(CharacterUI __instance, ref GameObject __result)
-        public static void FixContedxtMenu(CharacterUI __instance, ref GameObject __result)
+        public static void FixContextMenu(CharacterUI __instance, ref GameObject __result)
         {
             // Everytime the context menu (Menu opened when pressing X on an inv item) is opened, it automatically focuses the gamepade controls on a button that is hidden and prevents navigating the menu
             // and this is intended to fix that
@@ -346,174 +325,11 @@ namespace OutwardVR
         }
 
 
-        //    [HarmonyPostfix]
-        //[HarmonyPatch(typeof(ContextualMenu), "Show")]
-        //public static void FixContextMenu(ContextualMenu __instance)
-        //{
-
-
-        //    //___m_optionButtonTemplate.gameObject.SetActive(true);
-        //    Transform contextMenu = __instance.gameObject.transform.GetChild(0);
-        //    //Logs.WriteWarning(contextMenu.gameObject.name);
-
-        //    //EventSystem.current.SetSelectedGameObject(__instance.gameObject.transform.GetChild(0).gameObject, null);
-        //    contextMenu.GetChild(contextMenu.childCount - 1).GetChild(0).gameObject.SetActive(true);
-        //    contextMenu.GetChild(contextMenu.childCount - 1).gameObject.SetActive(true);
-        //    //contextMenu.GetChild(contextMenu.childCount - 1).GetComponent<Button>().Select();
-        //    test = contextMenu.GetChild(contextMenu.childCount - 1).GetComponent<Button>();
-        //    __instance.CharacterUI.GetType().GetField("m_currentSelectedGameObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(__instance.CharacterUI, contextMenu.GetChild(contextMenu.childCount - 1).gameObject);
-        //    //for (int i = 0; i < contextMenu.childCount; i++)
-        //    //{
-        //    //    if (contextMenu.GetChild(i).gameObject.name != "Background" && contextMenu.GetChild(i).gameObject.GetActive())
-        //    //    {
-
-        //    //        PointerEventData _data = new PointerEventData(EventSystem.current);
-        //    //        _data.pointerEnter = contextMenu.GetChild(i).gameObject;
-        //    //        _data.position = new Vector2(1203f, 1108f);
-        //    //        contextMenu.GetChild(i).gameObject.GetComponent<Button>().OnPointerEnter(_data);
-        //    //        Logs.WriteWarning("Triggered enter");
-        //    //        contextMenu.GetChild(i).gameObject.SetActive(true);
-        //    //        contextMenu.GetChild(i).gameObject.GetComponent<Button>().SetDownNav(contextMenu.GetChild(i+i).gameObject.GetComponent<Button>());
-        //    //        test = contextMenu.GetChild(i).gameObject.GetComponent<Button>();
-
-
-        //    //        EventSystem.current.SetSelectedGameObject(null);
-        //    //        EventSystem.current.SetSelectedGameObject(contextMenu.GetChild(i).gameObject);
-
-        //    //        //PointerEventData _data = new PointerEventData(EventSystem.current);
-        //    //        //_data.pointerPress = UI.invItem.gameObject;
-        //    //        //_data.position = UI.invItem.gameObject.transform.position;
-        //    //        //_data.position = new Vector2(1019f, 1143f);
-        //    //        //Logs.WriteWarning(contextMenu.GetChild(i).gameObject.name);
-        //    //        //contextMenu.GetChild(i).GetComponent<Button>().Select();
-        //    //        //i = contextMenu.childCount;
-        //    //    }
-        //    //}
-
-        //}
-
-
-
-
-        //[HarmonyPrefix]
-        //[HarmonyPatch(typeof(ContextualMenu), "Show")]
-        //public static void FixContextMenu(ContextualMenu __instance, object[] __args, 
-        //    UnityEngine.Transform ___m_optionButtonTemplate,
-        //    int ___m_itemCount,
-        //    bool[] ___m_flippedAxis,
-        //    RectTransform ___contentRectTransform,
-        //    GameObject ___m_previouslySelectedObject,
-
-        //    List<Button> ___m_actionButtons
-        //    )
-        //{
-        //    List<KeyValuePair<string, UnityAction>> _options = __args[1] as List<KeyValuePair<string, UnityAction>>;
-        //    if (!___m_optionButtonTemplate || _options.Count <= 0)
-        //    {
-        //        return;
-        //    }
-        //    ___m_itemCount = _options.Count;
-        //    for (int i = 0; i < ___m_flippedAxis.Length; i++)
-        //    {
-        //        if (___m_flippedAxis[i])
-        //        {
-        //            ___m_flippedAxis[i] = false;
-        //            RectTransformUtility.FlipLayoutOnAxis(___contentRectTransform, i, false, false);
-        //        }
-        //    }
-        //    m_previouslySelectedObject = m_characterUI.CurrentSelectedGameObject;
-        //    if ((bool)___m_optionButtonTemplate)
-        //    {
-        //        ___m_optionButtonTemplate.gameObject.SetActive(value: true);
-        //    }
-        //    for (int j = 0; j < _options.Count; j++)
-        //    {
-        //        if (j >= ___m_actionButtons.Count)
-        //        {
-        //            Transform transform = Object.Instantiate(___m_optionButtonTemplate);
-        //            transform.SetParent(m_panel.transform);
-        //            transform.ResetLocal();
-        //            ___m_actionButtons.Add(transform.GetComponent<Button>());
-        //        }
-        //        ___m_actionButtons[j].gameObject.SetActive(value: true);
-        //        ___m_actionButtons[j].GetComponentInChildren<Text>().text = _options[j].Key;
-        //        ___m_actionButtons[j].onClick.RemoveAllListeners();
-        //        ___m_actionButtons[j].onClick.AddListener(_options[j].Value);
-        //    }
-        //    for (int k = 0; k < ___m_actionButtons.Count; k++)
-        //    {
-        //        if (k < _options.Count)
-        //        {
-        //            if (k > 0)
-        //            {
-        //                ___m_actionButtons[k].SetUpNav(___m_actionButtons[k - 1]);
-        //            }
-        //            if (k < _options.Count - 1)
-        //            {
-        //                ___m_actionButtons[k].SetDownNav(___m_actionButtons[k + 1]);
-        //            }
-        //            if (k == 0)
-        //            {
-        //                ___m_actionButtons[k].SetUpNav(___m_actionButtons[_options.Count - 1]);
-        //            }
-        //            if (k == _options.Count - 1)
-        //            {
-        //                ___m_actionButtons[k].SetDownNav(___m_actionButtons[0]);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            ___m_actionButtons[k].gameObject.SetActive(value: false);
-        //        }
-        //    }
-        //    Show();
-        //    m_canvasGroup.set_blocksRaycasts(true);
-        //    m_globalMousePos = Vector3.zero;
-        //    RectTransform obj = base.transform as RectTransform;
-        //    Vector2 vector = _data?.position ?? Vector2.zero;
-        //    if (RectTransformUtility.ScreenPointToWorldPointInRectangle(obj, vector, _data?.pressEventCamera, ref m_globalMousePos))
-        //    {
-        //        RectTransform obj2 = ___m_optionButtonTemplate.transform as RectTransform;
-        //        obj2.gameObject.SetActive(value: true);
-        //        Vector2 size = obj2.rect.size;
-        //        Vector2 sizeDelta = contentRectTransform.sizeDelta;
-        //        sizeDelta.y = size.y * (float)m_itemCount;
-        //        contentRectTransform.sizeDelta = sizeDelta;
-        //        m_panel.transform.position = m_globalMousePos;
-        //        Vector3[] array = new Vector3[4];
-        //        contentRectTransform.GetWorldCorners(array);
-        //        RectTransform rectTransform = m_characterUI.UIPanel.transform as RectTransform;
-        //        Rect rect = rectTransform.rect;
-        //        for (int l = 0; l < 2; l++)
-        //        {
-        //            bool flag = false;
-        //            for (int m = 0; m < 4; m++)
-        //            {
-        //                Vector3 vector2 = rectTransform.InverseTransformPoint(array[m]);
-        //                if (vector2[l] < rect.min[l] || vector2[l] > rect.max[l])
-        //                {
-        //                    flag = true;
-        //                    break;
-        //                }
-        //            }
-        //            if (flag)
-        //            {
-        //                RectTransformUtility.FlipLayoutOnAxis(contentRectTransform, l, false, false);
-        //                m_flippedAxis[l] = true;
-        //            }
-        //        }
-        //        m_panel.transform.position = m_globalMousePos;
-        //    }
-        //    if ((bool)___m_optionButtonTemplate)
-        //    {
-        //        ___m_optionButtonTemplate.gameObject.SetActive(value: false);
-        //    }
-        //}
-
+        
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(PointerEventData), "get_pressEventCamera")]
-        public static bool PositwionBwandwwage(PointerEventData __instance, ref Camera __result)
+        public static bool SetCamOnPressevent(PointerEventData __instance, ref Camera __result)
         {
             __result = Camera.main;
             return false;

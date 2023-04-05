@@ -77,8 +77,6 @@ namespace OutwardVR
                     new AxisInput(SteamVR_Actions._default.LeftTrigger, LeftTrigger),
                     new AxisInput(SteamVR_Actions._default.RightTrigger, RightTrigger),
                     new ButtonInput(SteamVR_Actions._default.LeftGrip, LeftGrip),
-                    //new ButtonInput(SteamVR_Actions._default.LeftGripDouble, LeftGripDouble),
-                    //new ButtonInput(SteamVR_Actions._default.LeftGripHold, LeftGripHold),
                     new ButtonInput(SteamVR_Actions._default.ClickLeftJoystick, ClickLeftJoystick),
                     new ButtonInput(SteamVR_Actions._default.ClickRightJoystick, ClickRightJoystick),
                     new ButtonInput(SteamVR_Actions._default.RightGrip, RightGrip),
@@ -203,11 +201,9 @@ namespace OutwardVR
         public static int SouthDPAD = 16;
         public static int WestDPAD = 17;
         public static int Back = 18;
-        public static int LeftGripDouble = 19;
-        public static int LeftGripHold = 20;
-        public static int RightJoyStickUp = 21;
-        public static int RightJoyStickDown = 22;
-        public static int Start = 23;
+        public static int RightJoyStickUp = 19;
+        public static int RightJoyStickDown = 20;
+        public static int Start = 21;
 
 
         // ReWired custom controller category ID's

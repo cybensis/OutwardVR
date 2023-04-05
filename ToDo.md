@@ -1,21 +1,26 @@
 #ToDo
-- Make it so the player can move diagonally and backwards, rather than just forward or just left and right
-	- You can do this when locked onto someone so look into that, I think all I need to do is just prevent the camera rotating or something?
+- On the main menu screen, you have to press B to start use the UI, fix that
+- After exiting from the game to main menu, the menu and camera is all wonky and i don't think controls work anymore
+- Make loading screen show up on headset
+- Make the strafing and backwards movement less janky, I think I can do this by just increasing the walk/run speed
 - When you're locked onto someone and kill them the camera rotates 180 degrees so fix that
 - Moving and looking around to rotate the body is doing some funky stuff, fix that
 - Looking around with hmd then rotating cam with joystick is also doing some funky stuff
-- Rework the helmet mesh hiding thing, im pretty sure it would only work on the tutorial since it relies on the helmet being at index 8 or something
 - Make it so looking up or down rotates the character backwards or forwards so if there are two items on the same X axis but ones above the other, then you can look up or down to choose which one to pick up
 - try to make it so when the player bends over to pick something up or crouches, the camera moves with it
 - Figure out why the HUD keeps glitching into the camera when moving
-- Find a way to make the HUD not so clogged up
 - Figure out why there's like a half second delay between control input and action
-- Make the main menu screen work in VR and move the controller init and update functions to somewhere they can be used in the main menu
 - You can access the X button context menu when looting something, find a fix to prevent that
 - Make the inventory context menu pop up next to the inv item you're using it on
 - Fix camera during crouch movement
+- Go through the console, find the errors and fix them
+- Try and improve performance
 
 ### Done
+- ~~Rework the helmet mesh hiding thing, im pretty sure it would only work on the tutorial since it relies on the helmet being at index 8 or something~~
+- ~~Make the main menu screen work in VR and move the controller init and update functions to somewhere they can be used in the main menu~~
+- ~~When bow and arrows are equipped, trying to open the inv with current binding won't work properly so either fix that or rebind inv to something else, maybe right joystick down~~
+- ~~Make it so the player can move diagonally and backwards, rather than just forward or just left and right~~
 - ~~Make a better control scheme~~
 - ~~Figure out how to make the character move side to side instead of just forwards. Character can move sideways when locked on so look at that for ideas~~
 - ~~Using the same DeltaAngle stuff for rotating the body, make it so the HUD stays in the same x (i think) coord, then when you've looked beyond a certain point, recenter it. Also make it so the HUD doesn't rotate up or down, keep it centered. This will all help with reducing the need to strain to look at the corners of the UI by keeping the HUD in place~~

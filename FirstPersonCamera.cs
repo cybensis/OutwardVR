@@ -39,7 +39,6 @@ namespace OutwardVR
         //}
 
         // Override Camera update
-
         [HarmonyPatch(typeof(CharacterCamera), "Update")]
         public class CharacterCamera_Update
         {
@@ -53,24 +52,12 @@ namespace OutwardVR
                     || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue
                     || MenuManager.Instance.IsReturningToMainMenu)
                 {
-                    //Vector3 camHolderPos = ___m_camera.transform.parent.localPosition;
-                    //camHolderPos = ___m_camera.transform.localPosition * -1;
-                    ////camHolderPos.y += 0.7f;
-                    //camHolderPos.y += 0.65f;
-                    //___m_camera.transform.parent.localPosition = camHolderPos + (___m_camera.transform.parent.forward * 0.115f) + (___m_camera.transform.parent.right * 0.09f);
-
-                    // if cameraScript.TargetCharacter.Sneaking then only set y pos to 0.2 instead of 0.7, i.e. take 0.5 off to correct for crouched height
-
-
                     return false;
                 }
                 try
                 {
                     FixCamera(__instance, ___m_camera);
                     __instance.transform.parent.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false; // disable the head
-                    __instance.transform.parent.transform.parent.transform.GetChild(8).GetComponent<SkinnedMeshRenderer>().enabled = false; // I think this is for head armor, but this will only work in tutorial so change this later
-                    
-
                 }
                 catch (Exception e)
                 {
@@ -80,10 +67,11 @@ namespace OutwardVR
             }
         }
 
+
+
         private static void FixCamera(CharacterCamera cameraScript, Camera camera)
         {
             Debug.Log("[InwardVR] setting up camera...");
-            //Notes: TargetCharacter links to the Character class
             Controllers.Init();
             Camera.main.cullingMask = -1; // Culling mask needs to be -1, otherwise worldspace HUD doesn't show up
             Camera.main.nearClipPlane = 0.001f; // Reduce near clipping plane so the HUD can be seen when its close to the camera
@@ -133,8 +121,6 @@ namespace OutwardVR
 
             Debug.Log("[InwardVR] done setting up camera.");
         }
-
-        // Make CharacterControl less sharp turning
 
         private static readonly BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
 
@@ -259,12 +245,13 @@ namespace OutwardVR
                 Vector3 camPosition = Camera.main.transform.parent.localPosition;
                 camPosition.y = Camera.main.transform.localPosition.y * -1f;
                 if (__instance.Character.Sneaking) {
-                    camPosition.y += 0.2f;
+                    camPosition.y += 0.225f;
                     // Don't want the X axis to be locked in so only set the X axis crouching offset the one time
                     if (startedSneaking == false) {
                         startedSneaking = true;
+                        // Negative in this instance moves it forward and right respectively, not backwards and left
                         camPosition += __instance.transform.right * -0.25f;
-                        camPosition += __instance.transform.forward * -0.35f;
+                        camPosition += __instance.transform.forward * -0.45f;
                     }
                 }
                 else {
@@ -273,15 +260,13 @@ namespace OutwardVR
                     if (startedSneaking) { 
                         startedSneaking = false;
                         camPosition += __instance.transform.right * 0.25f;
-                        camPosition += __instance.transform.forward * 0.35f;
+                        camPosition += __instance.transform.forward * 0.45f;
                     }
                 }
                 Camera.main.transform.parent.localPosition = camPosition;
                 // This allows the player to move side to side only if a menu isn't open and they're not moving forward because it makes the
                 // camera turn around when you move forward and try to side step
-                //if (!m_char.CharacterUI.IsMenuFocused && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y <= 0.3)
-                if (!m_char.CharacterUI.IsMenuFocused)
-                {
+                if (!m_char.CharacterUI.IsMenuFocused) {
                     if (SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x > 0 || SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x < 0)
                         ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
                 }
@@ -302,25 +287,20 @@ namespace OutwardVR
 
                 var movementVector = inverseMove;
 
-                if (m_char.AnimatorInitialized)
-                {
+                if (m_char.AnimatorInitialized) {
                     animator.SetFloat("moveSide", inverseMove.x);
                     animator.SetFloat("moveForward", inverseMove.z);
                 }
 
-                if (m_char.Sliding || m_char.Falling) {
+                if (m_char.Sliding || m_char.Falling)
                     m_charControl.Move(transformMove * Time.deltaTime);
-                }
 
-                if (m_char.UseLegacyVisual && windZone != null)
-                {
+                if (m_char.UseLegacyVisual && windZone != null) {
                     float b = inverseMove.magnitude * 0.5f + (float)(m_char.NextIsLocomotion ? 0 : 3);
                     windZone.windTurbulence = Mathf.Lerp(windZone.windTurbulence, b, 2f * Time.deltaTime);
                 }
 
-                if (!m_char.Sliding)
-                {
-
+                if (!m_char.Sliding) {
                     Vector2 inputOne;
                     Vector2 inputTwo = inputOne = new Vector2(__instance.transform.forward.x, __instance.transform.forward.z);
 
@@ -330,16 +310,14 @@ namespace OutwardVR
                             || m_char.NextIsLocomotion
                             || m_char.Sliding))
                     {
-                        if (!__instance.FaceLikeCamera || m_char.Dodging || ___m_sprintFacing)
-                        {
-                            //(!m_char.CharacterUI.IsMenuFocused)
+                        if (!__instance.FaceLikeCamera || m_char.Dodging || ___m_sprintFacing) {
+                            // This code makes moving left and right rotate the camera instead, so keep it commented out
                             //if (___m_modifMoveInput.magnitude > 0.2f)
                             //    inputOne = new Vector2(transformMove.x, transformMove.z);
                         }
                         else if (!targetSys.Locked || m_char.CharacterCamera.InDeployBuildingMode)
                             inputOne = new Vector2(___m_horiControl.forward.x, ___m_horiControl.forward.z);
-                        else
-                        {
+                        else {
                             var targetDiff = targetSys.AdjustedLockedPointPos - __instance.transform.position;
                             inputOne = new Vector2(targetDiff.x, targetDiff.z).normalized;
                         }
@@ -356,8 +334,7 @@ namespace OutwardVR
                         clampedDiff = Mathf.Clamp(clampedDiff, 0f - angleDiff, angleDiff);
 
                     // ========= custom code for rotating body when looking around =========
-                    if (!targetSys.Locked)
-                    {
+                    if (!targetSys.Locked) {
                         // Rotate body to match camera position - Needs some work
                         Vector3 vrRot = Camera.main.transform.rotation.eulerAngles;
                         Vector3 bodyRot = __instance.transform.rotation.eulerAngles;
