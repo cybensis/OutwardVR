@@ -4,7 +4,7 @@
 <!-- [![Build Status][travis-image]][travis-url]
 [![Downloads Stats][npm-downloads]][npm-url] -->
 
-Currently this mod converts the standard third person flatscreen game to a first person VR experience with support for the Oculus Touch controllers (not motion controls). It's currently in pretty early stages of development so its pretty janky but should work for the most part.
+Currently this mod converts the standard third person flatscreen game to a first person VR experience with support for the Oculus Touch controllers (not motion controls). It's currently in pretty early stages of development so its pretty janky and I've only play tested the tutorial area so far.
 
 
 
@@ -26,7 +26,7 @@ Then opening with your favourite IDE should be enough to begin developing or bui
 
 ## Release History
 
-ToDo
+Unreleased
 
 ## Support
 
@@ -37,6 +37,10 @@ ToDo
 
 * Big thanks to [PinkMilkProductions](https://www.youtube.com/channel/UCvZLpwlyxn6lFYXKsBl6qHg) for his Unity VR modding series 
 * Thanks to [Raicuparta](https://github.com/Raicuparta) for his Unity VR Patcher
+
+## Contact
+
+If you want to get in contact with me, please send me an email at cybensis@protonmail.com
 
 <!-- Markdown link & img dfn's -->
 <!-- [npm-image]: https://img.shields.io/npm/v/datadog-metrics.svg?style=flat-square

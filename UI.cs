@@ -15,6 +15,7 @@ using Rewired.Data.Mapping;
 using NodeCanvas.Framework;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using Steamworks;
 
 
 // 1. MenuManager -> CharacterUIs -> PlayerUI -> Canvas open canvas component and set its render thingy to world space, and set position to cam pos
@@ -49,6 +50,24 @@ namespace OutwardVR
         private static readonly RenderTexture uiRenderTexture = new RenderTexture(1920, 1080, 0);
         private static GameObject statusBars;
         private static GameObject quickSlots;
+        private static GameObject tempCamHolder = new GameObject();
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CharacterCreationPanel), "Show")]
+        public static void PositionCharacterCreationPanel(CharacterCreationPanel __instance) {
+            //__instance.CharacterUI;
+
+            Logs.WriteWarning("CreationPanel Show");
+            if (tempCamHolder == null)
+                tempCamHolder = new GameObject();    
+            Camera.main.transform.parent = tempCamHolder.transform;
+            tempCamHolder.transform.position = new Vector3(-5000.829f, -5000.1f, -4998.098f);
+            tempCamHolder.transform.rotation = new Quaternion(0f, 0.8131f, 0f, -0.5821f);
+            __instance.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            __instance.transform.root.position = new Vector3(-4997.025f, -5001.101f, -5003.604f);
+            __instance.transform.root.rotation = new Quaternion(0, 0.9397f, 0, -0.342f);
+        }
 
 
 
@@ -60,13 +79,13 @@ namespace OutwardVR
                 __instance.ActiveVisualsHelmOrHead.Renderer.enabled = false;
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ArmorVisuals), "Awake")]
-        public static void DisableHelmetd(ArmorVisuals __instance)
-        {
-            CharacterVisuals visuals = __instance.transform.parent.GetComponent<CharacterVisuals>();
-            visuals.ActiveVisualsHelmOrHead.Renderer.enabled = false;
-        }
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(ArmorVisuals), "Awake")]
+        //public static void DisableHelmetd(ArmorVisuals __instance)
+        //{
+        //    CharacterVisuals visuals = __instance.transform.parent.GetComponent<CharacterVisuals>();
+        //    visuals.ActiveVisualsHelmOrHead.Renderer.enabled = false;
+        //}
 
         //======== UI FIXES ======== //
 
@@ -74,6 +93,7 @@ namespace OutwardVR
         [HarmonyPatch(typeof(MainScreen), "FirstUpdate")]
         private static void SetMainMenuPlacement(MainScreen __instance)
         {
+            
             Logs.WriteWarning("MainScreen FirstUpdate");
             Controllers.Init();
             Canvas menuCanvas = __instance.CharacterUI.transform.parent.GetComponent<Canvas>();
@@ -83,13 +103,14 @@ namespace OutwardVR
             menuCanvas.transform.root.localScale = new Vector3(0.005f, 0.005f, 0.005f);
 
             //menuCanvas.transform.root.GetChild(2).GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
-
-            GameObject menuCamHolder = new GameObject();
-            Camera.main.transform.parent = menuCamHolder.transform;
+            if (tempCamHolder == null)
+                tempCamHolder = new GameObject();
+            Camera.main.transform.parent = tempCamHolder.transform;
             Camera.main.cullingMask = -1;
             Camera.main.nearClipPlane = 0.01f;
-            menuCamHolder.transform.position = new Vector3(-3.0527f, -2.6422f, 0.1139f);
-            menuCamHolder.transform.rotation = new Quaternion(0, 0.342f, 0, 0.9397f);
+            tempCamHolder.transform.position = new Vector3(-3.0527f, -2.6422f, 0.1139f);
+            tempCamHolder.transform.rotation = new Quaternion(0, 0.342f, 0, 0.9397f);
+            __instance.CharacterUI.GetType().GetField("m_currentSelectedGameObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(__instance.CharacterUI, __instance.FirstSelectable);
         }
 
         [HarmonyPostfix]
@@ -334,7 +355,7 @@ namespace OutwardVR
             __result = Camera.main;
             return false;
         }
-        public static UnityEngine.UI.Button test;
+
         public static CharacterUI characterUIInstance;
         public static UnityEngine.UI.Button button;
         public static ItemDisplayClick invItem;

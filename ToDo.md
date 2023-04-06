@@ -1,4 +1,9 @@
 #ToDo
+- Can open inventory in the rest menu and probably other menus so fix that
+- Can't navigate the rest menu, fix it
+- Seems dialogue isn't working properly
+- The world keeps rotating for some reason when exiting tutorial and I think when starting a game?? really annoying
+- Fix the character creation screen by re-position the camera and the UI, make sure the controllers buttons work, and need  to re-enable the head mesh just for this
 - On the main menu screen, you have to press B to start use the UI, fix that
 - After exiting from the game to main menu, the menu and camera is all wonky and i don't think controls work anymore
 - Make loading screen show up on headset
