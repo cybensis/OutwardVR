@@ -1,4 +1,4 @@
-#ToDo
+# ToDo
 - Can open inventory in the rest menu and probably other menus so fix that
 - On the main menu screen, you have to press B to start use the UI, fix that
 - After exiting from the game to main menu, the menu and camera is all wonky and i don't think controls work anymore
@@ -37,7 +37,7 @@
 - ~~Reposition the status' HUD elements and the bandage element~~
 - ~~In pause menu, pickup item menu and inv, A and X buttons don't work for some reason so fix that~~
 
-#Future Goals
+# Future Goals
 - Figure out if you can track arms and weapon to VR controllers somehow
 	- After figuring this out, maybe try adding motion controls, e.g. when shield is within a Y range close to camera (meaning its around the same height as the camera), then trigger blocking.
 		- Look into how the hitbox system works so if I get motion controls working, see if I can get the motion controlled sword to interact with an enemy hitbox when swinging controller.
