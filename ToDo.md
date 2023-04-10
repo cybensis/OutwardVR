@@ -1,12 +1,9 @@
 #ToDo
 - Can open inventory in the rest menu and probably other menus so fix that
-- Can't navigate the rest menu, fix it
-- Seems dialogue isn't working properly
-- The world keeps rotating for some reason when exiting tutorial and I think when starting a game?? really annoying
-- Fix the character creation screen by re-position the camera and the UI, make sure the controllers buttons work, and need  to re-enable the head mesh just for this
 - On the main menu screen, you have to press B to start use the UI, fix that
 - After exiting from the game to main menu, the menu and camera is all wonky and i don't think controls work anymore
 - Make loading screen show up on headset
+	- I think the loading screens use a different camera, thats why the canvas isn't showing up properly
 - Make the strafing and backwards movement less janky, I think I can do this by just increasing the walk/run speed
 - When you're locked onto someone and kill them the camera rotates 180 degrees so fix that
 - Moving and looking around to rotate the body is doing some funky stuff, fix that
@@ -22,6 +19,9 @@
 - Try and improve performance
 
 ### Done
+- ~~Fix the character creation screen by re-position the camera and the UI, make sure the controllers buttons work, and need  to re-enable the head mesh just for this~~
+- ~~The world keeps rotating for some reason when exiting tutorial and I think when starting a game?? really annoying~~
+- ~~Seems dialogue isn't working properly~~
 - ~~Rework the helmet mesh hiding thing, im pretty sure it would only work on the tutorial since it relies on the helmet being at index 8 or something~~
 - ~~Make the main menu screen work in VR and move the controller init and update functions to somewhere they can be used in the main menu~~
 - ~~When bow and arrows are equipped, trying to open the inv with current binding won't work properly so either fix that or rebind inv to something else, maybe right joystick down~~

@@ -79,7 +79,7 @@ public class Plugin : BaseUnityPlugin
     public static void TriggerButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
     {
 
-        if (UI.characterUIInstance.IsMenuFocused) { 
+        if (UI.characterUIInstance.IsMenuFocused || UI.characterUIInstance.IsDialogueInProgress) { 
             // if ui.IsMenuFocused
                 // if ui.CurrentSelectedGameObject has UISelectable allow for A input and if it has ItemDisplayClick allow for X
             if (UI.button != null)

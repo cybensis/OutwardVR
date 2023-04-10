@@ -89,11 +89,21 @@ namespace OutwardVR
 
         //======== UI FIXES ======== //
 
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(CameraQuality), "Awake")]
+        //private static void SetMainMenuPlacementt(CameraQuality __instance) {
+        //    __instance.gameObject.active = false;
+        //}
+
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MainScreen), "FirstUpdate")]
         private static void SetMainMenuPlacement(MainScreen __instance)
         {
-            
+            //Camera[] cams = Camera.allCameras;
+            //for (int i = 0; i < cams.Length; i++) {
+            //    cams[i].gameObject.SetActive(true);
+            //}
             Logs.WriteWarning("MainScreen FirstUpdate");
             Controllers.Init();
             Canvas menuCanvas = __instance.CharacterUI.transform.parent.GetComponent<Canvas>();
@@ -110,6 +120,7 @@ namespace OutwardVR
             Camera.main.nearClipPlane = 0.01f;
             tempCamHolder.transform.position = new Vector3(-3.0527f, -2.6422f, 0.1139f);
             tempCamHolder.transform.rotation = new Quaternion(0, 0.342f, 0, 0.9397f);
+            Camera.main.transform.rotation = Quaternion.identity;
             __instance.CharacterUI.GetType().GetField("m_currentSelectedGameObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(__instance.CharacterUI, __instance.FirstSelectable);
         }
 

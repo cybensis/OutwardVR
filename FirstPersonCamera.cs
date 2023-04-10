@@ -89,7 +89,6 @@ namespace OutwardVR
             var pos = camHolder.localPosition;
             pos.y += 0.7f; // This offset places the camera at the right height
             camHolder.localPosition = pos + (camHolder.forward * 0.115f) + (camHolder.right * 0.09f);
-
             // get the root gameobject of the camera (parent of camHolder)
             var camRoot = camera.transform.root;
             // set the parent to the head transform, then reset local position
@@ -101,7 +100,13 @@ namespace OutwardVR
 
             cameraFixed = true;
             //cameraScript.transform.Rotate(351f, 250f, 346f);
-            cameraScript.transform.Rotate(348.42f, 250f, 341.36f);
+
+            // Use this value in tutorial
+            //cameraScript.transform.Rotate(348.42f, 250f, 341.36f);
+
+            // use this value in the actual game
+            cameraScript.transform.Rotate(0f, 250f, 6f);
+            //cameraScript.transform.Rotate(0f, 250f, 0f);
 
             if (UICanvas)
             {
@@ -132,6 +137,8 @@ namespace OutwardVR
         private static readonly FieldInfo fi_slopeSpeed = typeof(CharacterControl).GetField("m_slopeSlowSpeed", flags);
 
         private static readonly Dictionary<UID, float> LastTurnTimes = new Dictionary<UID, float>();
+
+
 
 
         [HarmonyPatch(typeof(LocalCharacterControl), "UpdateMovement")]
