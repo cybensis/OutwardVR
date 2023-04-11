@@ -15,7 +15,7 @@ namespace OutwardVR
     {
         public static bool ControllersAlreadyInit = false;
 
-        private static CustomController vrControllers;
+        public static CustomController vrControllers;
         private static CustomControllerMap vrGameplayMap;
         private static CustomControllerMap vrOtherControlsMap;
         private static CustomControllerMap vrMenuMap;
@@ -49,6 +49,10 @@ namespace OutwardVR
         }
 
 
+        public static void ResetControllerVars() { 
+            initializedMainPlayer = false;
+            ControllersAlreadyInit = false;
+        }
 
 
 
@@ -168,7 +172,7 @@ namespace OutwardVR
 
         private static void UpdateVRInputs()
         {
-
+            
             foreach (BaseInput input in inputs)
             {
                 input.UpdateValues(vrControllers);

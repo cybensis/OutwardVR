@@ -16,6 +16,7 @@ using NodeCanvas.Framework;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using Steamworks;
+using UnityEngine.SceneManagement;
 
 
 // 1. MenuManager -> CharacterUIs -> PlayerUI -> Canvas open canvas component and set its render thingy to world space, and set position to cam pos
@@ -51,7 +52,7 @@ namespace OutwardVR
         private static GameObject statusBars;
         private static GameObject quickSlots;
         private static GameObject tempCamHolder = new GameObject();
-
+        private static bool menuHasBeenLoadedOnce = false;
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterCreationPanel), "Show")]
@@ -100,27 +101,47 @@ namespace OutwardVR
         [HarmonyPatch(typeof(MainScreen), "FirstUpdate")]
         private static void SetMainMenuPlacement(MainScreen __instance)
         {
-            //Camera[] cams = Camera.allCameras;
-            //for (int i = 0; i < cams.Length; i++) {
-            //    cams[i].gameObject.SetActive(true);
-            //}
-            Logs.WriteWarning("MainScreen FirstUpdate");
+            // When returning from the game to the main menu, it deletes the controller scheme so we have to reset it here
+            Controllers.ResetControllerVars();
             Controllers.Init();
+
+            //Get all the game objects from the current scene so we can find the "Main Camera" since it doesn't appear in Camera.allCameras
+            GameObject[] rootObjects = SceneManager.GetActiveScene().GetRootGameObjects();
+            Camera mainCam = Camera.main;
+            for (int i = 0; i < rootObjects.Length; i++)
+            {
+                if (rootObjects[i].name == "Main Camera(Clone)")
+                    rootObjects[i].gameObject.SetActive(false);
+                else if (rootObjects[i].name == "Main Camera") {
+                    rootObjects[i].gameObject.SetActive(true);
+                    mainCam = rootObjects[i].GetComponent<Camera>();
+                }
+            }
+            if (tempCamHolder == null)
+                tempCamHolder = new GameObject();
+            tempCamHolder.transform.position = new Vector3(-3.0527f, -1.3422f, 0.1139f);
+            tempCamHolder.transform.rotation = new Quaternion(-0.1479f, 0.3253f, -0.0621f, 0.9319f);
+
             Canvas menuCanvas = __instance.CharacterUI.transform.parent.GetComponent<Canvas>();
             menuCanvas.renderMode = RenderMode.WorldSpace;
-            menuCanvas.transform.root.position = new Vector3(-9.7117f, -3.2f, 4.8f);
+            if (menuHasBeenLoadedOnce)
+                menuCanvas.transform.root.position = new Vector3(-4.5687f, -0.1414f, 5.1412f);
+            else
+                menuCanvas.transform.root.position = new Vector3(-9.7117f, -3.2f, 4.8f);
+
             menuCanvas.transform.root.rotation = Quaternion.identity;
             menuCanvas.transform.root.localScale = new Vector3(0.005f, 0.005f, 0.005f);
 
-            //menuCanvas.transform.root.GetChild(2).GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
-            if (tempCamHolder == null)
-                tempCamHolder = new GameObject();
             Camera.main.transform.parent = tempCamHolder.transform;
             Camera.main.cullingMask = -1;
             Camera.main.nearClipPlane = 0.01f;
-            tempCamHolder.transform.position = new Vector3(-3.0527f, -2.6422f, 0.1139f);
-            tempCamHolder.transform.rotation = new Quaternion(0, 0.342f, 0, 0.9397f);
-            Camera.main.transform.rotation = Quaternion.identity;
+
+            mainCam.transform.parent = tempCamHolder.transform;
+            mainCam.cullingMask = -1;
+            mainCam.nearClipPlane = 0.01f;
+
+            menuHasBeenLoadedOnce = true;
+
             __instance.CharacterUI.GetType().GetField("m_currentSelectedGameObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(__instance.CharacterUI, __instance.FirstSelectable);
         }
 
@@ -130,9 +151,8 @@ namespace OutwardVR
             Controllers.Update();
         }
 
-            // On MainScreen.Update, update controller inputs
 
-            [HarmonyPostfix]
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(MenuManager), "Update")]
         private static void CharacterCameraUpdate(MenuManager __instance)
         {
