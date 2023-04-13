@@ -20,14 +20,13 @@ public static class CameraManager
     }
 
     public static void Setup() {
-        if (VROrigin == null)
-        {
+        if (VROrigin == null) {
             VROrigin = new GameObject();
-            VROrigin.transform.Rotate(new Vector3(0f,270f,0f), Space.Self);
+            VROrigin.transform.Rotate(0f,270f,0f, Space.Self);
         }
+        //VROrigin.transform.parent = Camera.main.transform.parent.parent;
         SpawnHands();
-        if (Camera.main != null)
-        {
+        if (Camera.main != null) {
             if (RightHand)
                 RightHand.transform.parent = VROrigin.transform;
             if (LeftHand)
@@ -40,11 +39,12 @@ public static class CameraManager
         if (!RightHand)
         {
             RightHand = GameObject.Instantiate(AssetLoader.RightHandBase, Vector3.zeroVector, Quaternion.identityQuaternion);
-            RightHand.transform.parent = VROrigin.transform;
             RightHand.AddComponent<SteamVR_Behaviour_Pose>();
-            RightHand.AddComponent<SteamVR_LaserPointer>();
-            RightHand.AddComponent<GraphicRaycaster>();
-            laserPointer = RightHand.GetComponent<SteamVR_LaserPointer>();
+            RightHand.AddComponent<SteamVR_Skeleton_Poser>();
+            RightHand.transform.parent = VROrigin.transform;
+            //RightHand.AddComponent<SteamVR_LaserPointer>();
+            //RightHand.AddComponent<GraphicRaycaster>();
+            //laserPointer = RightHand.GetComponent<SteamVR_LaserPointer>();
             //RightHand.AddComponent<LaserInteract>();
             //RightHand.AddComponent<SceneHandler>();
 

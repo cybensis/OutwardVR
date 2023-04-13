@@ -13,7 +13,7 @@ namespace OutwardVR
 {
     public class FirstPersonCamera
     {
-        private static bool cameraFixed = true;
+        public static bool cameraFixed = true;
         public static bool enemyTargetActive = false;
 
         [HarmonyPatch(typeof(NetworkLevelLoader), "MidLoadLevel")]
@@ -52,12 +52,20 @@ namespace OutwardVR
                     || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue
                     || MenuManager.Instance.IsReturningToMainMenu)
                 {
+                    if (UI.gameHasBeenLoadedOnce)
+                        __instance.TargetCharacter.CharacterUI.gameObject.active = false;
                     return false;
                 }
                 try
                 {
                     FixCamera(__instance, ___m_camera);
-                    __instance.transform.parent.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false; // disable the head
+                    UI.gameHasBeenLoadedOnce = true;
+                    // CharacterUI is disabled during prologue so re-enable it here
+                    __instance.TargetCharacter.CharacterUI.gameObject.active = true;
+                    // Disable the loading cam once the player is loaded in
+                    UI.loadingCam.gameObject.active = false;
+                    // disable the head
+                    __instance.transform.parent.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
                 }
                 catch (Exception e)
                 {

@@ -17,25 +17,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using Steamworks;
 using UnityEngine.SceneManagement;
-
-
-// 1. MenuManager -> CharacterUIs -> PlayerUI -> Canvas open canvas component and set its render thingy to world space, and set position to cam pos
-// 2. In Canvas -> GeneralPanels -> MainScreem -> VisualMainScreen -> Options Set pos to camera
-// 3. Set canvas scale to 0.01 for xyz then move it forward on Z +10
-// 4. On main camera, set cullingMask to -1 so it shows the HUD
-
-// 1. MenuManager -> CharacterUIs -> PlayerChar -> Canvas open canvas component and set its render thingy to world space, and set position to cam pos
-// 2. Set Canvas scale to 0.0005 for xyz then rotate pm 7 180
-// 2. When moving you NEED to use canvas because the HUD only exists within the bounds of Canvas so if you move it out of where the canvas exists it disappears
-
-
-// Move Canvas forward x 0.7 and to the right 0.1 I think??
-// Camera.main.transform.position + Camera.main.transform.forward * 0.4f + Camera.main.transform.right * -0.03f;
-
-// From main cam, go up three parents to HeadWhiteMaleA (this will change in game but you should still only need to go up 3 parents) and disable SkinnedMeshRenderer to remove head
-
-
-
+using Valve.VR.InteractionSystem;
 
 
 namespace OutwardVR
@@ -52,7 +34,8 @@ namespace OutwardVR
         private static GameObject statusBars;
         private static GameObject quickSlots;
         private static GameObject tempCamHolder = new GameObject();
-        private static bool menuHasBeenLoadedOnce = false;
+        public static GameObject loadingCam;
+        public static bool gameHasBeenLoadedOnce = false;
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterCreationPanel), "Show")]
@@ -63,14 +46,45 @@ namespace OutwardVR
             if (tempCamHolder == null)
                 tempCamHolder = new GameObject();    
             Camera.main.transform.parent = tempCamHolder.transform;
-            tempCamHolder.transform.position = new Vector3(-5000.829f, -5000.1f, -4998.098f);
-            tempCamHolder.transform.rotation = new Quaternion(0f, 0.8131f, 0f, -0.5821f);
+            if (gameHasBeenLoadedOnce)
+                tempCamHolder.transform.position = new Vector3(-5000.329f, -4998.899f, -4997.397f);
+            else
+                tempCamHolder.transform.position = new Vector3(-5000.329f, -4998.599f, -4997.397f);
+            tempCamHolder.transform.rotation = new Quaternion(-0.0201f, 0.8114f, 0.1211f, -0.5715f);
             __instance.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-            __instance.transform.root.position = new Vector3(-4997.025f, -5001.101f, -5003.604f);
+
+            if (gameHasBeenLoadedOnce)
+                __instance.transform.root.position = new Vector3(-5000.929f, -4998.499f, -5000.4f);
+            else
+                __instance.transform.root.position = new Vector3(-4997.025f, -5001.101f, -5003.604f);
             __instance.transform.root.rotation = new Quaternion(0, 0.9397f, 0, -0.342f);
+
+            Transform GeneralMenus = __instance.CharacterUI.transform.root.GetChild(2); // Maybe change this to loop over all children, its place might change
+            if (GeneralMenus.name == "GeneralMenus")
+            {
+                GeneralMenus.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+                //GeneralMenus.transform.localPosition = Vector3.zero;
+                GeneralMenus.transform.position = __instance.CharacterUI.transform.position;
+                GeneralMenus.transform.rotation = Quaternion.identity;
+                GeneralMenus.transform.localScale = new Vector3(1, 1, 1);
+            }
         }
 
 
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ProloguePanel), "Show", new[] { typeof(EventContextData.ContextScreen[]), typeof(UnityAction) })]
+        public static void PositionIntroCanvas(ProloguePanel __instance) {
+            Logs.WriteWarning("POSITION INTRO CANVAS");
+            if (gameHasBeenLoadedOnce)
+                tempCamHolder.transform.position = new Vector3(-8f, -3f, -2f);
+            else
+                tempCamHolder.transform.position = new Vector3(-16.5f, -3f, 0);
+
+            tempCamHolder.transform.rotation = new Quaternion(-0.1158f, 0.3311f, -0.0594f, 0.9346f);
+
+            if (__instance.CharacterUI != null)
+                __instance.CharacterUI.gameObject.active = false;
+        }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterVisuals), "EquipVisuals")]
@@ -80,21 +94,9 @@ namespace OutwardVR
                 __instance.ActiveVisualsHelmOrHead.Renderer.enabled = false;
         }
 
-        //[HarmonyPostfix]
-        //[HarmonyPatch(typeof(ArmorVisuals), "Awake")]
-        //public static void DisableHelmetd(ArmorVisuals __instance)
-        //{
-        //    CharacterVisuals visuals = __instance.transform.parent.GetComponent<CharacterVisuals>();
-        //    visuals.ActiveVisualsHelmOrHead.Renderer.enabled = false;
-        //}
 
         //======== UI FIXES ======== //
 
-        //[HarmonyPostfix]
-        //[HarmonyPatch(typeof(CameraQuality), "Awake")]
-        //private static void SetMainMenuPlacementt(CameraQuality __instance) {
-        //    __instance.gameObject.active = false;
-        //}
 
 
         [HarmonyPostfix]
@@ -117,14 +119,17 @@ namespace OutwardVR
                     mainCam = rootObjects[i].GetComponent<Camera>();
                 }
             }
+            
             if (tempCamHolder == null)
                 tempCamHolder = new GameObject();
-            tempCamHolder.transform.position = new Vector3(-3.0527f, -1.3422f, 0.1139f);
-            tempCamHolder.transform.rotation = new Quaternion(-0.1479f, 0.3253f, -0.0621f, 0.9319f);
+            tempCamHolder.transform.position = new Vector3(-3.4527f, -1.3422f, 0.1139f);
+            tempCamHolder.transform.rotation = new Quaternion(-0.1504f, 0.3658f, -0.0555f, 0.9168f);
+            UnityEngine.Object.DontDestroyOnLoad(tempCamHolder);
+
 
             Canvas menuCanvas = __instance.CharacterUI.transform.parent.GetComponent<Canvas>();
             menuCanvas.renderMode = RenderMode.WorldSpace;
-            if (menuHasBeenLoadedOnce)
+            if (gameHasBeenLoadedOnce)
                 menuCanvas.transform.root.position = new Vector3(-4.5687f, -0.1414f, 5.1412f);
             else
                 menuCanvas.transform.root.position = new Vector3(-9.7117f, -3.2f, 4.8f);
@@ -132,15 +137,31 @@ namespace OutwardVR
             menuCanvas.transform.root.rotation = Quaternion.identity;
             menuCanvas.transform.root.localScale = new Vector3(0.005f, 0.005f, 0.005f);
 
-            Camera.main.transform.parent = tempCamHolder.transform;
-            Camera.main.cullingMask = -1;
-            Camera.main.nearClipPlane = 0.01f;
-
             mainCam.transform.parent = tempCamHolder.transform;
             mainCam.cullingMask = -1;
             mainCam.nearClipPlane = 0.01f;
 
-            menuHasBeenLoadedOnce = true;
+
+
+            Transform GeneralMenus = menuCanvas.transform.root.GetChild(2); // Maybe change this to loop over all children, its place might change
+            if (GeneralMenus.name == "GeneralMenus")
+            {
+                GeneralMenus.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+                //GeneralMenus.transform.localPosition = Vector3.zero;
+                GeneralMenus.transform.position = menuCanvas.transform.position;
+                GeneralMenus.transform.rotation = Quaternion.identity;
+                GeneralMenus.transform.localScale = new Vector3(1, 1, 1);
+            }
+
+
+
+            if (loadingCam == null) {
+                loadingCam = new GameObject();
+                loadingCam.transform.parent = tempCamHolder.transform;
+                loadingCam.AddComponent<Camera>();
+            }
+            // Keep loadingCam disabled until loading is triggered
+            loadingCam.active = false;
 
             __instance.CharacterUI.GetType().GetField("m_currentSelectedGameObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(__instance.CharacterUI, __instance.FirstSelectable);
         }
@@ -152,12 +173,16 @@ namespace OutwardVR
         }
 
 
+
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MenuManager), "Update")]
         private static void CharacterCameraUpdate(MenuManager __instance)
         {
 
             // I find these values work nicely for positioning the HUD
+            if (Camera.main == null || Camera.main.transform.root == null)
+                return;
             LocalCharacterControl characterController = Camera.main.transform.root.GetComponent<LocalCharacterControl>();
             if (characterController != null ) {
                 if (characterController.Character.Sneaking)
@@ -170,6 +195,50 @@ namespace OutwardVR
                 //__instance.transform.position = Camera.main.transform.position + (Camera.main.transform.forward * 0.5f) + (Camera.main.transform.right * -0.05f) + (Camera.main.transform.up * 0.05f);
                 __instance.transform.rotation = characterController.transform.rotation;
             }
+
+
+        }
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MenuManager), "BackToMainMenu")]
+        public static void PositionCamOnReturnToMenu(MenuManager __instance)
+        {
+            Logs.WriteWarning("RETURNING TO MENU");
+            loadingCam.active = true;
+            tempCamHolder.transform.position = new Vector3(-8.4527f, -3.4422f, -0.7861f);
+            Camera mainCam = loadingCam.GetComponent<Camera>();
+            mainCam.cullingMask = 32;
+            mainCam.clearFlags = CameraClearFlags.SolidColor;
+            mainCam.backgroundColor = Color.black;
+            mainCam.nearClipPlane = 0.01f;
+            mainCam.depth = 10;
+            __instance.transform.position = new Vector3(-4.5687f, -0.1414f, 5.1412f);
+        }
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MenuManager), "ShowMasterLoadingScreen", new[] { typeof(string) } )] 
+        public static void PositionCamOnLoad(MenuManager __instance)
+        {
+            Logs.WriteWarning("SHOW MASTER LOADING SCREEN");
+            loadingCam.active = true;
+
+            tempCamHolder.transform.position = new Vector3(-8.4527f, -3.4422f, -0.7861f);
+            Camera mainCam = loadingCam.GetComponent<Camera>();
+            mainCam.cullingMask = 32;
+            mainCam.clearFlags = CameraClearFlags.SolidColor;
+            mainCam.backgroundColor = Color.black;
+            mainCam.nearClipPlane = 0.01f;
+            mainCam.depth = 10;
+            if (gameHasBeenLoadedOnce)
+                __instance.transform.position = new Vector3(-4.5687f, -0.1414f, 5.1412f);
+            else
+                __instance.transform.position = new Vector3(-9.7117f, -3.2f, 4.8f);
+
+            Logs.WriteWarning(__instance.IsProloguePanelDisplayed);
+
+
         }
 
 
@@ -190,6 +259,7 @@ namespace OutwardVR
         [HarmonyPatch(typeof(TargetingFlare), "AwakeInit")]
         public static void DisableTargetingFlare(TargetingFlare __instance)
         {
+
             __instance.gameObject.active = false;
         }
 

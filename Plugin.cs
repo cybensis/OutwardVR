@@ -29,10 +29,10 @@ public class Plugin : BaseUnityPlugin
         // POSES
         // Use when eventually trying to get motion controls going
         //SteamVR_Actions._default.ClickRightJoystick.AddOnStateDownListener(ww, SteamVR_Input_Sources.Any);
-        //SteamVR_Actions._default.RightHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateRightHand);
+        //SteamVR_Actions._default.RightHandPose.AddOnUpdateListener(SteamVR_Input_Sources.RightHand, UpdateRightHand);
         //SteamVR_Actions._default.LeftHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateLeftHand);
 
-
+        
 
 
         SteamVR_Actions._default.ButtonA.AddOnStateDownListener(TriggerButton, SteamVR_Input_Sources.Any);
@@ -52,6 +52,8 @@ public class Plugin : BaseUnityPlugin
     {
         if (CameraManager.RightHand)
         {
+            // Maybe to fix the hand position offset stuff, add a check if the hands are below a certain Y axis, if they are then add until they are at the minimum Y, which is like maybe
+            // just where your hands would be having your arms at your side.
             Vector3 newPos = Camera.main.transform.parent.parent.position;
             newPos.y -= 0.5f;
             CameraManager.VROrigin.transform.position = newPos;
