@@ -36,14 +36,14 @@ namespace OutwardVR
                     vrController.SetAxisValueById(xAxisID, 0f);
             }
             else if (xAxisID == Controllers.RightJoyStickHor) {
-                if (FirstPersonCamera.enemyTargetActive)
-                    vrController.SetAxisValueById(xAxisID, SteamVR_Actions._default.LeftJoystick.axis.x);
-                else {
-                    if (vectorAction.axis.x < -0.3f || vectorAction.axis.x > 0.3f)
-                        vrController.SetAxisValueById(xAxisID, vectorAction.axis.x);
-                    else
-                        vrController.SetAxisValueById(xAxisID, 0f);
-                }
+                //if (FirstPersonCamera.enemyTargetActive)
+                //    vrController.SetAxisValueById(xAxisID, SteamVR_Actions._default.LeftJoystick.axis.x);
+                //else {
+                //    if (vectorAction.axis.x < -0.3f || vectorAction.axis.x > 0.3f)
+                //        vrController.SetAxisValueById(xAxisID, vectorAction.axis.x);
+                //    else
+                //        vrController.SetAxisValueById(xAxisID, 0f);
+                //}
             }
 
         }

@@ -1,24 +1,6 @@
 {
   "actions": [
     {
-      "name": "/actions/default/in/SkeletonLeftHand",
-      "type": "skeleton",
-      "skeleton": "/skeleton/hand/left"
-    },
-    {
-      "name": "/actions/default/in/SkeletonRightHand",
-      "type": "skeleton",
-      "skeleton": "/skeleton/hand/right"
-    },
-    {
-      "name": "/actions/default/in/LeftHandPose",
-      "type": "pose"
-    },
-    {
-      "name": "/actions/default/in/RightHandPose",
-      "type": "pose"
-    },
-    {
       "name": "/actions/default/in/LeftTrigger",
       "type": "vector1"
     },
@@ -91,6 +73,25 @@
       "type": "boolean"
     },
     {
+      "name": "/actions/default/in/SkeletonLeftHand",
+      "type": "skeleton",
+      "skeleton": "/skeleton/hand/left",
+      "requirement": "suggested"
+    },
+    {
+      "name": "/actions/default/in/SkeletonRightHand",
+      "type": "skeleton",
+      "skeleton": "/skeleton/hand/right"
+    },
+    {
+      "name": "/actions/default/in/LeftHandPose",
+      "type": "pose"
+    },
+    {
+      "name": "/actions/default/in/RightHandPose",
+      "type": "pose"
+    },
+    {
       "name": "/actions/default/out/Haptic",
       "type": "vibration"
     }
@@ -99,6 +100,10 @@
     {
       "name": "/actions/default",
       "usage": "leftright"
+    },
+    {
+      "name": "/actions/NewSet",
+      "usage": "single"
     }
   ],
   "default_bindings": [
@@ -154,11 +159,7 @@
   "localization": [
     {
       "language_tag": "en_US",
-      "/actions/default/in/SkeletonLeftHand": "Skeleton (Left)",
-      "/actions/default/in/SkeletonRightHand": "Skeleton (Right)",
-      "/actions/default/out/Haptic": "Haptic",
-      "/actions/default/in/LeftHandPose": "Left Hand Pose",
-      "/actions/default/in/RightHandPose": "Right Hand Pose"
+      "/actions/default/out/Haptic": "Haptic"
     }
   ]
 }

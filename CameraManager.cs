@@ -27,7 +27,7 @@ public class SceneHandler : MonoBehaviour
 
         PointerEventData pointerData = new PointerEventData(EventSystem.current);
 
-        pointerData.position = Input.mousePosition;
+        //pointerData.position = Input.mousePosition;
 
         List<RaycastResult> results = new List<RaycastResult>();
         //EventSystem.current.RaycastAll(pointerData, results);

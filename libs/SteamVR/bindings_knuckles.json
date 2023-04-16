@@ -10,16 +10,7 @@
     },
     "/actions/default": {
       "chords": [],
-      "poses": [
-        {
-          "output": "/actions/default/in/lefthandpose",
-          "path": "/user/hand/left/pose/raw"
-        },
-        {
-          "output": "/actions/default/in/righthandpose",
-          "path": "/user/hand/right/pose/raw"
-        }
-      ],
+      "poses": [],
       "haptics": [
         {
           "output": "/actions/default/out/haptic",
@@ -31,16 +22,7 @@
         }
       ],
       "sources": [],
-      "skeleton": [
-        {
-          "output": "/actions/default/in/skeletonlefthand",
-          "path": "/user/hand/left/input/skeleton/left"
-        },
-        {
-          "output": "/actions/default/in/skeletonrighthand",
-          "path": "/user/hand/right/input/skeleton/right"
-        }
-      ]
+      "skeleton": []
     },
     "/actions/platformer": {
       "chords": [],

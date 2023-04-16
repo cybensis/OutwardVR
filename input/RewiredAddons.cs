@@ -1,9 +1,8 @@
-﻿using Rewired;
-using Rewired.Data;
-using Rewired.Data.Mapping;
+﻿using Rewired.Data.Mapping;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using Rewired;
+using Rewired.Data;
 
 namespace OutwardVR
 {
@@ -64,12 +63,12 @@ namespace OutwardVR
                 },
                 new HardwareAxisInfo[]
                 {
-                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false, SpecialAxisType.None),
-                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false, SpecialAxisType.None),
-                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false, SpecialAxisType.None),
-                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false, SpecialAxisType.None),
-                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false, SpecialAxisType.None),  //analog trigger
-                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false, SpecialAxisType.None)  //analog trigger
+                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false, 0f, SpecialAxisType.None),
+                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false, 0f, SpecialAxisType.None),
+                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false,  0f, SpecialAxisType.None),
+                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false, 0f, SpecialAxisType.None),
+                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false, 0f, SpecialAxisType.None),  //analog trigger
+                    new HardwareAxisInfo(AxisCoordinateMode.Absolute, false, 0f, SpecialAxisType.None)  //analog trigger
                 },
                 new HardwareButtonInfo[] { },
                 null
@@ -275,7 +274,7 @@ namespace OutwardVR
                     newElementMap.axisRange = elementMap.axisRange;
                 newElementMap.invert = elementMap.invert;
             }
-            return ReInput.UserData.ZkdVVpddavmruicKaOtoiXbLmnO(categoryId, controllerId, 0);
+            return ReInput.UserData.jtJLkGhxZsBzutVJygqxKWaYeEx(categoryId, controllerId, 0);
         }
         // Rewired ActionID Mapping
         public static int QuickActionID = 18;

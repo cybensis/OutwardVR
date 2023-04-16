@@ -1,7 +1,7 @@
 {
    "action_manifest_version" : 0,
    "alias_info" : {},
-   "app_key" : "steam.app.794260",
+   "app_key" : "application.generated.unity.myproject3.exe",
    "bindings" : {
       "/actions/buggy" : {
          "chords" : [],
@@ -192,7 +192,7 @@
    "controller_type" : "oculus_touch",
    "description" : "",
    "interaction_profile" : "",
-   "name" : "My Outward configuration for Oculus Touch Controller",
+   "name" : "My My project (3) [Testing] configuration for Oculus Touch Controller",
    "options" : {},
    "simulated_actions" : []
 }
