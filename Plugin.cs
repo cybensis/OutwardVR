@@ -104,9 +104,9 @@ public class Plugin : BaseUnityPlugin
         // the camHolder so they are also locked into the Y axis
 
 
-        //SteamVR_Actions._default.ButtonA.AddOnStateDownListener(TriggerButton, SteamVR_Input_Sources.Any);
-        //SteamVR_Actions._default.ButtonX.AddOnStateDownListener(InventoryMenuTrigger, SteamVR_Input_Sources.Any);
-        //SteamVR_Actions._default.ButtonB.AddOnStateDownListener(RemoveActiveButton, SteamVR_Input_Sources.Any);
+        SteamVR_Actions._default.ButtonA.AddOnStateDownListener(TriggerButton, SteamVR_Input_Sources.Any);
+        SteamVR_Actions._default.ButtonX.AddOnStateDownListener(InventoryMenuTrigger, SteamVR_Input_Sources.Any);
+        SteamVR_Actions._default.ButtonB.AddOnStateDownListener(RemoveActiveButton, SteamVR_Input_Sources.Any);
     }
 
 
@@ -147,57 +147,57 @@ public class Plugin : BaseUnityPlugin
 
 
 
-    //public static void TriggerButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
-    //{
+    public static void TriggerButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    {
+        Logs.WriteWarning(UI.button.name);
+        if (UI.characterUIInstance.IsMenuFocused || UI.characterUIInstance.IsDialogueInProgress)
+        {
+            // if ui.IsMenuFocused
+            // if ui.CurrentSelectedGameObject has UISelectable allow for A input and if it has ItemDisplayClick allow for X
+            if (UI.button != null)
+            {
+                var reflection = UI.button.GetType().GetMethod("Press", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                reflection.Invoke(UI.button, new object[] { });
+            }
+            if (UI.characterUIInstance.CurrentSelectedGameObject != null && UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
+            {
+                ItemDisplayClick invItem = UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
+                var reflection = invItem.GetType().GetMethod("SingleClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                reflection.Invoke(invItem, new object[] { });
+            }
 
-    //    if (UI.characterUIInstance.IsMenuFocused || UI.characterUIInstance.IsDialogueInProgress)
-    //    {
-    //        // if ui.IsMenuFocused
-    //        // if ui.CurrentSelectedGameObject has UISelectable allow for A input and if it has ItemDisplayClick allow for X
-    //        if (UI.button != null)
-    //        {
-    //            var reflection = UI.button.GetType().GetMethod("Press", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-    //            reflection.Invoke(UI.button, new object[] { });
-    //        }
-    //        if (UI.characterUIInstance.CurrentSelectedGameObject != null && UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
-    //        {
-    //            ItemDisplayClick invItem = UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
-    //            var reflection = invItem.GetType().GetMethod("SingleClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-    //            reflection.Invoke(invItem, new object[] { });
-    //        }
+        }
 
-    //    }
-
-    //}
-
-
+    }
 
 
-    //public static void InventoryMenuTrigger(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
-    //{
-
-    //    if (UI.characterUIInstance != null &&
-    //        UI.characterUIInstance.IsMenuFocused &&
-    //        UI.characterUIInstance.CurrentSelectedGameObject != null &&
-    //        UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
-    //    {
-    //        ItemDisplayClick invItem = UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
-    //        PointerEventData _data = new PointerEventData(EventSystem.current);
-    //        _data.pointerPress = invItem.gameObject;
-    //        // Figure out how to set this value based on the items positon in the inventory canvas
-    //        _data.position = new Vector2(1019f, 1143f);
-
-    //        var reflection = invItem.GetType().GetMethod("RightClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-    //        reflection.Invoke(invItem, new object[] { _data });
-    //    }
-
-    //}
 
 
-    //public static void RemoveActiveButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
-    //{
-    //    UI.button = null;
-    //}
+    public static void InventoryMenuTrigger(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    {
+
+        //if (UI.characterUIInstance != null &&
+        //    UI.characterUIInstance.IsMenuFocused &&
+        //    UI.characterUIInstance.CurrentSelectedGameObject != null &&
+        //    UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
+        //{
+        //    ItemDisplayClick invItem = UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
+        //    PointerEventData _data = new PointerEventData(EventSystem.current);
+        //    _data.pointerPress = invItem.gameObject;
+        //    // Figure out how to set this value based on the items positon in the inventory canvas
+        //    _data.position = new Vector2(1019f, 1143f);
+
+        //    var reflection = invItem.GetType().GetMethod("RightClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        //    reflection.Invoke(invItem, new object[] { _data });
+        //}
+
+    }
+
+
+    public static void RemoveActiveButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    {
+        UI.button = null;
+    }
 
 
     private static void InitSteamVR()
