@@ -87,7 +87,7 @@ namespace OutwardVR
             Canvas UICanvas = cameraScript.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
             Camera.main.gameObject.AddComponent<SteamVR_TrackedObject>();
             cameraScript.TargetCharacter.CharacterUI.transform.parent.localRotation = Quaternion.identity;
-
+            //cameraScript.TargetCharacter.Animator.avatarRoot
 
             UICanvas.renderMode = RenderMode.WorldSpace;
             var headTrans = cameraScript.TargetCharacter.Visuals.Head.transform; // Get the character model head transform
@@ -148,7 +148,18 @@ namespace OutwardVR
 
         private static readonly Dictionary<UID, float> LastTurnTimes = new Dictionary<UID, float>();
 
+        private static GameObject playerHead;
 
+
+        [HarmonyPatch(typeof(CharacterJointManager), "Start")]
+        public class SetHeadJoint {
+            private static void Prefix(CharacterJointManager __instance) {
+                if (__instance.name == "head") { 
+                    Logs.WriteWarning("Head found");
+                    playerHead = __instance.gameObject;
+                }
+            }
+        }
 
 
         [HarmonyPatch(typeof(LocalCharacterControl), "UpdateMovement")]
@@ -262,31 +273,38 @@ namespace OutwardVR
                 // This if/else statement locks the characters Y axis to the perfect position, then also when the player crouches or uncrouches, it changes the position
                 // a little bit since the crouching head is more to the right and forward
                 Vector3 camPosition = Camera.main.transform.parent.localPosition;
-                camPosition.y = Camera.main.transform.localPosition.y * -1f;
-                if (__instance.Character.Sneaking)
-                {
-                    camPosition.y += 0.225f;
-                    // Don't want the X axis to be locked in so only set the X axis crouching offset the one time
-                    if (startedSneaking == false)
-                    {
-                        startedSneaking = true;
-                        // Negative in this instance moves it forward and right respectively, not backwards and left
-                        camPosition += __instance.transform.right * -0.25f;
-                        camPosition += __instance.transform.forward * -0.45f;
-                    }
-                }
-                else
-                {
-                    camPosition.y += 0.65f;
-                    // Return the players X axis position back to normal after returning from crouching
-                    if (startedSneaking)
-                    {
-                        startedSneaking = false;
-                        camPosition += __instance.transform.right * 0.25f;
-                        camPosition += __instance.transform.forward * 0.45f;
-                    }
-                }
-                Camera.main.transform.parent.localPosition = camPosition;
+                if (playerHead != null)
+                    camPosition = playerHead.transform.position;
+                camPosition.y += 7f;
+
+                Camera.main.transform.parent.localPosition = Camera.main.transform.localPosition * -1;
+                Camera.main.transform.parent.position = camPosition;
+
+                //camPosition.y =- Camera.main.transform.localPosition.y;
+                //if (__instance.Character.Sneaking)
+                //{
+                //    camPosition.y += 0.225f;
+                //    // Don't want the X axis to be locked in so only set the X axis crouching offset the one time
+                //    if (startedSneaking == false)
+                //    {
+                //        startedSneaking = true;
+                //        // Negative in this instance moves it forward and right respectively, not backwards and left
+                //        camPosition += __instance.transform.right * -0.25f;
+                //        camPosition += __instance.transform.forward * -0.45f;
+                //    }
+                //}
+                //else
+                //{
+                //    camPosition.y += 0.65f;
+                //    // Return the players X axis position back to normal after returning from crouching
+                //    if (startedSneaking)
+                //    {
+                //        startedSneaking = false;
+                //        camPosition += __instance.transform.right * 0.25f;
+                //        camPosition += __instance.transform.forward * 0.45f;
+                //    }
+                //}
+                //Camera.main.transform.parent.position = camPosition;
                 // This allows the player to move side to side only if a menu isn't open and they're not in dialogue
                 if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress)
                 {

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using static AQUAS_Parameters;
 
 
 namespace OutwardVR
@@ -191,7 +192,7 @@ namespace OutwardVR
                 case HUNTING_LOADING_SCREEN:
                     tempCamHolder.transform.position = new Vector3(-2.4527f, -2.0422f, -0.5861f);
                     tempCamHolder.transform.rotation = new Quaternion(0, 0.1736f, 0, -0.9848f);
-                    menuManager.transform.position = new Vector3(-17.0117f, -2.5f, 2.8f);
+                    menuManager.transform.position = new Vector3(-14.8117f, -2.5f, 2.8f);
                     menuManager.transform.rotation = new Quaternion(0f, 0.2588f, 0f, -0.9659f);
                     break;
                 case TOWNSQUARE_LOADING_SCREEN:
@@ -274,7 +275,7 @@ namespace OutwardVR
             Logs.WriteWarning("SHOW MASTER LOADING SCREEN");
             loadingCam.active = true;
 
-            tempCamHolder.transform.position = new Vector3(-7f, -3f, -0.7861f);
+            tempCamHolder.transform.position = new Vector3(-3.5f, -1.25f, -0.7861f);
             Camera mainCam = loadingCam.GetComponent<Camera>();
             mainCam.cullingMask = 32;
             mainCam.clearFlags = CameraClearFlags.SolidColor;
@@ -455,27 +456,39 @@ namespace OutwardVR
         }
 
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(Selectable), "IsHighlighted")]
-        public static void SetCurrentButton(Selectable __instance)
-        {
-            Logs.WriteWarning("Is Highlighted");
-            Logs.WriteWarning(__instance.gameObject.GetComponent<UnityEngine.UI.Button>().name);
-            if (__instance.gameObject.GetComponent<UnityEngine.UI.Button>() != null)
-                button = __instance.gameObject.GetComponent<UnityEngine.UI.Button>();
+        //[HarmonyPrefix]
+        //[HarmonyPatch(typeof(Selectable), "IsHighlighted")]
+        //public static void SetCurrentButton(Selectable __instance)
+        //{
+        //    Logs.WriteWarning("Is Highlighted");
+        //    Logs.WriteWarning(__instance.gameObject.GetComponent<UnityEngine.UI.Button>().name);
+        //    if (__instance.gameObject.GetComponent<UnityEngine.UI.Button>() != null)
+        //        button = __instance.gameObject.GetComponent<UnityEngine.UI.Button>();
 
-            if (__instance.gameObject.GetComponent<ItemDisplayClick>() != null)
-                invItem = __instance.gameObject.GetComponent<ItemDisplayClick>();
-            else
-                invItem = null;
-        }
+        //    if (__instance.gameObject.GetComponent<ItemDisplayClick>() != null)
+        //        invItem = __instance.gameObject.GetComponent<ItemDisplayClick>();
+        //    else
+        //        invItem = null;
+        //}
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(UnityEngine.UI.Selectable), "OnSelect")]
-        public static void SetCurrentButtown(UnityEngine.UI.Selectable __instance)
+        public static void SetCurrentButton(UnityEngine.UI.Selectable __instance)
         {
-            if (__instance.gameObject.GetComponent<UnityEngine.UI.Button>() != null)
+            if (__instance.gameObject.GetComponent<UnityEngine.UI.Button>() != null) 
                 button = __instance.gameObject.GetComponent<UnityEngine.UI.Button>();
+            else
+                button = null;
+            
+            if (__instance.gameObject.GetComponent<UnityEngine.UI.Dropdown>() != null)
+                dropdown = __instance.gameObject.GetComponent<UnityEngine.UI.Dropdown>();
+            else    
+                dropdown = null;
+
+            if (__instance.gameObject.GetComponent<Dropdown.DropdownItem>() != null)
+                dropdownItem = __instance.gameObject.GetComponent<Dropdown.DropdownItem>();
+            else
+                dropdownItem = null;
 
             if (__instance.gameObject.GetComponent<ItemDisplayClick>() != null)
                 invItem = __instance.gameObject.GetComponent<ItemDisplayClick>();
@@ -551,6 +564,8 @@ namespace OutwardVR
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(PointerEventData), "get_pressEventCamera")]
+        // Pretty sure this is used for activating the inventory context menu because we need to create a fake pointer event when activating the
+        // context menu but can't set the camera manually, so we need to do that here.
         public static bool SetCamOnPressEvent(PointerEventData __instance, ref Camera __result)
         {
             __result = Camera.main;
@@ -560,6 +575,8 @@ namespace OutwardVR
         private static string chosenTitleScreen;
         public static CharacterUI characterUIInstance;
         public static UnityEngine.UI.Button button;
+        public static Dropdown dropdown;
+        public static Dropdown.DropdownItem dropdownItem;
         public static ItemDisplayClick invItem;
 
         ////// Fix for GroupItemDisplays
