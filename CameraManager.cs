@@ -10,56 +10,77 @@ using Valve.VR.Extras;
 
 public class SceneHandler : MonoBehaviour
 {
-    public SteamVR_LaserPointer laserPointer;
-    public GraphicRaycaster m_Raycaster;
+    //public SteamVR_LaserPointer laserPointer;
+    //public GraphicRaycaster m_Raycaster;
+    private Quaternion lastParentRotation;
     void Awake()
     {
-        m_Raycaster = GetComponent<GraphicRaycaster>();
+        //m_Raycaster = GetComponent<GraphicRaycaster>();
         //laserPointer = gameObject.GetComponent<SteamVR_LaserPointer>();
         //laserPointer.PointerIn += PointerInside;
         //laserPointer.PointerOut += PointerOutside;
         //laserPointer.PointerClick += PointerClick;
     }
 
+    private void Start()
+    {
+        lastParentRotation = transform.parent.localRotation;
 
-    private void Update() {
-        //interact.Process();
-
-        PointerEventData pointerData = new PointerEventData(EventSystem.current);
-
-        //pointerData.position = Input.mousePosition;
-
-        List<RaycastResult> results = new List<RaycastResult>();
-        //EventSystem.current.RaycastAll(pointerData, results);
-
-        m_Raycaster.Raycast(pointerData, results);
-
-        if (results.Count > 0)
-        {
-            Logs.WriteWarning(results[0].gameObject.name);
-        }
-
-        //Ray raycast = new Ray(transform.position, transform.forward);
-        //RaycastHit hit;
-        //bool bHit = Physics.Raycast(raycast, out hit);
-
-        //PointerEventData pointerData = new PointerEventData(EventSystem.current);
-
-        //pointerData.position = transform.position;
-        //List<RaycastResult> results = new List<RaycastResult>();
-        //EventSystem.current.RaycastAll(pointerData, results);
-        //Logs.WriteWarning(results.Count);
-        //if (results.Count > 0)
-        //{
-        //    Logs.WriteWarning(results[0].gameObject.name);
-        //}
-
-        //if (bHit)
-        //{
-        //    Logs.WriteWarning(hit.transform.parent.name);
-
-        //}
     }
+
+    private void Update()
+    {
+        transform.rotation = Quaternion.identity;
+        transform.localRotation = Quaternion.identity;
+    }
+
+
+    private void LateUpdate()
+    {
+        transform.rotation = Quaternion.identity;
+        transform.localRotation = Quaternion.identity;
+        //Logs.WriteWarning("LateUpdate");
+    }
+
+
+    //private void Update() {
+    //    //interact.Process();
+
+    //    PointerEventData pointerData = new PointerEventData(EventSystem.current);
+
+    //    //pointerData.position = Input.mousePosition;
+
+    //    List<RaycastResult> results = new List<RaycastResult>();
+    //    //EventSystem.current.RaycastAll(pointerData, results);
+
+    //    m_Raycaster.Raycast(pointerData, results);
+
+    //    if (results.Count > 0)
+    //    {
+    //        Logs.WriteWarning(results[0].gameObject.name);
+    //    }
+
+    //    //Ray raycast = new Ray(transform.position, transform.forward);
+    //    //RaycastHit hit;
+    //    //bool bHit = Physics.Raycast(raycast, out hit);
+
+    //    //PointerEventData pointerData = new PointerEventData(EventSystem.current);
+
+    //    //pointerData.position = transform.position;
+    //    //List<RaycastResult> results = new List<RaycastResult>();
+    //    //EventSystem.current.RaycastAll(pointerData, results);
+    //    //Logs.WriteWarning(results.Count);
+    //    //if (results.Count > 0)
+    //    //{
+    //    //    Logs.WriteWarning(results[0].gameObject.name);
+    //    //}
+
+    //    //if (bHit)
+    //    //{
+    //    //    Logs.WriteWarning(hit.transform.parent.name);
+
+    //    //}
+    //}
 
 
     public void PointerClick(object sender, PointerEventArgs e)

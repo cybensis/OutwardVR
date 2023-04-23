@@ -64,7 +64,7 @@ namespace OutwardVR
                     // CharacterUI is disabled during prologue so re-enable it here
                     //__instance.TargetCharacter.CharacterUI.gameObject.active = true;
                     // Disable the loading cam once the player is loaded in
-                    UI.loadingCam.gameObject.active = false;
+                    UI.loadingCamHolder.gameObject.active = false;
                     // disable the head
                     __instance.transform.parent.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
                 }
@@ -148,7 +148,7 @@ namespace OutwardVR
 
         private static readonly Dictionary<UID, float> LastTurnTimes = new Dictionary<UID, float>();
 
-        private static GameObject playerHead;
+        public static GameObject playerHead;
 
 
         [HarmonyPatch(typeof(CharacterJointManager), "Start")]
@@ -247,6 +247,7 @@ namespace OutwardVR
                     Vector2.Distance(___m_inputMoveVector, ___m_modifMoveInput) * moveModif * Time.deltaTime);
 
                 // ========= More custom =========
+                // This gets the difference between the player body and the camera
                 Vector3 camDistanceFromBody = __instance.transform.InverseTransformPoint(Camera.main.transform.position);
                 // When sneaking, the player models head moves to the right, so I move the camera to the right to fix this which creates an offset
                 // of 0.1 for the X axis, so use this to negate that
@@ -255,11 +256,13 @@ namespace OutwardVR
                 // Camera is positioned slightly forward from the bodies center, so use this to offset that
                 camDistanceFromBody.z -= 0.2f;
 
+                // If the camera is beyond -+0.1 distance from the body, then move it in that direction
                 if (camDistanceFromBody.x >= 0.1f || camDistanceFromBody.x <= -0.1f)
                 {
                     ___m_inputMoveVector.x += camDistanceFromBody.x * 2f;
                     Vector3 right = __instance.transform.right;
                     right.y = 0f;
+                    // Since the cam holder is a child of the player body, we need to offset the movement with this
                     Camera.main.transform.parent.position += (right * (camDistanceFromBody.x * -0.1f));
                 }
                 if (camDistanceFromBody.z > 0.1f || camDistanceFromBody.z <= -0.1f)
@@ -272,39 +275,39 @@ namespace OutwardVR
 
                 // This if/else statement locks the characters Y axis to the perfect position, then also when the player crouches or uncrouches, it changes the position
                 // a little bit since the crouching head is more to the right and forward
+                //Vector3 camPosition = Camera.main.transform.parent.localPosition;
+                //if (playerHead != null)
+                //    camPosition = playerHead.transform.position;
+
+                //Camera.main.transform.parent.localPosition = (Camera.main.transform.localPosition * -1) + (camPosition - Camera.main.transform.parent.position);
+
+
                 Vector3 camPosition = Camera.main.transform.parent.localPosition;
-                if (playerHead != null)
-                    camPosition = playerHead.transform.position;
-                camPosition.y += 7f;
-
-                Camera.main.transform.parent.localPosition = Camera.main.transform.localPosition * -1;
-                Camera.main.transform.parent.position = camPosition;
-
-                //camPosition.y =- Camera.main.transform.localPosition.y;
-                //if (__instance.Character.Sneaking)
-                //{
-                //    camPosition.y += 0.225f;
-                //    // Don't want the X axis to be locked in so only set the X axis crouching offset the one time
-                //    if (startedSneaking == false)
-                //    {
-                //        startedSneaking = true;
-                //        // Negative in this instance moves it forward and right respectively, not backwards and left
-                //        camPosition += __instance.transform.right * -0.25f;
-                //        camPosition += __instance.transform.forward * -0.45f;
-                //    }
-                //}
-                //else
-                //{
-                //    camPosition.y += 0.65f;
-                //    // Return the players X axis position back to normal after returning from crouching
-                //    if (startedSneaking)
-                //    {
-                //        startedSneaking = false;
-                //        camPosition += __instance.transform.right * 0.25f;
-                //        camPosition += __instance.transform.forward * 0.45f;
-                //    }
-                //}
-                //Camera.main.transform.parent.position = camPosition;
+                camPosition.y = Camera.main.transform.localPosition.y * -1f;
+                if (__instance.Character.Sneaking)
+                {
+                    camPosition.y += 0.225f;
+                    // Don't want the X axis to be locked in so only set the X axis crouching offset the one time
+                    if (startedSneaking == false)
+                    {
+                        startedSneaking = true;
+                        // Negative in this instance moves it forward and right respectively, not backwards and left
+                        camPosition += __instance.transform.right * -0.25f;
+                        camPosition += __instance.transform.forward * -0.45f;
+                    }
+                }
+                else
+                {
+                    camPosition.y += 0.65f;
+                    // Return the players X axis position back to normal after returning from crouching
+                    if (startedSneaking)
+                    {
+                        startedSneaking = false;
+                        camPosition += __instance.transform.right * 0.25f;
+                        camPosition += __instance.transform.forward * 0.45f;
+                    }
+                }
+                Camera.main.transform.parent.localPosition = camPosition;
                 // This allows the player to move side to side only if a menu isn't open and they're not in dialogue
                 if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress)
                 {
@@ -319,6 +322,16 @@ namespace OutwardVR
                 // whereas inputMoveVector cant
                 if (___m_inputMoveVector.y < -1)
                     ___m_inputMoveVector.y = SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y * 6f;
+
+                if (___m_inputMoveVector.y > 10f)
+                    ___m_inputMoveVector.y = 10f;
+                if (___m_inputMoveVector.y < -10f)
+                    ___m_inputMoveVector.y = -10f;
+
+                if (___m_inputMoveVector.x > 10f)
+                    ___m_inputMoveVector.x = 10f;
+                if (___m_inputMoveVector.x < -10f)
+                    ___m_inputMoveVector.x = -10f;
                 var transformMove = (___m_horiControl.forward * ___m_inputMoveVector.y) + (___m_horiControl.right * ___m_inputMoveVector.x);
 
                 if (m_charControl.enabled)

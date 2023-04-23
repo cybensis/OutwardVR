@@ -37,10 +37,11 @@
 //            //Logs.WriteWarning("T");
 //            m_Data.Reset();
 //            m_Data.position = new Vector2(m_Camera.pixelWidth / 2, m_Camera.pixelHeight / 2);
-            
+
 //            eventSystem.RaycastAll(m_Data, m_RaycastResultCache);
 //            m_Data.pointerCurrentRaycast = FindFirstRaycast(m_RaycastResultCache);
-//            if (m_Data.pointerCurrentRaycast.gameObject != null) { 
+//            if (m_Data.pointerCurrentRaycast.gameObject != null)
+//            {
 //                m_CurrentObject = m_Data.pointerCurrentRaycast.gameObject;
 //                Logs.WriteWarning(m_CurrentObject.gameObject.name);
 //                m_RaycastResultCache.Clear();

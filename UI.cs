@@ -6,6 +6,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using static AQUAS_Parameters;
+using ParadoxNotion.Services;
 
 
 namespace OutwardVR
@@ -13,41 +14,41 @@ namespace OutwardVR
     [HarmonyPatch]
     internal class UI
     {
-        private const string ASSETBUNDLE_PATH = @"BepInEx\plugins\InwardVR\shaderbundle";
-        private static Material AlwaysOnTopMaterial;
-
-        private static Canvas uiWorldCanvas;
-        private static RawImage uiRawImage;
-        private static readonly RenderTexture uiRenderTexture = new RenderTexture(1920, 1080, 0);
         private static GameObject statusBars;
         private static GameObject quickSlots;
         private static GameObject tempCamHolder = new GameObject();
-        public static GameObject loadingCam;
+        private static GameObject newCharacterCamHolder = new GameObject();
+        public static GameObject loadingCamHolder;
         public static bool gameHasBeenLoadedOnce = false;
+
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CharacterCreationPanel), "PutBackCamera")]
+        public static void ReturnCameraFromCharacterCreation(CharacterCreationPanel __instance) {
+            Camera.main.transform.parent = tempCamHolder.transform;
+            PositionMenuManager(__instance.transform.root.gameObject);
+        }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterCreationPanel), "Show")]
         public static void PositionCharacterCreationPanel(CharacterCreationPanel __instance)
         {
-            //__instance.CharacterUI;
+            if (newCharacterCamHolder == null)
+                newCharacterCamHolder = new GameObject();
+            Camera.main.transform.parent = newCharacterCamHolder.transform;
 
-            Logs.WriteWarning("CreationPanel Show");
-            if (tempCamHolder == null)
-                tempCamHolder = new GameObject();
-            Camera.main.transform.parent = tempCamHolder.transform;
-            if (gameHasBeenLoadedOnce)
-                tempCamHolder.transform.position = new Vector3(-5000.329f, -4998.899f, -4997.397f);
-            else
-                tempCamHolder.transform.position = new Vector3(-5000.329f, -4998.599f, -4997.397f);
-            tempCamHolder.transform.rotation = new Quaternion(-0.0201f, 0.8114f, 0.1211f, -0.5715f);
+            newCharacterCamHolder.transform.position = new Vector3(-4998.8f, -4999.5f, -4997.397f);
+            newCharacterCamHolder.transform.rotation = Quaternion.identity;
+            newCharacterCamHolder.transform.Rotate(0, 200, 0);
             __instance.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
 
             if (gameHasBeenLoadedOnce)
                 __instance.transform.root.position = new Vector3(-5000.929f, -4998.499f, -5000.4f);
             else
                 __instance.transform.root.position = new Vector3(-4997.025f, -5001.101f, -5003.604f);
-            __instance.transform.root.rotation = new Quaternion(0, 0.9397f, 0, -0.342f);
 
+            __instance.transform.root.rotation = new Quaternion(0, 0.9397f, 0, -0.342f);
             Transform GeneralMenus = __instance.CharacterUI.transform.root.GetChild(2); // Maybe change this to loop over all children, its place might change
             if (GeneralMenus.name == "GeneralMenus")
             {
@@ -80,14 +81,62 @@ namespace OutwardVR
         [HarmonyPatch(typeof(CharacterVisuals), "EquipVisuals")]
         public static void DisableHelmet(CharacterVisuals __instance)
         {
-            if (__instance.ActiveVisualsHelmOrHead != null)
-                __instance.ActiveVisualsHelmOrHead.Renderer.enabled = false;
-            __instance.DefaultHairVisuals.gameObject.active = false;
+            try
+            {
+                if (__instance.ActiveVisualsHelmOrHead != null && __instance.ActiveVisualsHelmOrHead.Renderer != null)
+                    __instance.ActiveVisualsHelmOrHead.Renderer.enabled = false;
+                if (__instance.DefaultHairVisuals != null && __instance.DefaultHairVisuals.gameObject != null)
+                    __instance.DefaultHairVisuals.gameObject.active = false;
+            }
+            catch {
+                return;
+            }
         }
 
 
         //======== UI FIXES ======== //
 
+
+        private static void PositionMenuManager(GameObject menuManager) {
+            tempCamHolder.transform.rotation = Quaternion.identity;
+            menuManager.transform.rotation = Quaternion.identity;
+            switch (chosenTitleScreen)
+            {
+                case CAVE_LOADING_SCREEN:
+                    tempCamHolder.transform.position = new Vector3(-2.7527f, -2.7422f, -1.4861f);
+                    tempCamHolder.transform.rotation = new Quaternion(0f, 0.1736f, 0f, -0.9848f);
+                    menuManager.transform.position = new Vector3(-7.4117f, 0f, 5.7f);
+                    menuManager.transform.rotation = new Quaternion(0f, 0.1736f, 0f, -0.9848f);
+                    break;
+                case TABLE_LOADING_SCREEN:
+                    tempCamHolder.transform.position = new Vector3(-3.8527f, -2.2422f, -1.2861f);
+                    menuManager.transform.position = new Vector3(-6.4117f, 0.5f, 6.7f);
+                    menuManager.transform.rotation = new Quaternion(0, -0.0872f, 0, 0.9962f);
+
+                    break;
+                case VOLCANO_LOADING_SCREEN:
+                    tempCamHolder.transform.position = new Vector3(-4.2527f, -1.8422f, -2.3861f);
+                    menuManager.transform.position = new Vector3(-4.9117f, 0f, 4.8f);
+                    break;
+                case CLIFFSIDE_LOADING_SCREEN:
+                    tempCamHolder.transform.position = new Vector3(-3.1527f, -2.2422f, -2.2861f);
+                    menuManager.transform.position = new Vector3(-0.9527f, 0.2578f, 6.5139f);
+                    menuManager.transform.rotation = new Quaternion(0, 0.2164f, 0, 0.9763f);
+                    break;
+                case HUNTING_LOADING_SCREEN:
+                    tempCamHolder.transform.position = new Vector3(-2.4527f, -2.0422f, -0.5861f);
+                    tempCamHolder.transform.rotation = new Quaternion(0, 0.1736f, 0, -0.9848f);
+                    menuManager.transform.position = new Vector3(-8.8117f, 0.1f, 6.7f);
+                    menuManager.transform.rotation = new Quaternion(0f, 0.2588f, 0f, -0.9659f);
+                    break;
+                case TOWNSQUARE_LOADING_SCREEN:
+                    tempCamHolder.transform.position = new Vector3(-2.4527f, -2.6422f, -2.3861f);
+                    menuManager.transform.localScale = new Vector3(0.003f, 0.003f, 0.003f);
+                    menuManager.transform.position = new Vector3(-5.3117f, 0f, 2.1f);
+                    menuManager.transform.Rotate(0, 341, 2);
+                    break;
+            }
+        }
 
 
         [HarmonyPostfix]
@@ -98,37 +147,22 @@ namespace OutwardVR
             Controllers.ResetControllerVars();
             Controllers.Init();
 
-            //Get all the game objects from the current scene so we can find the "Main Camera" since it doesn't appear in Camera.allCameras
-            GameObject[] rootObjects = SceneManager.GetActiveScene().GetRootGameObjects();
             Camera mainCam = Camera.main;
-            //for (int i = 0; i < rootObjects.Length; i++)
-            //{
-            //    if (rootObjects[i].name == "Main Camera(Clone)")
-            //        rootObjects[i].gameObject.SetActive(false);
-            //    else if (rootObjects[i].name == "Main Camera")
-            //    {
-            //        rootObjects[i].gameObject.SetActive(true);
-            //        mainCam = rootObjects[i].GetComponent<Camera>();
-
-            //    }
-                
-            //}
 
             if (tempCamHolder == null)
                 tempCamHolder = new GameObject();
-            //tempCamHolder.transform.position = new Vector3(-3.4527f, -1.3422f, 0.1139f);
-            //tempCamHolder.transform.rotation = new Quaternion(-0.1504f, 0.3658f, -0.0555f, 0.9168f);
             UnityEngine.Object.DontDestroyOnLoad(tempCamHolder);
 
 
             Canvas menuCanvas = __instance.CharacterUI.transform.parent.GetComponent<Canvas>();
             menuCanvas.renderMode = RenderMode.WorldSpace;
-            //if (gameHasBeenLoadedOnce)
-            //    menuCanvas.transform.root.position = new Vector3(-4.5687f, -0.1414f, 5.1412f);
-            //else
-            //    menuCanvas.transform.root.position = new Vector3(-9.7117f, -3.2f, 4.8f);
+            
+            // These 3 lines ensure that no matter what size the users browser is, the worldspace UI stays the same resolution, that way its position never changes
+            // when the user changes their resolution
+            menuCanvas.GetComponent<RectTransform>().localScale = new Vector3(1,1,1);
+            menuCanvas.GetComponent<RectTransform>().sizeDelta = new Vector2(1920, 1080);
+            menuCanvas.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(0, 0, 0);
 
-            //menuCanvas.transform.root.rotation = Quaternion.identity;
             menuCanvas.transform.root.localScale = new Vector3(0.005f, 0.005f, 0.005f);
 
             mainCam.transform.parent = tempCamHolder.transform;
@@ -145,74 +179,24 @@ namespace OutwardVR
                 GeneralMenus.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
                 //GeneralMenus.transform.localPosition = Vector3.zero;
                 GeneralMenus.transform.position = menuCanvas.transform.position;
-                GeneralMenus.transform.rotation = Quaternion.identity;
+                GeneralMenus.transform.localRotation = Quaternion.identity;
                 GeneralMenus.transform.localScale = new Vector3(1, 1, 1);
             }
 
-
-
-            if (loadingCam == null)
+            if (loadingCamHolder == null)
             {
-                loadingCam = new GameObject();
-                loadingCam.transform.parent = tempCamHolder.transform;
-                loadingCam.AddComponent<Camera>();
-                loadingCam.AddComponent<SteamVR_TrackedObject>();
+                loadingCamHolder = new GameObject();
+                loadingCamHolder.transform.parent = tempCamHolder.transform;
+                loadingCamHolder.AddComponent<Camera>();
+                loadingCamHolder.AddComponent<SteamVR_TrackedObject>();
             }
-            // Keep loadingCam disabled until loading is triggered
-            loadingCam.active = false;
+            // Keep loadingCamHolder disabled until loading is triggered
+            loadingCamHolder.active = false;
 
             //__instance.CharacterUI.GetType().GetField("m_currentSelectedGameObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(__instance.CharacterUI, __instance.FirstSelectable);
             GameObject menuManager = __instance.transform.root.gameObject;
-            tempCamHolder.transform.rotation = Quaternion.identity;
-            menuManager.transform.rotation = Quaternion.identity;
 
-            switch (chosenTitleScreen)
-            {
-                case CAVE_LOADING_SCREEN:
-                    tempCamHolder.transform.position = new Vector3(-2.7527f, -2.7422f, -1.4861f);
-                    tempCamHolder.transform.rotation = new Quaternion(0f, 0.1736f, 0f, -0.9848f);
-                    menuManager.transform.position = new Vector3(-14.4117f, -3.2f, 3.7f);
-                    menuManager.transform.rotation = new Quaternion(0f, 0.1736f, 0f, -0.9848f);
-                    break;
-                case TABLE_LOADING_SCREEN:
-                    tempCamHolder.transform.position = new Vector3(-3.8527f, -2.2422f, -1.2861f);
-                    menuManager.transform.position = new Vector3(-12.4117f, -2.3f, 4.8f);
-                    menuManager.transform.rotation = new Quaternion(0, -0.0872f, 0, 0.9962f);
-
-                    break;
-                case VOLCANO_LOADING_SCREEN:
-                    tempCamHolder.transform.position = new Vector3(-4.2527f, -1.8422f, -2.3861f);
-                    menuManager.transform.position = new Vector3(-12.5117f, -3.2f, 4.8f);
-                    break;
-                case CLIFFSIDE_LOADING_SCREEN:
-                    tempCamHolder.transform.position = new Vector3(-3.1527f, -2.2422f, -2.2861f);
-                    menuManager.transform.position = new Vector3(-7.6527f, -3.2422f, 8.6139f);
-                    menuManager.transform.rotation = new Quaternion(0, 0.2164f, 0, 0.9763f);
-                    break;
-                case HUNTING_LOADING_SCREEN:
-                    tempCamHolder.transform.position = new Vector3(-2.4527f, -2.0422f, -0.5861f);
-                    tempCamHolder.transform.rotation = new Quaternion(0, 0.1736f, 0, -0.9848f);
-                    menuManager.transform.position = new Vector3(-14.8117f, -2.5f, 2.8f);
-                    menuManager.transform.rotation = new Quaternion(0f, 0.2588f, 0f, -0.9659f);
-                    break;
-                case TOWNSQUARE_LOADING_SCREEN:
-                    tempCamHolder.transform.position = new Vector3(-2.4527f, -2.6422f, -2.3861f);
-                    menuManager.transform.localScale = new Vector3(0.003f, 0.003f, 0.003f);
-                    menuManager.transform.position = new Vector3(-6.8117f, -3.8f, 3.1f);
-                    menuManager.transform.rotation = new Quaternion(0.003f, 0.0871f, 0.0348f, 0.9956f);
-                    break;
-            }
-
-            if (gameHasBeenLoadedOnce)
-                menuManager.transform.position += (menuManager.transform.right * 7.5f) + (menuManager.transform.up * 3f);
-
-            // 0 = In cave, camHolder pos = -2.7527f, -2.7422f, -1.4861f  rot = 0f, 0.1736f, 0f,-0.9848f menuPos = -14.4117,f -3.2f, 3.7f rot = 0f, 0.1736f, 0f,-0.9848f
-            // A = At a table, camHolder pos = -3.8527f, -2.2422f, -1.2861f and rot = 0,0,0,1 menu pos = -12.9117f, -2.3f, 4.8f and rot = 0,0,0,1
-            // B = By volcano, camHolder pos = -4.2527f, -1.8422f, -2.3861f and rot = 0,0,0,1 menu pos = -12.5117f, -3.2f, 4.8f and rot = 0,0,0,1
-            // C = Outside by purple light, camHolder pos = -3.1527f, -2.2422f, -2.2861f  Rot = 0,0,0,1 and menu pos = -7.6527f, -3.2422f, 8.6139f and rot = 0,0.2164f,0,0.9763f
-            // D = Hunting in grass and ruins  camHolder pos = -2.4527f, -2.0422f, -0.5861f rot = 0, 0.1736f, 0, -0.9848 menuPos = -17.0117f, -2.5f, 2.8f and rot = 0f, 0.2588f, 0f, -0.9659f
-            // E = Townsquare, camHolder pos = -2.4527f, -2.6422f, -2.3861f, rot 0,0,0,1 menu pos = -6.8117f, -3.8f, 3.1f size = 0.003f, 0.003f, 0.003f rot =  0.003f, 0.0871f, 0.0348f, 0.9956f
-
+            PositionMenuManager(menuManager);
         }
 
         [HarmonyPostfix]
@@ -227,26 +211,25 @@ namespace OutwardVR
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MenuManager), "Update")]
-        private static void CharacterCameraUpdate(MenuManager __instance)
+        private static void PositionHUD(MenuManager __instance)
         {
 
-            // I find these values work nicely for positioning the HUD
-            if (Camera.main == null || Camera.main.transform.root == null)
-                return;
-            Character character = Camera.main.transform.root.GetComponent<Character>();
-            if (character != null)
-            {
+            try { 
+                if (Camera.main == null || Camera.main.transform.root == null || Camera.main.transform.root.GetComponent<Character>() == null)
+                    return;
+                Character character = Camera.main.transform.root.GetComponent<Character>();
+                // By setting the HUD's parent to the head object it rotates with the body and by setting the local position, it is positioned perfectly
+                if (__instance.transform.parent == null) {
+                    __instance.transform.parent = Camera.main.transform.parent.parent.parent.transform;
+                    __instance.transform.localRotation = Quaternion.identity;
+                }
+                __instance.transform.localPosition = new Vector3(-0.025f, 1.6f, 0.6f);
                 if (character.Sneaking)
-                    __instance.transform.position = character.transform.position + (character.transform.right * 0.05f) + (character.transform.forward * 0.7f) + (character.transform.up * 1.2f);
-                else
-                    __instance.transform.position = character.transform.position + (character.transform.forward * 0.6f) + (character.transform.up * 1.675f);
-                if (character.Sprinting)
-                    __instance.transform.position += (character.transform.forward * 0.2f);
-                else if (character.AnimMove.x < 0.1f)
-                    __instance.transform.position += (character.transform.forward * 0.1f);
-                __instance.transform.rotation = character.transform.rotation;
+                    __instance.transform.localPosition += new Vector3(0, -0.4f, 0);
             }
-
+            catch {
+                return;
+            }
 
         }
 
@@ -255,17 +238,38 @@ namespace OutwardVR
         [HarmonyPatch(typeof(MenuManager), "BackToMainMenu")]
         public static void PositionCamOnReturnToMenu(MenuManager __instance)
         {
+            Logs.WriteWarning(__instance.transform.parent.name);
+            __instance.transform.parent.DetachChildren();
             Logs.WriteWarning("RETURNING TO MENU");
-            loadingCam.active = true;
+            loadingCamHolder.active = true;
             tempCamHolder.transform.position = new Vector3(-8.4527f, -3.4422f, -0.7861f);
-            Camera mainCam = loadingCam.GetComponent<Camera>();
-            mainCam.cullingMask = 32;
-            mainCam.clearFlags = CameraClearFlags.SolidColor;
-            mainCam.backgroundColor = Color.black;
-            mainCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
-            mainCam.depth = 10;
-            __instance.transform.position = new Vector3(-4.5687f, -0.1414f, 5.1412f);
+            Camera loadingCam  = loadingCamHolder.GetComponent<Camera>();
+            loadingCam.cullingMask = 32;
+            loadingCam.clearFlags = CameraClearFlags.SolidColor;
+            loadingCam.backgroundColor = Color.black;
+            loadingCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
+            loadingCam.depth = 10;
+            __instance.transform.position = tempCamHolder.transform.position + (tempCamHolder.transform.right * -3f) + (tempCamHolder.transform.forward * 5f) + (tempCamHolder.transform.up * -0.5f);
         }
+
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(PauseMenu), "GoBackMainMenu")]
+        //public static void PositionCamOnReturnToMenu(PauseMenu __instance)
+        //{
+        //    Logs.WriteWarning("RETURNING TO MENU");
+        //    Logs.WriteWarning(__instance.CharacterUI.transform.parent.parent.name);
+        //    __instance.CharacterUI.transform.parent.parent.SetParent(null);
+        //    loadingCamHolder.active = true;
+        //    tempCamHolder.transform.position = new Vector3(-8.4527f, -3.4422f, -0.7861f);
+        //    Camera loadingCam = loadingCamHolder.GetComponent<Camera>();
+        //    loadingCam.cullingMask = 32;
+        //    loadingCam.clearFlags = CameraClearFlags.SolidColor;
+        //    loadingCam.backgroundColor = Color.black;
+        //    loadingCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
+        //    loadingCam.depth = 10;
+        //    __instance.transform.position = tempCamHolder.transform.position + (tempCamHolder.transform.right * -3f) + (tempCamHolder.transform.forward * 5f) + (tempCamHolder.transform.up * -0.5f);
+        //}
+
 
 
         [HarmonyPostfix]
@@ -273,23 +277,25 @@ namespace OutwardVR
         public static void PositionCamOnLoad(MenuManager __instance)
         {
             Logs.WriteWarning("SHOW MASTER LOADING SCREEN");
-            loadingCam.active = true;
+            loadingCamHolder.active = true;
 
             tempCamHolder.transform.position = new Vector3(-3.5f, -1.25f, -0.7861f);
-            Camera mainCam = loadingCam.GetComponent<Camera>();
-            mainCam.cullingMask = 32;
-            mainCam.clearFlags = CameraClearFlags.SolidColor;
-            mainCam.backgroundColor = Color.black;
-            mainCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
-            mainCam.depth = 10;
-            if (gameHasBeenLoadedOnce)
-                __instance.transform.position = new Vector3(-4.5687f, -0.1414f, 5.1412f);
-            else
-                __instance.transform.position = new Vector3(-9.7117f, -3.2f, 4.8f);
+            tempCamHolder.transform.rotation = Quaternion.identity;
+            __instance.transform.localRotation = Quaternion.identity;
+            __instance.transform.position = tempCamHolder.transform.position + (tempCamHolder.transform.right * -0.5f) + (tempCamHolder.transform.up * 1.25f) + (tempCamHolder.transform.forward * 5f) ;
+            Camera loadingCam = loadingCamHolder.GetComponent<Camera>();
+            loadingCam.cullingMask = 32;
+            loadingCam.clearFlags = CameraClearFlags.SolidColor;
+            loadingCam.backgroundColor = Color.black;
+            loadingCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
+            loadingCam.depth = 10;
 
-            Logs.WriteWarning(__instance.IsProloguePanelDisplayed);
-
-
+            Transform GeneralMenus = __instance.transform.root.GetChild(2); // Maybe change this to loop over all children, its place might change
+            if (GeneralMenus.name == "GeneralMenus")
+            {
+                GeneralMenus.rotation = Quaternion.identity;
+                GeneralMenus.localRotation = Quaternion.identity;
+            }
         }
 
 
@@ -301,7 +307,6 @@ namespace OutwardVR
             {
                 __instance.RectTransform.localPosition = new Vector3(281f, -400, 0f);
                 statusBars = __instance.gameObject;
-
             }
 
         }
@@ -311,7 +316,6 @@ namespace OutwardVR
         [HarmonyPatch(typeof(TargetingFlare), "AwakeInit")]
         public static void DisableTargetingFlare(TargetingFlare __instance)
         {
-
             __instance.gameObject.active = false;
         }
 
@@ -320,7 +324,6 @@ namespace OutwardVR
         public static void PositionEnemyHealth(CharacterBarDisplayHolder __instance)
         {
             __instance.RectTransform.localPosition = new Vector3(-650f, -1000, 0f);
-
         }
 
         [HarmonyPrefix]
@@ -379,9 +382,9 @@ namespace OutwardVR
 
 
 
-        // This only needs to be a onetime thing, find someway to change it so its not on update
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(UICompass), "Update")]
+        //This only needs to be a onetime thing, find someway to change it so its not on update
+       [HarmonyPrefix]
+       [HarmonyPatch(typeof(UICompass), "Update")]
         public static void PositionCompass(UICompass __instance)
         {
             Vector3 newPos = __instance.transform.localPosition;
@@ -495,30 +498,6 @@ namespace OutwardVR
             else
                 invItem = null;
         }
-        //[HarmonyPrefix]
-        //[HarmonyPatch(typeof(UnityEngine.UI.Selectable), "Select")]
-        //public static void SetCurrentButtwown(UnityEngine.UI.Selectable __instance)
-        //{
-        //    Logs.WriteWarning("Select");
-        //}
-        //[HarmonyPrefix]
-        //[HarmonyPatch(typeof(SelectOnPointerEnter), "OnPointerEnter")]
-        //public static void SetCurrentButtwwown(UnityEngine.UI.Selectable __instance)
-        //{
-        //    Logs.WriteWarning("OnPointerEnter");
-        //}
-        //[HarmonyPrefix]
-        //[HarmonyPatch(typeof(SoundOnEventTrigger), "OnSelect")]
-        //public static void SetCurrentBwuttwwown(UnityEngine.UI.Selectable __instance)
-        //{
-        //    Logs.WriteWarning("SoundOnEventTrigger OnSelect");
-        //}
-        //[HarmonyPrefix]
-        //[HarmonyPatch(typeof(SoundOnEventTrigger), "OnPointerEnter")]
-        //public static void SetCurrentBwuttwwwown(UnityEngine.UI.Selectable __instance)
-        //{
-        //    Logs.WriteWarning("SoundOnEventTrigger OnPointerEnter");
-        //}
 
 
         [HarmonyPostfix]
@@ -546,16 +525,9 @@ namespace OutwardVR
                     }
                 }
             }
-            //if (__result.name == "UI_ContextMenuButton") {
-            //    Logs.WriteWarning("AAAAAAAAAAA");
-            //    GameObject contextButton = __result.transform.parent.GetChild(2).gameObject;
-            //    __instance.GetType().GetField("m_currentSelectedGameObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(__instance, contextButton);
-            //    __result = contextButton;
-            //}
-
         }
 
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(TitleScreenLoader), "LoadTitleScreen")]
         private static void PositionDifferentMenus(TitleScreenLoader __instance, object[] __args) {
             chosenTitleScreen = __args[0] as string;
@@ -578,50 +550,6 @@ namespace OutwardVR
         public static Dropdown dropdown;
         public static Dropdown.DropdownItem dropdownItem;
         public static ItemDisplayClick invItem;
-
-        ////// Fix for GroupItemDisplays
-
-        //[HarmonyPatch(typeof(ItemGroupDisplay), "AddItemToGroup")]
-        //public class ItemGroupDisplay_AddItemToGroup
-        //{
-        //    [HarmonyPostfix]
-        //    public static void Postfix(ItemGroupDisplay __instance)
-        //    {
-        //        FixUIMaterials(__instance.GetComponentsInChildren<Image>(true),
-        //                       __instance.GetComponentsInChildren<Text>(true));
-        //    }
-        //}
-
-        //private static void FixUIMaterials(Image[] images, Text[] texts)
-        //{
-        //    foreach (var image in images)
-        //    {
-        //        if (image.material.name == "Default UI Material")
-        //        {
-        //            image.material = AlwaysOnTopMaterial;
-        //        }
-        //    }
-        //    foreach (var text in texts)
-        //    {
-        //        if (text.material.name == "Default UI Material")
-        //        {
-        //            text.material = AlwaysOnTopMaterial;
-        //        }
-        //    }
-        //}
-
-
-        ////// Fix MenuManager when character removed
-
-        //[HarmonyPatch(typeof(SplitScreenManager), "RemoveLocalPlayer", new Type[] { typeof(SplitPlayer), typeof(string) })]
-        //public class SplitScreenManager_RemoveLocalPlayer
-        //{
-        //    [HarmonyPostfix]
-        //    public static void Postfix(SplitPlayer _player)
-        //    {
-        //        // todo, check if main player
-        //    }
-        //}
 
         private const string CAVE_LOADING_SCREEN = "0";
         private const string TABLE_LOADING_SCREEN = "A";

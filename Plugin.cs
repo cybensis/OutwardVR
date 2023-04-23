@@ -166,16 +166,12 @@ public class Plugin : BaseUnityPlugin
             {
                 UI.button.Press();
                 UI.button = null;
-                //var reflection = UI.button.GetType().GetMethod("Press", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                //reflection.Invoke(UI.button, new object[] { });
             }
             
             if (UI.characterUIInstance.CurrentSelectedGameObject != null && UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
             {
                 ItemDisplayClick invItem = UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
                 invItem.SingleClick();
-                //var reflection = invItem.GetType().GetMethod("SingleClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                //reflection.Invoke(invItem, new object[] { });
             }
 
         }
