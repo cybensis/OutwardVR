@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using static AQUAS_Parameters;
 using ParadoxNotion.Services;
+using static MapMagic.ObjectPool;
 
 
 namespace OutwardVR
@@ -19,20 +20,28 @@ namespace OutwardVR
         private static GameObject tempCamHolder = new GameObject();
         private static GameObject newCharacterCamHolder = new GameObject();
         public static GameObject loadingCamHolder;
+        private static GameObject menuManager;
         public static bool gameHasBeenLoadedOnce = false;
+        public static bool isLoading = false;
 
 
-
+        public static void PositionMenuAfterLoading() {
+            if (menuManager.transform.parent != null)
+            {
+                tempCamHolder.transform.position = menuManager.transform.root.position + (menuManager.transform.root.right * -0.3f) + (menuManager.transform.root.root.up * 0.3f) + (menuManager.transform.root.forward * -0.6f);
+                menuManager.transform.root.localRotation = Quaternion.identity;
+            }
+        }
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterCreationPanel), "PutBackCamera")]
-        public static void ReturnCameraFromCharacterCreation(CharacterCreationPanel __instance) {
+        private static void ReturnCameraFromCharacterCreation(CharacterCreationPanel __instance) {
             Camera.main.transform.parent = tempCamHolder.transform;
             PositionMenuManager(__instance.transform.root.gameObject);
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterCreationPanel), "Show")]
-        public static void PositionCharacterCreationPanel(CharacterCreationPanel __instance)
+        private static void PositionCharacterCreationPanel(CharacterCreationPanel __instance)
         {
             if (newCharacterCamHolder == null)
                 newCharacterCamHolder = new GameObject();
@@ -63,7 +72,7 @@ namespace OutwardVR
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ProloguePanel), "Show", new[] { typeof(EventContextData.ContextScreen[]), typeof(UnityAction) })]
-        public static void PositionIntroCanvas(ProloguePanel __instance)
+        private static void PositionIntroCanvas(ProloguePanel __instance)
         {
             Logs.WriteWarning("POSITION INTRO CANVAS");
             if (gameHasBeenLoadedOnce)
@@ -75,11 +84,12 @@ namespace OutwardVR
 
             if (__instance.CharacterUI != null)
                 __instance.CharacterUI.gameObject.active = false;
+
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterVisuals), "EquipVisuals")]
-        public static void DisableHelmet(CharacterVisuals __instance)
+        private static void DisableHelmet(CharacterVisuals __instance)
         {
             try
             {
@@ -94,10 +104,10 @@ namespace OutwardVR
         }
 
 
-        //======== UI FIXES ======== //
-
-
         private static void PositionMenuManager(GameObject menuManager) {
+
+            Logs.WriteWarning("Position menu");
+
             tempCamHolder.transform.rotation = Quaternion.identity;
             menuManager.transform.rotation = Quaternion.identity;
             switch (chosenTitleScreen)
@@ -143,6 +153,8 @@ namespace OutwardVR
         [HarmonyPatch(typeof(MainScreen), "FirstUpdate")]
         private static void SetMainMenuPlacement(MainScreen __instance)
         {
+            Logs.WriteWarning("Main menu first update");
+
             // When returning from the game to the main menu, it deletes the controller scheme so we have to reset it here
             Controllers.ResetControllerVars();
             Controllers.Init();
@@ -194,7 +206,7 @@ namespace OutwardVR
             loadingCamHolder.active = false;
 
             //__instance.CharacterUI.GetType().GetField("m_currentSelectedGameObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(__instance.CharacterUI, __instance.FirstSelectable);
-            GameObject menuManager = __instance.transform.root.gameObject;
+            menuManager = __instance.transform.root.gameObject;
 
             PositionMenuManager(menuManager);
         }
@@ -236,72 +248,65 @@ namespace OutwardVR
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MenuManager), "BackToMainMenu")]
-        public static void PositionCamOnReturnToMenu(MenuManager __instance)
+        private static void PositionCamOnReturnToMenu(MenuManager __instance)
         {
             Logs.WriteWarning(__instance.transform.parent.name);
             __instance.transform.parent.DetachChildren();
             Logs.WriteWarning("RETURNING TO MENU");
             loadingCamHolder.active = true;
-            tempCamHolder.transform.position = new Vector3(-8.4527f, -3.4422f, -0.7861f);
+            tempCamHolder.transform.position = new Vector3(-3.5f, -1.25f, -0.7861f);
+            tempCamHolder.transform.rotation = Quaternion.identity;
             Camera loadingCam  = loadingCamHolder.GetComponent<Camera>();
             loadingCam.cullingMask = 32;
             loadingCam.clearFlags = CameraClearFlags.SolidColor;
             loadingCam.backgroundColor = Color.black;
             loadingCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
             loadingCam.depth = 10;
-            __instance.transform.position = tempCamHolder.transform.position + (tempCamHolder.transform.right * -3f) + (tempCamHolder.transform.forward * 5f) + (tempCamHolder.transform.up * -0.5f);
-        }
+            __instance.transform.position = tempCamHolder.transform.position + (tempCamHolder.transform.right * -0.5f) + (tempCamHolder.transform.up * 1.25f) + (tempCamHolder.transform.forward * 5f);
+            __instance.transform.localRotation = Quaternion.identity;
+            __instance.transform.rotation = Quaternion.identity;
 
-        //[HarmonyPostfix]
-        //[HarmonyPatch(typeof(PauseMenu), "GoBackMainMenu")]
-        //public static void PositionCamOnReturnToMenu(PauseMenu __instance)
-        //{
-        //    Logs.WriteWarning("RETURNING TO MENU");
-        //    Logs.WriteWarning(__instance.CharacterUI.transform.parent.parent.name);
-        //    __instance.CharacterUI.transform.parent.parent.SetParent(null);
-        //    loadingCamHolder.active = true;
-        //    tempCamHolder.transform.position = new Vector3(-8.4527f, -3.4422f, -0.7861f);
-        //    Camera loadingCam = loadingCamHolder.GetComponent<Camera>();
-        //    loadingCam.cullingMask = 32;
-        //    loadingCam.clearFlags = CameraClearFlags.SolidColor;
-        //    loadingCam.backgroundColor = Color.black;
-        //    loadingCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
-        //    loadingCam.depth = 10;
-        //    __instance.transform.position = tempCamHolder.transform.position + (tempCamHolder.transform.right * -3f) + (tempCamHolder.transform.forward * 5f) + (tempCamHolder.transform.up * -0.5f);
-        //}
+        }
 
 
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MenuManager), "ShowMasterLoadingScreen", new[] { typeof(string) })]
-        public static void PositionCamOnLoad(MenuManager __instance)
+        private static void PositionCamOnLoad(MenuManager __instance)
         {
             Logs.WriteWarning("SHOW MASTER LOADING SCREEN");
             loadingCamHolder.active = true;
-
-            tempCamHolder.transform.position = new Vector3(-3.5f, -1.25f, -0.7861f);
-            tempCamHolder.transform.rotation = Quaternion.identity;
-            __instance.transform.localRotation = Quaternion.identity;
-            __instance.transform.position = tempCamHolder.transform.position + (tempCamHolder.transform.right * -0.5f) + (tempCamHolder.transform.up * 1.25f) + (tempCamHolder.transform.forward * 5f) ;
-            Camera loadingCam = loadingCamHolder.GetComponent<Camera>();
-            loadingCam.cullingMask = 32;
-            loadingCam.clearFlags = CameraClearFlags.SolidColor;
-            loadingCam.backgroundColor = Color.black;
-            loadingCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
-            loadingCam.depth = 10;
-
-            Transform GeneralMenus = __instance.transform.root.GetChild(2); // Maybe change this to loop over all children, its place might change
-            if (GeneralMenus.name == "GeneralMenus")
+            if (__instance.transform.parent != null)
             {
-                GeneralMenus.rotation = Quaternion.identity;
-                GeneralMenus.localRotation = Quaternion.identity;
+                PositionMenuAfterLoading();
             }
+            else
+            {
+                tempCamHolder.transform.position = new Vector3(-3.5f, -1.25f, -0.7861f);
+                tempCamHolder.transform.rotation = Quaternion.identity;
+                __instance.transform.localRotation = Quaternion.identity;
+                __instance.transform.position = tempCamHolder.transform.position + (tempCamHolder.transform.right * -0.5f) + (tempCamHolder.transform.up * 1.25f) + (tempCamHolder.transform.forward * 5f);
+                Camera loadingCam = loadingCamHolder.GetComponent<Camera>();
+                loadingCam.cullingMask = 32;
+                loadingCam.clearFlags = CameraClearFlags.SolidColor;
+                loadingCam.backgroundColor = Color.black;
+                loadingCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
+                loadingCam.depth = 10;
+                Transform GeneralMenus = __instance.transform.GetChild(2); // Maybe change this to loop over all children, its place might change
+                if (GeneralMenus.name == "GeneralMenus")
+                {
+                    GeneralMenus.rotation = Quaternion.identity;
+                    GeneralMenus.localRotation = Quaternion.identity;
+                }
+            }
+
+            isLoading = true;
         }
 
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterBarListener), "Awake")]
-        public static void PositionCharacterBar(CharacterBarListener __instance)
+        private static void PositionCharacterBar(CharacterBarListener __instance)
         {
             if (__instance.gameObject.name == "MainCharacterBars")
             {
@@ -314,21 +319,21 @@ namespace OutwardVR
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(TargetingFlare), "AwakeInit")]
-        public static void DisableTargetingFlare(TargetingFlare __instance)
+        private static void DisableTargetingFlare(TargetingFlare __instance)
         {
             __instance.gameObject.active = false;
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterBarDisplayHolder), "FreeDisplay")]
-        public static void PositionEnemyHealth(CharacterBarDisplayHolder __instance)
+        private static void PositionEnemyHealth(CharacterBarDisplayHolder __instance)
         {
             __instance.RectTransform.localPosition = new Vector3(-650f, -1000, 0f);
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ControlsInput), "IsLastActionGamepad")]
-        public static bool SetUsingGamepad(ref bool __result)
+        private static bool SetUsingGamepad(ref bool __result)
         {
             __result = true;
             return false;
@@ -336,7 +341,7 @@ namespace OutwardVR
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(QuickSlotPanelSwitcher), "StartInit")]
-        public static void PositionQuickSlots(QuickSlotPanelSwitcher __instance)
+        private static void PositionQuickSlots(QuickSlotPanelSwitcher __instance)
         {
             Vector3 newPos = __instance.transform.localPosition;
             newPos.x = -355f;
@@ -351,7 +356,7 @@ namespace OutwardVR
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterUI), "Update")]
-        public static void DisplayQuickSlots(CharacterUI __instance)
+        private static void DisplayQuickSlots(CharacterUI __instance)
         {
             // Display QuickSlots and hide player status bars only if left or right trigger is being held down
             if (SteamVR_Actions._default.LeftTrigger.GetAxis(SteamVR_Input_Sources.Any) > 0.3f || SteamVR_Actions._default.RightTrigger.GetAxis(SteamVR_Input_Sources.Any) > 0.3f)
@@ -375,7 +380,7 @@ namespace OutwardVR
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterUI), "Awake")]
-        public static void SetUIInstance(CharacterUI __instance)
+        private static void SetUIInstance(CharacterUI __instance)
         {
             characterUIInstance = __instance;
         }
@@ -385,7 +390,7 @@ namespace OutwardVR
         //This only needs to be a onetime thing, find someway to change it so its not on update
        [HarmonyPrefix]
        [HarmonyPatch(typeof(UICompass), "Update")]
-        public static void PositionCompass(UICompass __instance)
+        private static void PositionCompass(UICompass __instance)
         {
             Vector3 newPos = __instance.transform.localPosition;
             newPos.y = -450f;
@@ -394,21 +399,21 @@ namespace OutwardVR
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(StatusEffectPanel), "AwakeInit")]
-        public static void PositionStatusEffectPanel(StatusEffectPanel __instance)
+        private static void PositionStatusEffectPanel(StatusEffectPanel __instance)
         {
             __instance.transform.localPosition = new Vector3(-250f, 100f, 0f);
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(NeedsDisplay), "AwakeInit")]
-        public static void PositionNeeds(NeedsDisplay __instance)
+        private static void PositionNeeds(NeedsDisplay __instance)
         {
             __instance.transform.parent.parent.localPosition = new Vector3(411f, 100f, 0f);
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(NotificationDisplay), "AwakeInit")]
-        public static void PositionNotifications(NotificationDisplay __instance)
+        private static void PositionNotifications(NotificationDisplay __instance)
         {
             Vector3 newPos = __instance.transform.localPosition;
             newPos.x = -293f;
@@ -418,7 +423,7 @@ namespace OutwardVR
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(TemperatureExposureDisplay), "StartInit")]
-        public static void PositionTempDisplay(TemperatureExposureDisplay __instance)
+        private static void PositionTempDisplay(TemperatureExposureDisplay __instance)
         {
             __instance.transform.localPosition = new Vector3(-208f, -490f, 0f);
         }
@@ -426,7 +431,7 @@ namespace OutwardVR
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(QuiverDisplay), "AwakeInit")]
-        public static void PositionQuiverDisplay(QuiverDisplay __instance)
+        private static void PositionQuiverDisplay(QuiverDisplay __instance)
         {
             __instance.transform.localPosition = new Vector3(100f, -525f, 0f);
         }
@@ -435,7 +440,7 @@ namespace OutwardVR
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ItemDisplayDropGround), "Init")]
-        public static void PositionMenus(ItemDisplayDropGround __instance)
+        private static void PositionMenus(ItemDisplayDropGround __instance)
         {
             __instance.transform.parent.localPosition = new Vector3(-150f, -350f, 0f);
             __instance.transform.parent.localScale = new Vector3(0.8f, 0.8f, 0.8f);
@@ -444,7 +449,7 @@ namespace OutwardVR
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(MapDisplay), "AwakeInit")]
-        public static void PositionGeneralMenus(MapDisplay __instance)
+        private static void PositionGeneralMenus(MapDisplay __instance)
         {
             Transform GeneralMenus = __instance.transform.parent;
             GeneralMenus.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
@@ -453,7 +458,7 @@ namespace OutwardVR
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Tutorialization_UseBandage), "StartInit")]
-        public static void PositionBandage(Tutorialization_UseBandage __instance)
+        private static void PositionBandage(Tutorialization_UseBandage __instance)
         {
             __instance.transform.localPosition = new Vector3(1050f, -160f, 0f);
         }
@@ -476,7 +481,7 @@ namespace OutwardVR
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(UnityEngine.UI.Selectable), "OnSelect")]
-        public static void SetCurrentButton(UnityEngine.UI.Selectable __instance)
+        private static void SetCurrentButton(UnityEngine.UI.Selectable __instance)
         {
             if (__instance.gameObject.GetComponent<UnityEngine.UI.Button>() != null) 
                 button = __instance.gameObject.GetComponent<UnityEngine.UI.Button>();
@@ -502,7 +507,7 @@ namespace OutwardVR
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterUI), "get_EventSystemCurrentSelectedGo")]
-        public static void FixContextMenu(CharacterUI __instance, ref GameObject __result)
+        private static void FixContextMenu(CharacterUI __instance, ref GameObject __result)
         {
             // Everytime the context menu (Menu opened when pressing X on an inv item) is opened, it automatically focuses the gamepade controls on a button that is hidden and prevents navigating the menu
             // and this is intended to fix that
@@ -527,10 +532,16 @@ namespace OutwardVR
             }
         }
 
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(TitleScreenLoader), "LoadTitleScreen")]
         private static void PositionDifferentMenus(TitleScreenLoader __instance, object[] __args) {
             chosenTitleScreen = __args[0] as string;
+            Logs.WriteWarning("LOADING TITLE SCREEN");
+            // When returning from a game to the main menu, the main menu FirstUpdate gets ran before
+            if (gameHasBeenLoadedOnce) { 
+                
+                PositionMenuManager(menuManager);
+            }
         }
 
 
@@ -538,7 +549,7 @@ namespace OutwardVR
         [HarmonyPatch(typeof(PointerEventData), "get_pressEventCamera")]
         // Pretty sure this is used for activating the inventory context menu because we need to create a fake pointer event when activating the
         // context menu but can't set the camera manually, so we need to do that here.
-        public static bool SetCamOnPressEvent(PointerEventData __instance, ref Camera __result)
+        private static bool SetCamOnPressEvent(PointerEventData __instance, ref Camera __result)
         {
             __result = Camera.main;
             return false;

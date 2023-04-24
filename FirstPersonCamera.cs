@@ -40,6 +40,7 @@ namespace OutwardVR
         //}
 
         // Override Camera update
+
         [HarmonyPatch(typeof(CharacterCamera), "Update")]
         public class CharacterCamera_Update
         {
@@ -53,6 +54,10 @@ namespace OutwardVR
                     || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue
                     || MenuManager.Instance.IsReturningToMainMenu)
                 {
+                    if (UI.isLoading) { 
+                        UI.PositionMenuAfterLoading();
+                        UI.isLoading = false;
+                    }
                     //if (UI.gameHasBeenLoadedOnce)
                     //    __instance.TargetCharacter.CharacterUI.gameObject.active = false;
                     return false;
@@ -62,7 +67,7 @@ namespace OutwardVR
                     FixCamera(__instance, ___m_camera);
                     UI.gameHasBeenLoadedOnce = true;
                     // CharacterUI is disabled during prologue so re-enable it here
-                    //__instance.TargetCharacter.CharacterUI.gameObject.active = true;
+                    __instance.TargetCharacter.CharacterUI.gameObject.active = true;
                     // Disable the loading cam once the player is loaded in
                     UI.loadingCamHolder.gameObject.active = false;
                     // disable the head
@@ -94,19 +99,18 @@ namespace OutwardVR
 
             // set camera position and cancel out actual camera position
             var camHolder = camera.transform.parent;
-            camHolder.localPosition = camera.transform.localPosition * -1;
-            var pos = camHolder.localPosition;
-            pos.y += 0.7f; // This offset places the camera at the right height
-            camHolder.localPosition = pos + (camHolder.forward * 0.115f) + (camHolder.right * 0.09f);
             // get the root gameobject of the camera (parent of camHolder)
             var camRoot = camera.transform.root;
             // set the parent to the head transform, then reset local position
             camRoot.SetParent(headTrans, false);
             camRoot.ResetLocal();
 
+            camHolder.localPosition = Vector3.zero;
+
             // align rotation with the character rotation
             camRoot.rotation = cameraScript.TargetCharacter.transform.rotation;
-
+            
+            time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             cameraFixed = true;
             //cameraScript.transform.Rotate(351f, 250f, 346f);
 
@@ -121,10 +125,10 @@ namespace OutwardVR
             {
                 cameraScript.TargetCharacter.CharacterUI.transform.parent.localPosition = Vector3.zero; // Set localPosition to zero to position HUD correctly
                 cameraScript.TargetCharacter.CharacterUI.transform.parent.localScale = new Vector3(1f, 1f, 1f); // localScale is like 111.11 for some reason, so set it all to 1
-                UICanvas.transform.root.localScale = new Vector3(0.0006f, 0.0006f, 0.0006f); // The MenuManager is huge in world space as 1,1,1 so reduce it to 0.0006
+                cameraScript.TargetCharacter.CharacterUI.transform.parent.parent.localScale = new Vector3(0.0006f, 0.0006f, 0.0006f); // The MenuManager is huge in world space as 1,1,1 so reduce it to 0.0006
 
             }
-            Transform GeneralMenus = UICanvas.transform.root.GetChild(2); // Maybe change this to loop over all children, its place might change
+            Transform GeneralMenus = cameraScript.TargetCharacter.CharacterUI.transform.parent.parent.GetChild(2); // Maybe change this to loop over all children, its place might change
             if (GeneralMenus.name == "GeneralMenus")
             {
                 GeneralMenus.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
@@ -162,6 +166,8 @@ namespace OutwardVR
         }
 
 
+        private static long time = 0;
+
         [HarmonyPatch(typeof(LocalCharacterControl), "UpdateMovement")]
         public class LocalCharacterControl_UpdateMovement
         {
@@ -171,6 +177,8 @@ namespace OutwardVR
                 Transform ___m_horiControl, ref bool ___m_sprintFacing)
             {
                 Controllers.Update();
+
+
                 var m_char = fi_m_character.GetValue(__instance) as Character;
                 var animator = m_char.Animator;
                 var targetSys = m_char.TargetingSystem;
@@ -183,50 +191,7 @@ namespace OutwardVR
 
                 enemyTargetActive = targetSys.Locked;
 
-                // ~~~~~~~~~~~ custom turn speed override ~~~~~~~~~~~
-
-                // turn around 
-                if (___m_modifMoveInput.y < 0f && !targetSys.Locked)
-                {
-                    //if (!LastTurnTimes.ContainsKey(m_char.UID))
-                    //{
-                    //    LastTurnTimes.Add(m_char.UID, float.MinValue);
-                    //}
-                    //if (Time.time - LastTurnTimes[m_char.UID] > 1f)
-                    //{
-                    //    LastTurnTimes[m_char.UID] = Time.time;
-
-                    //    var rot = m_char.transform.localEulerAngles;
-                    //    rot.y += 180f;
-                    //    m_char.transform.localEulerAngles = rot;
-                    //}
-                    //___m_modifMoveInput.y = 0f;
-                }
-                //turn speed
-                else if (___m_modifMoveInput.x != 0 && !targetSys.Locked)
-                {
-
-                    // If the player is moving ___m_modifMoveInput.y will be greater than 0.25f which makes turning super slow, but for first person
-                    // the turning rate should be the same when moving as it is when you're still. Sprinting for some reason speeds up turning rate so use
-                    // this value to make it slower
-                    if (m_char.Sprinting)
-                        ___m_modifMoveInput.y = 0.5f;
-                    else
-                        ___m_modifMoveInput.y = 0.25f;
-
-                    float yAmount = ___m_modifMoveInput.y;
-                    if (yAmount < 0) yAmount *= -1;
-
-                    // typical Y input will be 0 to 3.2
-                    var yRatio = (float)((decimal)yAmount / (decimal)3.2f);
-                    //float hMod = Mathf.Lerp(0.01f, 0.05f, yRatio);
-                    float hMod = Mathf.Lerp(0.01f, 0.015f, yRatio);
-                    ___m_modifMoveInput.x *= hMod;
-                }
-
-                // ~~~~~~~~~~~~~~~~~~~ end custom ~~~~~~~~~~~~~~~~~~~
-
-                // ========= vanilla =========
+                // ========= Vanilla code =========
                 float moveModif = 4f;
 
                 if (Vector3.Angle(___m_inputMoveVector, ___m_modifMoveInput) > 160f)
@@ -246,9 +211,14 @@ namespace OutwardVR
                     ___m_modifMoveInput,
                     Vector2.Distance(___m_inputMoveVector, ___m_modifMoveInput) * moveModif * Time.deltaTime);
 
-                // ========= More custom =========
+                // ========= Custom code to move the in game body towards the headset when physically moving around =========
                 // This gets the difference between the player body and the camera
                 Vector3 camDistanceFromBody = __instance.transform.InverseTransformPoint(Camera.main.transform.position);
+                // If the users x and y hmd axis is further away than 0.5 something must be wrong, so limit it to -+0.5 and -+2 for Y 
+                camDistanceFromBody.x = Mathf.Clamp(camDistanceFromBody.x, -0.5f, 0.5f);
+                camDistanceFromBody.y = Mathf.Clamp(camDistanceFromBody.y, -2f, 2f);
+                camDistanceFromBody.z = Mathf.Clamp(camDistanceFromBody.z, -0.5f, 0.5f);
+
                 // When sneaking, the player models head moves to the right, so I move the camera to the right to fix this which creates an offset
                 // of 0.1 for the X axis, so use this to negate that
                 if (__instance.Character.Sneaking)
@@ -273,15 +243,15 @@ namespace OutwardVR
                     Camera.main.transform.parent.position += (forward * (camDistanceFromBody.z * -0.1f));
                 }
 
-                // This if/else statement locks the characters Y axis to the perfect position, then also when the player crouches or uncrouches, it changes the position
-                // a little bit since the crouching head is more to the right and forward
                 //Vector3 camPosition = Camera.main.transform.parent.localPosition;
                 //if (playerHead != null)
                 //    camPosition = playerHead.transform.position;
 
                 //Camera.main.transform.parent.localPosition = (Camera.main.transform.localPosition * -1) + (camPosition - Camera.main.transform.parent.position);
 
-
+                // ========= Custom code to lock Y axis =========
+                // This if/else statement locks the characters Y axis to the perfect position, then also when the player crouches or uncrouches, it changes the position
+                // a little bit since the crouching head is more to the right and forward
                 Vector3 camPosition = Camera.main.transform.parent.localPosition;
                 camPosition.y = Camera.main.transform.localPosition.y * -1f;
                 if (__instance.Character.Sneaking)
@@ -308,34 +278,27 @@ namespace OutwardVR
                     }
                 }
                 Camera.main.transform.parent.localPosition = camPosition;
+
+                // ========= Mix of custom and default code to enable sideways and backwards movement =========
                 // This allows the player to move side to side only if a menu isn't open and they're not in dialogue
-                if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress)
-                {
+                if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress) {
                     if (SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x > 0 || SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x < 0)
                         ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
                 }
-
-                // setting y to positive will move character forward, negative moves backward
-                // setting x to postiive will move character right, negative will move left
-
                 // Moving backwards is pretty slow so increase it manually to speed it up. Set the if conditional to the inputMoveVector because the SteamVR input can be active during menus,
                 // whereas inputMoveVector cant
                 if (___m_inputMoveVector.y < -1)
                     ___m_inputMoveVector.y = SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y * 6f;
 
-                if (___m_inputMoveVector.y > 10f)
-                    ___m_inputMoveVector.y = 10f;
-                if (___m_inputMoveVector.y < -10f)
-                    ___m_inputMoveVector.y = -10f;
+                // Keep the movement from exceeding 10
+                ___m_inputMoveVector.y = Mathf.Clamp(___m_inputMoveVector.y, -10, 10);
+                ___m_inputMoveVector.x = Mathf.Clamp(___m_inputMoveVector.x, -10, 10);
 
-                if (___m_inputMoveVector.x > 10f)
-                    ___m_inputMoveVector.x = 10f;
-                if (___m_inputMoveVector.x < -10f)
-                    ___m_inputMoveVector.x = -10f;
                 var transformMove = (___m_horiControl.forward * ___m_inputMoveVector.y) + (___m_horiControl.right * ___m_inputMoveVector.x);
 
                 if (m_charControl.enabled)
                     m_charControl.Move(new Vector3(0f, -3f, 0f) * Time.deltaTime);
+
 
                 Vector3 inverseMove = __instance.transform.InverseTransformDirection(transformMove) * slopeSpeed;
                 inverseMove.x *= 0.8f;
@@ -358,7 +321,7 @@ namespace OutwardVR
                     float b = inverseMove.magnitude * 0.5f + (float)(m_char.NextIsLocomotion ? 0 : 3);
                     windZone.windTurbulence = Mathf.Lerp(windZone.windTurbulence, b, 2f * Time.deltaTime);
                 }
-
+                // ========= Default code, I think for rotating the body =========
                 if (!m_char.Sliding)
                 {
                     Vector2 inputOne;
@@ -384,7 +347,6 @@ namespace OutwardVR
                             inputOne = new Vector2(targetDiff.x, targetDiff.z).normalized;
                         }
                     }
-
                     float angleDiff = Vector2.Angle(inputTwo, inputOne);
                     if (Vector3.Cross(inputTwo, inputOne).z > 0f)
                         angleDiff = 0f - angleDiff;
