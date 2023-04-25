@@ -47,6 +47,11 @@ namespace OutwardVR
             [HarmonyPrefix]
             public static bool Prefix(CharacterCamera __instance, Camera ___m_camera)
             {
+                if (NetworkLevelLoader.Instance.IsOverallLoadingDone && UI.isLoading) {
+                    UI.PositionMenuAfterLoading();
+                    UI.isLoading = false;
+                }
+
                 if (cameraFixed
                     || !__instance.TargetCharacter
                     || !NetworkLevelLoader.Instance.IsOverallLoadingDone
@@ -54,10 +59,6 @@ namespace OutwardVR
                     || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue
                     || MenuManager.Instance.IsReturningToMainMenu)
                 {
-                    if (UI.isLoading) { 
-                        UI.PositionMenuAfterLoading();
-                        UI.isLoading = false;
-                    }
                     //if (UI.gameHasBeenLoadedOnce)
                     //    __instance.TargetCharacter.CharacterUI.gameObject.active = false;
                     return false;
@@ -177,7 +178,6 @@ namespace OutwardVR
                 Transform ___m_horiControl, ref bool ___m_sprintFacing)
             {
                 Controllers.Update();
-
 
                 var m_char = fi_m_character.GetValue(__instance) as Character;
                 var animator = m_char.Animator;

@@ -165,6 +165,12 @@ public class Plugin : BaseUnityPlugin
             if (UI.button != null)
             {
                 UI.button.Press();
+                //if (UI.characterUIInstance.IsDialogueInProgress)
+                //{
+                //    DialoguePanel dialoguePanel = UI.button.transform.parent.parent.parent.GetComponent<DialoguePanel>();
+                //    if (dialoguePanel != null)
+                //        dialoguePanel.m_timeOfLastSelectedChoice = true;
+                //}
                 UI.button = null;
             }
             
@@ -194,9 +200,10 @@ public class Plugin : BaseUnityPlugin
             _data.pointerPress = invItem.gameObject;
             // Figure out how to set this value based on the items positon in the inventory canvas
             _data.position = new Vector2(1019f, 1143f);
+            invItem.RightClick(_data);
 
-            var reflection = invItem.GetType().GetMethod("RightClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            reflection.Invoke(invItem, new object[] { _data });
+            //var reflection = invItem.GetType().GetMethod("RightClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            //reflection.Invoke(invItem, new object[] { _data });
         }
 
     }

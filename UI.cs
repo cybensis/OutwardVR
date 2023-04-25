@@ -28,7 +28,8 @@ namespace OutwardVR
         public static void PositionMenuAfterLoading() {
             if (menuManager.transform.parent != null)
             {
-                tempCamHolder.transform.position = menuManager.transform.root.position + (menuManager.transform.root.right * -0.3f) + (menuManager.transform.root.root.up * 0.3f) + (menuManager.transform.root.forward * -0.6f);
+                Logs.WriteWarning("POSITION MENU AFTER LOADING");
+                tempCamHolder.transform.position = menuManager.transform.root.position + (menuManager.transform.root.right * -0.15f) + (menuManager.transform.root.root.up * 0.3f) + (menuManager.transform.root.forward * -1.5f);
                 menuManager.transform.root.localRotation = Quaternion.identity;
             }
         }
@@ -250,9 +251,8 @@ namespace OutwardVR
         [HarmonyPatch(typeof(MenuManager), "BackToMainMenu")]
         private static void PositionCamOnReturnToMenu(MenuManager __instance)
         {
-            Logs.WriteWarning(__instance.transform.parent.name);
-            __instance.transform.parent.DetachChildren();
             Logs.WriteWarning("RETURNING TO MENU");
+            __instance.transform.parent.DetachChildren();
             loadingCamHolder.active = true;
             tempCamHolder.transform.position = new Vector3(-3.5f, -1.25f, -0.7861f);
             tempCamHolder.transform.rotation = Quaternion.identity;
@@ -397,6 +397,15 @@ namespace OutwardVR
             __instance.transform.localPosition = newPos;
         }
 
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(LowStaminaListener), "AwakeInit")]
+        private static void HideLowStaminaEffect(LowStaminaListener __instance)
+        {
+            __instance.gameObject.active = false;
+        }
+
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(StatusEffectPanel), "AwakeInit")]
         private static void PositionStatusEffectPanel(StatusEffectPanel __instance)
@@ -502,6 +511,36 @@ namespace OutwardVR
                 invItem = __instance.gameObject.GetComponent<ItemDisplayClick>();
             else
                 invItem = null;
+        }
+
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(DialoguePanel), "SkipLine")]
+        private static bool twestw(DialoguePanel __instance)
+        {
+            Logs.WriteWarning(UnityEngine.Time.time - __instance.m_timeOfLastSelectedChoice > 1);
+            if (UnityEngine.Time.time - __instance.m_timeOfLastSelectedChoice > 1)
+                __instance.m_activeDialogue[0].Continue();
+            return false;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(DialoguePanel), "OnSelectDialogueOption")]
+        private static void testw(DialoguePanel __instance, object[] __args)
+        {
+            Logs.WriteWarning(__args[0]);
+        }
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CharacterBarDisplayHolder), "GetClosestToCenter")]
+        private static void testfw(CharacterBarDisplayHolder __instance )
+        {
+            Logs.WriteWarning("CLOSEST TO CENTER");
+        }
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CharacterBarDisplayHolder), "GetBarDisplay")]
+        private static void wwww(CharacterBarDisplayHolder __instance )
+        {
+            Logs.WriteWarning("GET BAR DISPLAY");
         }
 
 
