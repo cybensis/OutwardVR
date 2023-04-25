@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 using static AQUAS_Parameters;
 using ParadoxNotion.Services;
 using static MapMagic.ObjectPool;
+using NodeCanvas.Framework;
 
 
 namespace OutwardVR
@@ -17,12 +18,47 @@ namespace OutwardVR
     {
         private static GameObject statusBars;
         private static GameObject quickSlots;
-        private static GameObject tempCamHolder = new GameObject();
-        private static GameObject newCharacterCamHolder = new GameObject();
+        private static GameObject tempCamHolder = new GameObject("tempCamHolder");
+        private static GameObject enemyHealthHolder;
+        private static GameObject newCharacterCamHolder = new GameObject("newCharacterCamHolder");
         public static GameObject loadingCamHolder;
         private static GameObject menuManager;
         public static bool gameHasBeenLoadedOnce = false;
         public static bool isLoading = false;
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CharacterBarListener), "UpdateDisplay")]
+        private static void HelpInitEnemyHealthBar(CharacterBarListener __instance)
+        {
+            // Since the health bar object no longer spawns in the MenuManager object it needs some
+            // help initialising its values.
+            if (__instance.gameObject.name == "CharacterBar(Clone)" && __instance.m_characterUI == null)
+                    __instance.m_characterUI = characterUIInstance;
+        }
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CharacterBarListener), "UpdateDisplay")]
+        private static void PositionEnemyHealth(CharacterBarListener __instance)
+        {
+            // This check for the name is because the player health bar also uses CharacterBarListener
+            if (__instance.gameObject.name == "CharacterBar(Clone)")
+            {
+                if (__instance.transform.parent != null && __instance.transform.parent.parent.name != "enemyHealthHolder") {
+                    __instance.transform.parent.SetParent(enemyHealthHolder.transform);
+                    __instance.transform.parent.localScale = new Vector3(0.005f, 0.005f, 0.005f);
+                    __instance.transform.parent.localRotation = Quaternion.identity;
+                    __instance.transform.localRotation = Quaternion.identity;
+                }
+                __instance.transform.parent.localPosition = Vector3.zero;
+                __instance.transform.localPosition = Vector3.zero;
+                // Get the enemies position
+                Vector3 barPosition = __instance.TargetCharacter.transform.position;
+                // Get their center height, then multiply it by two and add it to Y so it always appears exactly above their head
+                barPosition.y += __instance.TargetCharacter.CenterHeight * 2;
+                enemyHealthHolder.transform.position = barPosition;
+                enemyHealthHolder.transform.rotation = Camera.main.transform.root.rotation;
+            }
+        }
+
 
 
         public static void PositionMenuAfterLoading() {
@@ -45,7 +81,7 @@ namespace OutwardVR
         private static void PositionCharacterCreationPanel(CharacterCreationPanel __instance)
         {
             if (newCharacterCamHolder == null)
-                newCharacterCamHolder = new GameObject();
+                newCharacterCamHolder = new GameObject("newCharacterCamHolder");
             Camera.main.transform.parent = newCharacterCamHolder.transform;
 
             newCharacterCamHolder.transform.position = new Vector3(-4998.8f, -4999.5f, -4997.397f);
@@ -53,10 +89,8 @@ namespace OutwardVR
             newCharacterCamHolder.transform.Rotate(0, 200, 0);
             __instance.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
 
-            if (gameHasBeenLoadedOnce)
-                __instance.transform.root.position = new Vector3(-5000.929f, -4998.499f, -5000.4f);
-            else
-                __instance.transform.root.position = new Vector3(-4997.025f, -5001.101f, -5003.604f);
+            __instance.transform.root.position = new Vector3(-5000.929f, -4998.499f, -5000.4f);
+
 
             __instance.transform.root.rotation = new Quaternion(0, 0.9397f, 0, -0.342f);
             Transform GeneralMenus = __instance.CharacterUI.transform.root.GetChild(2); // Maybe change this to loop over all children, its place might change
@@ -156,6 +190,14 @@ namespace OutwardVR
         {
             Logs.WriteWarning("Main menu first update");
 
+
+            if (enemyHealthHolder == null)
+            {
+                enemyHealthHolder = new GameObject("enemyHealthHolder");
+                enemyHealthHolder.AddComponent<Canvas>();
+                UnityEngine.Object.DontDestroyOnLoad(enemyHealthHolder);
+            }
+
             // When returning from the game to the main menu, it deletes the controller scheme so we have to reset it here
             Controllers.ResetControllerVars();
             Controllers.Init();
@@ -163,7 +205,7 @@ namespace OutwardVR
             Camera mainCam = Camera.main;
 
             if (tempCamHolder == null)
-                tempCamHolder = new GameObject();
+                tempCamHolder = new GameObject("tempCamHolder");
             UnityEngine.Object.DontDestroyOnLoad(tempCamHolder);
 
 
@@ -198,7 +240,7 @@ namespace OutwardVR
 
             if (loadingCamHolder == null)
             {
-                loadingCamHolder = new GameObject();
+                loadingCamHolder = new GameObject("loadingCam");
                 loadingCamHolder.transform.parent = tempCamHolder.transform;
                 loadingCamHolder.AddComponent<Camera>();
                 loadingCamHolder.AddComponent<SteamVR_TrackedObject>();
@@ -399,7 +441,7 @@ namespace OutwardVR
 
 
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(LowStaminaListener), "AwakeInit")]
+        [HarmonyPatch(typeof(LowStaminaListener), "Awake")]
         private static void HideLowStaminaEffect(LowStaminaListener __instance)
         {
             __instance.gameObject.active = false;
@@ -516,31 +558,14 @@ namespace OutwardVR
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(DialoguePanel), "SkipLine")]
-        private static bool twestw(DialoguePanel __instance)
+        private static bool PreventAccidentalDialogueSkip(DialoguePanel __instance)
         {
-            Logs.WriteWarning(UnityEngine.Time.time - __instance.m_timeOfLastSelectedChoice > 1);
+
+            // When selecting an option from the dialogue panel, it usually automatically skips the following piece of dialogue
+            // so set a time check here to prevent it unless a second has passed already
             if (UnityEngine.Time.time - __instance.m_timeOfLastSelectedChoice > 1)
                 __instance.m_activeDialogue[0].Continue();
             return false;
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(DialoguePanel), "OnSelectDialogueOption")]
-        private static void testw(DialoguePanel __instance, object[] __args)
-        {
-            Logs.WriteWarning(__args[0]);
-        }
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(CharacterBarDisplayHolder), "GetClosestToCenter")]
-        private static void testfw(CharacterBarDisplayHolder __instance )
-        {
-            Logs.WriteWarning("CLOSEST TO CENTER");
-        }
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(CharacterBarDisplayHolder), "GetBarDisplay")]
-        private static void wwww(CharacterBarDisplayHolder __instance )
-        {
-            Logs.WriteWarning("GET BAR DISPLAY");
         }
 
 
