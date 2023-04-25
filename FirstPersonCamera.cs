@@ -281,32 +281,33 @@ namespace OutwardVR
 
                 // ========= Mix of custom and default code to enable sideways and backwards movement =========
                 // This allows the player to move side to side only if a menu isn't open and they're not in dialogue
-                if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress) {
-                    if (SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x > 0 || SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x < 0)
+                if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress) 
                         ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
-                }
+                
                 // Moving backwards is pretty slow so increase it manually to speed it up. Set the if conditional to the inputMoveVector because the SteamVR input can be active during menus,
                 // whereas inputMoveVector cant
                 if (___m_inputMoveVector.y < -1)
-                    ___m_inputMoveVector.y = SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y * 6f;
+                    ___m_inputMoveVector.y = SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y * 5f;
 
                 // Keep the movement from exceeding 10
                 ___m_inputMoveVector.y = Mathf.Clamp(___m_inputMoveVector.y, -10, 10);
                 ___m_inputMoveVector.x = Mathf.Clamp(___m_inputMoveVector.x, -10, 10);
 
                 var transformMove = (___m_horiControl.forward * ___m_inputMoveVector.y) + (___m_horiControl.right * ___m_inputMoveVector.x);
-
                 if (m_charControl.enabled)
                     m_charControl.Move(new Vector3(0f, -3f, 0f) * Time.deltaTime);
 
 
                 Vector3 inverseMove = __instance.transform.InverseTransformDirection(transformMove) * slopeSpeed;
-                inverseMove.x *= 0.8f;
-                if (inverseMove.z < 0f)
-                    inverseMove.z *= 0.6f;
 
                 var movementVector = inverseMove;
-
+                if (inverseMove.x > 0.5 && inverseMove.x < 2) {
+                    inverseMove.x *= 2f;
+                }
+                if (inverseMove.x < -0.5 && inverseMove.x > -2)
+                {
+                    inverseMove.x *= 2f;
+                }
                 if (m_char.AnimatorInitialized)
                 {
                     animator.SetFloat("moveSide", inverseMove.x);

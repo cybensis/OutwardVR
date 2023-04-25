@@ -26,6 +26,17 @@ namespace OutwardVR
         public static bool gameHasBeenLoadedOnce = false;
         public static bool isLoading = false;
 
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UICompass), "Update")]
+        private static void FixCompassDirection(UICompass __instance)
+        {
+            if (Camera.main != null)
+                __instance.TargetTransform = Camera.main.transform;
+        }
+
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(CharacterBarListener), "UpdateDisplay")]
         private static void HelpInitEnemyHealthBar(CharacterBarListener __instance)
