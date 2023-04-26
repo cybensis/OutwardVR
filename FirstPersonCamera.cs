@@ -111,7 +111,6 @@ namespace OutwardVR
             // align rotation with the character rotation
             camRoot.rotation = cameraScript.TargetCharacter.transform.rotation;
             
-            time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             cameraFixed = true;
             //cameraScript.transform.Rotate(351f, 250f, 346f);
 
@@ -159,15 +158,14 @@ namespace OutwardVR
         [HarmonyPatch(typeof(CharacterJointManager), "Start")]
         public class SetHeadJoint {
             private static void Prefix(CharacterJointManager __instance) {
-                if (__instance.name == "head") { 
-                    Logs.WriteWarning("Head found");
-                    playerHead = __instance.gameObject;
+                if (__instance.name == "head" && __instance.transform.root.name != "AISquadManagerStructure") { 
+                    Logs.WriteWarning("Head found " + __instance.transform.root + " " + __instance.transform.parent);
+                    playerHead = __instance.transform.parent.gameObject;
                 }
             }
         }
 
 
-        private static long time = 0;
 
         [HarmonyPatch(typeof(LocalCharacterControl), "UpdateMovement")]
         public class LocalCharacterControl_UpdateMovement

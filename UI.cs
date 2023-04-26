@@ -32,7 +32,7 @@ namespace OutwardVR
         [HarmonyPatch(typeof(UICompass), "Update")]
         private static void FixCompassDirection(UICompass __instance)
         {
-            if (Camera.main != null)
+            if (Camera.main != null && __instance != null)
                 __instance.TargetTransform = Camera.main.transform;
         }
 
@@ -70,8 +70,24 @@ namespace OutwardVR
             }
         }
 
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(CharacterCamera), "LateUpdate")]
+        //private static void TrackCamToPhysicalHead(CharacterCreationPanel __instance)
+        //{
 
+        //    if (!NetworkLevelLoader.Instance.IsOverallLoadingDone)
+        //        return;
 
+        //    if (FirstPersonCamera.playerHead != null)
+        //    {
+        //        Vector3 camPosition = FirstPersonCamera.playerHead.transform.position;
+        //        camPosition = (camPosition - Camera.main.transform.parent.parent.position);
+        //        camPosition.x = Mathf.Round(camPosition.x * 100) / 100;
+        //        camPosition.y = 1;
+        //        camPosition.z = Mathf.Round(camPosition.z * 100) / 100;
+        //        Camera.main.transform.parent.parent.localPosition = camPosition;
+        //    }
+        //}
         public static void PositionMenuAfterLoading() {
             if (menuManager.transform.parent != null)
             {
@@ -236,7 +252,7 @@ namespace OutwardVR
             mainCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
             mainCam.targetTexture = null;
             mainCam.gameObject.AddComponent<SteamVR_TrackedObject>();
-
+            tempCamHolder.transform.Rotate(0, -25, 0);
 
 
             Transform GeneralMenus = menuCanvas.transform.root.GetChild(2); // Maybe change this to loop over all children, its place might change

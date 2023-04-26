@@ -1,22 +1,14 @@
 ﻿using BepInEx;
-using BepInEx.Logging;
 using HarmonyLib;
-using Rewired;
-using System;
-using System.Linq;
-using System.Reflection;
-using UnityEngine;
-using Valve.VR;
-using static MapMagic.ObjectPool;
-using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using UnityEngine.XR.OpenXR;
-using UnityEngine.XR.Management;
+using System.Reflection;
 using Unity.XR.OpenVR;
-using UnityEngine.XR;
-using UnityEngine.UI;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.XR.Management;
+using Valve.VR;
 
 namespace OutwardVR;
 
@@ -96,9 +88,9 @@ public class Plugin : BaseUnityPlugin
 
         // POSES
         // Use when eventually trying to get motion controls going
-        //SteamVR_Actions._default.ClickRightJoystick.AddOnStateDownListener(ww, SteamVR_Input_Sources.Any);
-        //SteamVR_Actions._default.RightHandPose.AddOnUpdateListener(SteamVR_Input_Sources.RightHand, UpdateRightHand);
-        //SteamVR_Actions._default.LeftHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateLeftHand);
+        SteamVR_Actions._default.ClickRightJoystick.AddOnStateDownListener(ww, SteamVR_Input_Sources.Any);
+        SteamVR_Actions._default.RightHandPose.AddOnUpdateListener(SteamVR_Input_Sources.RightHand, UpdateRightHand);
+        SteamVR_Actions._default.LeftHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateLeftHand);
 
 
 
@@ -151,7 +143,8 @@ public class Plugin : BaseUnityPlugin
         {
             // if ui.IsMenuFocused
             // if ui.CurrentSelectedGameObject has UISelectable allow for A input and if it has ItemDisplayClick allow for X
-            if (UI.characterUIInstance.IsOptionPanelDisplayed && UI.dropdown != null) {
+            if (UI.characterUIInstance.IsOptionPanelDisplayed && UI.dropdown != null)
+            {
                 UI.dropdown.Show();
                 UI.dropdown = null;
             }
@@ -165,15 +158,9 @@ public class Plugin : BaseUnityPlugin
             if (UI.button != null)
             {
                 UI.button.Press();
-                //if (UI.characterUIInstance.IsDialogueInProgress)
-                //{
-                //    DialoguePanel dialoguePanel = UI.button.transform.parent.parent.parent.GetComponent<DialoguePanel>();
-                //    if (dialoguePanel != null)
-                //        dialoguePanel.m_timeOfLastSelectedChoice = true;
-                //}
                 UI.button = null;
             }
-            
+
             if (UI.characterUIInstance.CurrentSelectedGameObject != null && UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
             {
                 ItemDisplayClick invItem = UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();

@@ -14,8 +14,24 @@ namespace OutwardVR
 
 
         private void LateUpdate() {
-            transform.localPosition = CameraManager.LeftHand.transform.localPosition - new Vector3(0, 0.6f, 0.75f);
-            transform.localRotation = CameraManager.LeftHand.transform.localRotation;
+            if (this.name == "hand_left")
+            {
+                Vector3 localPos = CameraManager.LeftHand.transform.position - transform.position;
+                float newZ = localPos.z;
+                localPos.z = localPos.y;
+                localPos.y = newZ;
+                transform.position = CameraManager.LeftHand.transform.position;
+                transform.localRotation = CameraManager.LeftHand.transform.localRotation;
+            }
+            else {
+                Vector3 localPos = CameraManager.LeftHand.transform.position - transform.position;
+                float newZ = localPos.z;
+                localPos.z = localPos.y;
+                localPos.y = newZ;
+                transform.position = CameraManager.RightHand.transform.position;
+                transform.localRotation = CameraManager.RightHand.transform.localRotation;
+
+            }
         }
 
     }
