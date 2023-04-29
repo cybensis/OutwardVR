@@ -92,8 +92,9 @@ namespace OutwardVR
             if (menuManager.transform.parent != null)
             {
                 Logs.WriteWarning("POSITION MENU AFTER LOADING");
-                tempCamHolder.transform.position = menuManager.transform.root.position + (menuManager.transform.root.right * -0.15f) + (menuManager.transform.root.root.up * 0.3f) + (menuManager.transform.root.forward * -1.5f);
                 menuManager.transform.root.localRotation = Quaternion.identity;
+                tempCamHolder.transform.rotation = Quaternion.identity;
+                tempCamHolder.transform.position = menuManager.transform.root.position + (menuManager.transform.root.right * -0.15f) + (menuManager.transform.root.root.up * 0.3f) + (menuManager.transform.root.forward * -1.5f);
             }
         }
         [HarmonyPostfix]
@@ -252,7 +253,6 @@ namespace OutwardVR
             mainCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
             mainCam.targetTexture = null;
             mainCam.gameObject.AddComponent<SteamVR_TrackedObject>();
-            tempCamHolder.transform.Rotate(0, -25, 0);
 
 
             Transform GeneralMenus = menuCanvas.transform.root.GetChild(2); // Maybe change this to loop over all children, its place might change
@@ -279,6 +279,7 @@ namespace OutwardVR
             menuManager = __instance.transform.root.gameObject;
 
             PositionMenuManager(menuManager);
+            tempCamHolder.transform.Rotate(0, -25, 0);
         }
 
         [HarmonyPostfix]
@@ -353,6 +354,7 @@ namespace OutwardVR
             {
                 tempCamHolder.transform.position = new Vector3(-3.5f, -1.25f, -0.7861f);
                 tempCamHolder.transform.rotation = Quaternion.identity;
+                tempCamHolder.transform.localRotation = Quaternion.identity;
                 __instance.transform.localRotation = Quaternion.identity;
                 __instance.transform.position = tempCamHolder.transform.position + (tempCamHolder.transform.right * -0.5f) + (tempCamHolder.transform.up * 1.25f) + (tempCamHolder.transform.forward * 5f);
                 Camera loadingCam = loadingCamHolder.GetComponent<Camera>();

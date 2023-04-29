@@ -65,6 +65,21 @@ namespace OutwardVR
                 }
                 try
                 {
+                    CameraManager.Setup();
+
+                    if (leftHand != null && leftHand.GetComponent<ArmIK>() == null)
+                        leftHand.AddComponent<ArmIK>();
+                    if (rightHand != null && rightHand.GetComponent<ArmIK>() == null)
+                        rightHand.AddComponent<ArmIK>();
+
+
+                    BoxCollider weaponCollider = __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<BoxCollider>();
+                    weaponCollider.extents = new Vector3(1, 0.01f, 0.01f);
+                    weaponCollider.size = new Vector3(1.5f, 0.01f, 0.01f);
+                    //Collider length = __instance.TargetCharacter.CurrentWeapon.Reach / 3;
+                    __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<CollisionTest>();
+
+
                     FixCamera(__instance, ___m_camera);
                     UI.gameHasBeenLoadedOnce = true;
                     // CharacterUI is disabled during prologue so re-enable it here
@@ -153,15 +168,24 @@ namespace OutwardVR
         private static readonly Dictionary<UID, float> LastTurnTimes = new Dictionary<UID, float>();
 
         public static GameObject playerHead;
+        public static GameObject leftHand;
+        public static GameObject rightHand;
 
 
         [HarmonyPatch(typeof(CharacterJointManager), "Start")]
-        public class SetHeadJoint {
-            private static void Prefix(CharacterJointManager __instance) {
-                if (__instance.name == "head" && __instance.transform.root.name != "AISquadManagerStructure") { 
+        public class SetHeadJoint
+        {
+            private static void Prefix(CharacterJointManager __instance)
+            {
+                if (__instance.name == "head" && __instance.transform.root.name != "AISquadManagerStructure")
+                {
                     Logs.WriteWarning("Head found " + __instance.transform.root + " " + __instance.transform.parent);
                     playerHead = __instance.transform.parent.gameObject;
                 }
+                if (__instance.name == "hand_left" && __instance.transform.root.name != "AISquadManagerStructure")
+                    leftHand = __instance.transform.gameObject;
+                if (__instance.name == "hand_right" && __instance.transform.root.name != "AISquadManagerStructure")
+                    rightHand = __instance.transform.gameObject;
             }
         }
 
@@ -171,6 +195,8 @@ namespace OutwardVR
         public class LocalCharacterControl_UpdateMovement
         {
             private static bool startedSneaking = false;
+            private static bool outOfBreathStarted = false;
+
             [HarmonyPrefix]
             public static bool Prefix(LocalCharacterControl __instance, ref Vector3 ___m_inputMoveVector, ref Vector3 ___m_modifMoveInput,
                 Transform ___m_horiControl, ref bool ___m_sprintFacing)
@@ -275,6 +301,20 @@ namespace OutwardVR
                         camPosition += __instance.transform.forward * 0.45f;
                     }
                 }
+                float staminaAsPercent = m_char.Stats.CurrentStamina / m_char.Stats.MaxStamina;
+
+                if (staminaAsPercent < 0.35f && !outOfBreathStarted) {
+                    outOfBreathStarted = true;
+                    camPosition.y -= 0.2f;
+                }
+                else if (staminaAsPercent >= 0.35f && outOfBreathStarted)
+                {
+                    outOfBreathStarted = false;
+                    camPosition.y += 0.2f;
+                }
+
+
+
                 Camera.main.transform.parent.localPosition = camPosition;
 
                 // ========= Mix of custom and default code to enable sideways and backwards movement =========
