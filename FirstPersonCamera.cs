@@ -71,13 +71,14 @@ namespace OutwardVR
                         leftHand.AddComponent<ArmIK>();
                     if (rightHand != null && rightHand.GetComponent<ArmIK>() == null)
                         rightHand.AddComponent<ArmIK>();
+                    if (playerHead != null && playerHead.GetComponent<FixHeadRotation>() == null)
+                        playerHead.AddComponent<FixHeadRotation>();
 
-
-                    BoxCollider weaponCollider = __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<BoxCollider>();
-                    weaponCollider.extents = new Vector3(1, 0.01f, 0.01f);
-                    weaponCollider.size = new Vector3(1.5f, 0.01f, 0.01f);
-                    //Collider length = __instance.TargetCharacter.CurrentWeapon.Reach / 3;
-                    __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<CollisionTest>();
+                    //BoxCollider weaponCollider = __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<BoxCollider>();
+                    //weaponCollider.extents = new Vector3(1, 0.01f, 0.01f);
+                    //weaponCollider.size = new Vector3(1.5f, 0.01f, 0.01f);
+                    ////Collider length = __instance.TargetCharacter.CurrentWeapon.Reach / 3;
+                    __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<VRCombat>();
 
 
                     FixCamera(__instance, ___m_camera);
@@ -87,7 +88,7 @@ namespace OutwardVR
                     // Disable the loading cam once the player is loaded in
                     UI.loadingCamHolder.gameObject.active = false;
                     // disable the head
-                    __instance.transform.parent.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
+                    __instance.TargetCharacter.Visuals.Head.GetComponent<SkinnedMeshRenderer>().enabled = false;
                 }
                 catch (Exception e)
                 {
@@ -118,7 +119,13 @@ namespace OutwardVR
             // get the root gameobject of the camera (parent of camHolder)
             var camRoot = camera.transform.root;
             // set the parent to the head transform, then reset local position
-            camRoot.SetParent(headTrans, false);
+
+            if (playerHead) {
+                camRoot.SetParent(playerHead.transform, false);
+
+            }
+            else { 
+            }
             camRoot.ResetLocal();
 
             camHolder.localPosition = Vector3.zero;
@@ -168,6 +175,7 @@ namespace OutwardVR
         private static readonly Dictionary<UID, float> LastTurnTimes = new Dictionary<UID, float>();
 
         public static GameObject playerHead;
+        public static GameObject playerTorso;
         public static GameObject leftHand;
         public static GameObject rightHand;
 
@@ -177,10 +185,10 @@ namespace OutwardVR
         {
             private static void Prefix(CharacterJointManager __instance)
             {
-                if (__instance.name == "head" && __instance.transform.root.name != "AISquadManagerStructure")
-                {
+
+                if (__instance.name == "head" && __instance.transform.root.name != "AISquadManagerStructure") {
                     Logs.WriteWarning("Head found " + __instance.transform.root + " " + __instance.transform.parent);
-                    playerHead = __instance.transform.parent.gameObject;
+                    playerHead = __instance.transform.gameObject;
                 }
                 if (__instance.name == "hand_left" && __instance.transform.root.name != "AISquadManagerStructure")
                     leftHand = __instance.transform.gameObject;
@@ -214,6 +222,28 @@ namespace OutwardVR
                 var slopeSpeed = (float)fi_slopeSpeed.GetValue(__instance);
 
                 enemyTargetActive = targetSys.Locked;
+
+
+                if (___m_modifMoveInput.y >= 0f && ___m_modifMoveInput.x != 0 && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x == 0 && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y == 0 && !targetSys.Locked)
+                {
+
+                    // If the player is moving ___m_modifMoveInput.y will be greater than 0.25f which makes turning super slow, but for first person
+                    // the turning rate should be the same when moving as it is when you're still. Sprinting for some reason speeds up turning rate so use
+                    // this value to make it slower
+                    if (m_char.Sprinting)
+                        ___m_modifMoveInput.y = 0.5f;
+                    else
+                        ___m_modifMoveInput.y = 0.25f;
+
+                    float yAmount = ___m_modifMoveInput.y;
+                    if (yAmount < 0) yAmount *= -1;
+
+                    // typical Y input will be 0 to 3.2
+                    var yRatio = (float)((decimal)yAmount / (decimal)3.2f);
+                    //float hMod = Mathf.Lerp(0.01f, 0.05f, yRatio);
+                    float hMod = Mathf.Lerp(0.01f, 0.025f, yRatio);
+                    ___m_modifMoveInput.x *= hMod;
+                }
 
                 // ========= Vanilla code =========
                 float moveModif = 4f;

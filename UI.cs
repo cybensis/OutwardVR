@@ -9,7 +9,7 @@ using static AQUAS_Parameters;
 using ParadoxNotion.Services;
 using static MapMagic.ObjectPool;
 using NodeCanvas.Framework;
-
+using System.Diagnostics;
 
 namespace OutwardVR
 {
@@ -306,9 +306,10 @@ namespace OutwardVR
                     __instance.transform.parent = Camera.main.transform.parent.parent.parent.transform;
                     __instance.transform.localRotation = Quaternion.identity;
                 }
-                __instance.transform.localPosition = new Vector3(-0.025f, 1.6f, 0.6f);
-                if (character.Sneaking)
-                    __instance.transform.localPosition += new Vector3(0, -0.4f, 0);
+
+                __instance.transform.localPosition = new Vector3(-0.05f, 0.15f, 0.425f);
+                //if (character.Sneaking)
+                //    __instance.transform.localPosition += new Vector3(0, -0.4f, 0);
             }
             catch {
                 return;
@@ -322,7 +323,7 @@ namespace OutwardVR
         private static void PositionCamOnReturnToMenu(MenuManager __instance)
         {
             Logs.WriteWarning("RETURNING TO MENU");
-            __instance.transform.parent.DetachChildren();
+            __instance.transform.SetParent(null);
             loadingCamHolder.active = true;
             tempCamHolder.transform.position = new Vector3(-3.5f, -1.25f, -0.7861f);
             tempCamHolder.transform.rotation = Quaternion.identity;

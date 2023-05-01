@@ -22,32 +22,15 @@ namespace OutwardVR
 
         internal override void UpdateValues(CustomController vrController)
         {
-            //Make it so the joystick movements only register beyond .3
-                vrController.SetAxisValueById(yAxisID, vectorAction.axis.y);
-            //if (vectorAction.axis.y < -0.3f || vectorAction.axis.y > 0.3f)
-            //    vrController.SetAxisValueById(yAxisID, vectorAction.axis.y);
-            //else
-            //    vrController.SetAxisValueById(yAxisID, 0f);
+            vrController.SetAxisValueById(yAxisID, vectorAction.axis.y);
 
-
-            if (xAxisID == Controllers.LeftJoyStickHor) {
+            if (xAxisID == Controllers.LeftJoyStickHor)
                     vrController.SetAxisValueById(xAxisID, vectorAction.axis.x);
-                //if (vectorAction.axis.x < -0.3f || vectorAction.axis.x > 0.3f)
-                //    vrController.SetAxisValueById(xAxisID, vectorAction.axis.x);
-                //else
-                //    vrController.SetAxisValueById(xAxisID, 0f);
-            }
             else if (xAxisID == Controllers.RightJoyStickHor) {
                 if (FirstPersonCamera.enemyTargetActive)
                     vrController.SetAxisValueById(xAxisID, SteamVR_Actions._default.LeftJoystick.axis.x);
                 else
-                {
-                        vrController.SetAxisValueById(xAxisID, vectorAction.axis.x);
-                    //if (vectorAction.axis.x < -0.3f || vectorAction.axis.x > 0.3f)
-                    //    vrController.SetAxisValueById(xAxisID, vectorAction.axis.x);
-                    //else
-                    //    vrController.SetAxisValueById(xAxisID, 0f);
-                }
+                    vrController.SetAxisValueById(xAxisID, vectorAction.axis.x);
             }
 
         }
