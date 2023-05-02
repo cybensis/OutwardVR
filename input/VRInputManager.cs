@@ -42,7 +42,7 @@ public static class CameraManager
         if (!RightHand)
         {
             //RightHand = GameObject.Instantiate(AssetLoader.RightHandBase, Vector3.zero, Quaternion.identity);
-            RightHand = new GameObject();
+            RightHand = new GameObject("RightHand");
             RightHand.AddComponent<SteamVR_Behaviour_Pose>();
             //RightHand.AddComponent<SteamVR_Skeleton_Poser>();
             RightHand.transform.parent = VROrigin.transform;
@@ -56,7 +56,7 @@ public static class CameraManager
         if (!LeftHand)
         {
             //LeftHand = GameObject.Instantiate(AssetLoader.LeftHandBase, Vector3.zero, Quaternion.identity);
-            LeftHand = new GameObject();
+            LeftHand = new GameObject("LeftHand");
             LeftHand.AddComponent<SteamVR_Behaviour_Pose>();
             LeftHand.transform.parent = VROrigin.transform;
         }

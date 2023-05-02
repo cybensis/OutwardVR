@@ -62,6 +62,8 @@ namespace OutwardVR
         private float y = 0;
         private float z = 0;
 
+        private Character character;
+
         // Start is called before the first frame update
         void Awake()
         {
@@ -77,6 +79,7 @@ namespace OutwardVR
             BonesLength = new float[ChainLength];
             StartDirectionSucc = new Vector3[ChainLength + 1];
             StartRotationBone = new Quaternion[ChainLength + 1];
+            character = transform.root.GetComponent<Character>();
             //find root
             Root = transform;
             for (var i = 0; i <= ChainLength; i++)
@@ -173,8 +176,11 @@ namespace OutwardVR
 
         private void ResolveIK()
         {
-            if (Target == null)
-                return;
+            if (Target == null) { 
+                Init();
+                Logs.WriteWarning(name + " target is null");
+            }
+
 
 
             if (BonesLength.Length != ChainLength)
@@ -184,7 +190,7 @@ namespace OutwardVR
             if (this.name == "hand_left")
                 Pole.position = Camera.main.transform.parent.parent.position + (Camera.main.transform.parent.parent.right * -0.75f) + (Camera.main.transform.parent.parent.forward * 1f) + (Camera.main.transform.parent.parent.up * -0.5f);
             else
-                Pole.position = Camera.main.transform.parent.parent.position + (Camera.main.transform.parent.parent.right * 1.25f) + (Camera.main.transform.parent.parent.forward * 1.25f) + (Camera.main.transform.parent.parent.up * -0.5f);
+                Pole.position = Camera.main.transform.parent.parent.position + (Camera.main.transform.parent.parent.right * 1.5f) + (Camera.main.transform.parent.parent.forward * 1.25f) + (Camera.main.transform.parent.parent.up * -0.5f);
 
             if (name == "hand_left")
                 TrackLeftHandFingers();
@@ -196,12 +202,24 @@ namespace OutwardVR
             for (int i = 0; i < Bones.Length; i++)
                 Positions[i] = GetPositionRootSpace(Bones[i]);
 
-            var targetPosition = Target.position;
+            Vector3 targetPosition = Target.position;
             // This offsets the VR hands so they align better with the in game hands
             if (name == "hand_left")
                 targetPosition += (Target.right * 0) + (Target.up * 0.05f) + (Target.forward * -0.15f);
             else
                 targetPosition += (Target.right * 0.05f) + (Target.up * 0.05f) + (Target.forward * -0.15f);
+
+            // Trying to figure out how to stick left hand onto two handed weapons
+            if (name == "hand_left" && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.Type != Weapon.WeaponType.Bow)
+            {
+                Target = CameraManager.RightHand.transform;
+                Transform rightHand = character.CurrentWeapon.CurrentVisual.transform.parent.parent.parent;
+                targetPosition = Target.position + (rightHand.forward * -0.4f) + (rightHand.transform.up * -0.135f) + (rightHand.right * -0.025f);
+            }
+            else if (name == "hand_left" && Target.name == "RightHand") {
+                Target = CameraManager.LeftHand.transform;
+            }
+
             targetPosition = Quaternion.Inverse(Root.rotation) * (targetPosition - Root.position);
 
             var targetRotation = GetRotationRootSpace(Target);
@@ -266,6 +284,13 @@ namespace OutwardVR
                         Bones[i].Rotate(-34, 15, -217);
                     else
                         Bones[i].Rotate(-34, 15, -200);
+
+                    //if (name == "hand_left" && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded)
+                    //{
+                    //    Bones[i].rotation = CameraManager.RightHand.transform.rotation;
+                    //    Bones[i].Rotate(0,0,180f);
+                       
+                    //}
                 }
                 else
                     SetRotationRootSpace(Bones[i], Quaternion.FromToRotation(StartDirectionSucc[i], Positions[i + 1] - Positions[i]) * Quaternion.Inverse(StartRotationBone[i]));

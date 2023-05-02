@@ -41,7 +41,18 @@ namespace OutwardVR
 
         // Override Camera update
 
-        [HarmonyPatch(typeof(CharacterCamera), "Update")]
+
+        [HarmonyPatch(typeof(CharacterCamera), "LateUpdate")]
+        public class CharacterCamera_LateUpdate
+        {
+            [HarmonyPostfix]
+            public static void Postfix(CharacterCamera __instance)
+            {
+                __instance.transform.localPosition = new Vector3(0, 0.2f, 0);
+            }
+        }
+
+            [HarmonyPatch(typeof(CharacterCamera), "Update")]
         public class CharacterCamera_Update
         {
             [HarmonyPrefix]
@@ -307,44 +318,46 @@ namespace OutwardVR
                 // This if/else statement locks the characters Y axis to the perfect position, then also when the player crouches or uncrouches, it changes the position
                 // a little bit since the crouching head is more to the right and forward
                 Vector3 camPosition = Camera.main.transform.parent.localPosition;
+                //camPosition.y -= 0.3f;
                 camPosition.y = Camera.main.transform.localPosition.y * -1f;
-                if (__instance.Character.Sneaking)
-                {
-                    camPosition.y += 0.225f;
-                    // Don't want the X axis to be locked in so only set the X axis crouching offset the one time
-                    if (startedSneaking == false)
-                    {
-                        startedSneaking = true;
-                        // Negative in this instance moves it forward and right respectively, not backwards and left
-                        camPosition += __instance.transform.right * -0.25f;
-                        camPosition += __instance.transform.forward * -0.45f;
-                    }
-                }
-                else
-                {
-                    camPosition.y += 0.65f;
-                    // Return the players X axis position back to normal after returning from crouching
-                    if (startedSneaking)
-                    {
-                        startedSneaking = false;
-                        camPosition += __instance.transform.right * 0.25f;
-                        camPosition += __instance.transform.forward * 0.45f;
-                    }
-                }
-                float staminaAsPercent = m_char.Stats.CurrentStamina / m_char.Stats.MaxStamina;
 
-                if (staminaAsPercent < 0.35f && !outOfBreathStarted) {
-                    outOfBreathStarted = true;
-                    camPosition.y -= 0.2f;
-                }
-                else if (staminaAsPercent >= 0.35f && outOfBreathStarted)
-                {
-                    outOfBreathStarted = false;
-                    camPosition.y += 0.2f;
-                }
+                //if (__instance.Character.Sneaking)
+                //{
+                //    camPosition.y += 0.225f;
+                //    // Don't want the X axis to be locked in so only set the X axis crouching offset the one time
+                //    if (startedSneaking == false)
+                //    {
+                //        startedSneaking = true;
+                //        // Negative in this instance moves it forward and right respectively, not backwards and left
+                //        camPosition += __instance.transform.right * -0.25f;
+                //        camPosition += __instance.transform.forward * -0.45f;
+                //    }
+                //}
+                //else
+                //{
+                //    camPosition.y += 0.65f;
+                //    // Return the players X axis position back to normal after returning from crouching
+                //    if (startedSneaking)
+                //    {
+                //        startedSneaking = false;
+                //        camPosition += __instance.transform.right * 0.25f;
+                //        camPosition += __instance.transform.forward * 0.45f;
+                //    }
+                //}
+                //float staminaAsPercent = m_char.Stats.CurrentStamina / m_char.Stats.MaxStamina;
+
+                //if (staminaAsPercent < 0.35f && !outOfBreathStarted) {
+                //    outOfBreathStarted = true;
+                //    camPosition.y -= 0.2f;
+                //}
+                //else if (staminaAsPercent >= 0.35f && outOfBreathStarted)
+                //{
+                //    outOfBreathStarted = false;
+                //    camPosition.y += 0.2f;
+                //}
 
 
-
+                //Camera.main.transform.parent.parent.transform.localPosition = Vector3.zero;
                 Camera.main.transform.parent.localPosition = camPosition;
 
                 // ========= Mix of custom and default code to enable sideways and backwards movement =========

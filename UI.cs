@@ -376,6 +376,19 @@ namespace OutwardVR
         }
 
 
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(DeveloperToolManager), "Awake")]
+        private static void PositionDebugToolWindow(DeveloperToolManager __instance)
+        {
+            __instance.transform.localPosition = new Vector3(-200f, 0f, 0f);
+            __instance.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+        }
+
+
+
+
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterBarListener), "Awake")]
         private static void PositionCharacterBar(CharacterBarListener __instance)
