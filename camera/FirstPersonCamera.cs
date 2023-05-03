@@ -1,21 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using BepInEx;
 using HarmonyLib;
+using OutwardVR.body;
+using OutwardVR.combat;
 using UnityEngine;
 using Valve.VR;
-using static MapMagic.ObjectPool;
 
-namespace OutwardVR
+namespace OutwardVR.camera
 {
     public class FirstPersonCamera
     {
-        public static bool cameraFixed = true;
+        private static bool cameraFixed = true;
         public static bool enemyTargetActive = false;
         public const float NEAR_CLIP_PLANE_VALUE = 0.1f;
+        private const float HMD_AND_BODY_DIFF_TOLERANCE = 17.5f;
+        private static GameObject playerHead;
+        private static GameObject playerTorso;
+        public static GameObject leftHand;
+        public static GameObject rightHand;
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MainScreen), nameof(MainScreen.StartInit))]
+        private static void OnCameraRigEnabled()
+        {
+            Camera.main.gameObject.AddComponent<SteamVR_TrackedObject>();
+        }
+
+
 
         [HarmonyPatch(typeof(NetworkLevelLoader), "MidLoadLevel")]
         public class NetworkLevelLoader_MidLoadLevel
@@ -27,19 +37,6 @@ namespace OutwardVR
             }
         }
 
-        // Disable mouse/controller look rotation
-
-        //[HarmonyPatch(typeof(CharacterCamera), "LateUpdate")]
-        //public class CharacterCamera_LateUpdate
-        //{
-        //    [HarmonyPrefix]
-        //    public static bool Prefix()
-        //    {
-        //        return false;
-        //    }
-        //}
-
-        // Override Camera update
 
 
         [HarmonyPatch(typeof(CharacterCamera), "LateUpdate")]
@@ -51,16 +48,19 @@ namespace OutwardVR
                 __instance.transform.localPosition = new Vector3(0, 0.2f, 0);
             }
         }
+        
 
-            [HarmonyPatch(typeof(CharacterCamera), "Update")]
+
+        [HarmonyPatch(typeof(CharacterCamera), "Update")]
         public class CharacterCamera_Update
         {
             [HarmonyPrefix]
             public static bool Prefix(CharacterCamera __instance, Camera ___m_camera)
             {
-                if (NetworkLevelLoader.Instance.IsOverallLoadingDone && UI.isLoading) {
-                    UI.PositionMenuAfterLoading();
-                    UI.isLoading = false;
+                if (NetworkLevelLoader.Instance.IsOverallLoadingDone && UI.MenuPatches.isLoading)
+                {
+                    UI.MenuPatches.PositionMenuAfterLoading();
+                    UI.MenuPatches.isLoading = false;
                 }
 
                 if (cameraFixed
@@ -70,8 +70,6 @@ namespace OutwardVR
                     || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue
                     || MenuManager.Instance.IsReturningToMainMenu)
                 {
-                    //if (UI.gameHasBeenLoadedOnce)
-                    //    __instance.TargetCharacter.CharacterUI.gameObject.active = false;
                     return false;
                 }
                 try
@@ -85,19 +83,13 @@ namespace OutwardVR
                     if (playerHead != null && playerHead.GetComponent<FixHeadRotation>() == null)
                         playerHead.AddComponent<FixHeadRotation>();
 
-                    //BoxCollider weaponCollider = __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<BoxCollider>();
-                    //weaponCollider.extents = new Vector3(1, 0.01f, 0.01f);
-                    //weaponCollider.size = new Vector3(1.5f, 0.01f, 0.01f);
-                    ////Collider length = __instance.TargetCharacter.CurrentWeapon.Reach / 3;
                     __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<VRCombat>();
-
-
                     FixCamera(__instance, ___m_camera);
-                    UI.gameHasBeenLoadedOnce = true;
+                    UI.MenuPatches.gameHasBeenLoadedOnce = true;
                     // CharacterUI is disabled during prologue so re-enable it here
                     __instance.TargetCharacter.CharacterUI.gameObject.active = true;
                     // Disable the loading cam once the player is loaded in
-                    UI.loadingCamHolder.gameObject.active = false;
+                    UI.MenuPatches.loadingCamHolder.gameObject.active = false;
                     // disable the head
                     __instance.TargetCharacter.Visuals.Head.GetComponent<SkinnedMeshRenderer>().enabled = false;
                 }
@@ -120,48 +112,27 @@ namespace OutwardVR
             Canvas UICanvas = cameraScript.TargetCharacter.CharacterUI.UIPanel.gameObject.GetComponent<Canvas>();
             Camera.main.gameObject.AddComponent<SteamVR_TrackedObject>();
             cameraScript.TargetCharacter.CharacterUI.transform.parent.localRotation = Quaternion.identity;
-            //cameraScript.TargetCharacter.Animator.avatarRoot
-
             UICanvas.renderMode = RenderMode.WorldSpace;
-            var headTrans = cameraScript.TargetCharacter.Visuals.Head.transform; // Get the character model head transform
-
             // set camera position and cancel out actual camera position
             var camHolder = camera.transform.parent;
             // get the root gameobject of the camera (parent of camHolder)
             var camRoot = camera.transform.root;
             // set the parent to the head transform, then reset local position
-
-            if (playerHead) {
+            if (playerHead)
                 camRoot.SetParent(playerHead.transform, false);
-
-            }
-            else { 
-            }
             camRoot.ResetLocal();
-
             camHolder.localPosition = Vector3.zero;
-
             // align rotation with the character rotation
             camRoot.rotation = cameraScript.TargetCharacter.transform.rotation;
-            
             cameraFixed = true;
-            //cameraScript.transform.Rotate(351f, 250f, 346f);
-
-            // Use this value in tutorial
-            //cameraScript.transform.Rotate(348.42f, 250f, 341.36f);
-
-            // use this value in the actual game
-            //cameraScript.transform.Rotate(0f, 250f, 6f);
-            //cameraScript.transform.Rotate(0f, 250f, 0f);
 
             if (UICanvas)
             {
                 cameraScript.TargetCharacter.CharacterUI.transform.parent.localPosition = Vector3.zero; // Set localPosition to zero to position HUD correctly
                 cameraScript.TargetCharacter.CharacterUI.transform.parent.localScale = new Vector3(1f, 1f, 1f); // localScale is like 111.11 for some reason, so set it all to 1
                 cameraScript.TargetCharacter.CharacterUI.transform.parent.parent.localScale = new Vector3(0.0006f, 0.0006f, 0.0006f); // The MenuManager is huge in world space as 1,1,1 so reduce it to 0.0006
-
             }
-            Transform GeneralMenus = cameraScript.TargetCharacter.CharacterUI.transform.parent.parent.GetChild(2); // Maybe change this to loop over all children, its place might change
+            Transform GeneralMenus = cameraScript.TargetCharacter.CharacterUI.transform.parent.parent.GetChild(2);
             if (GeneralMenus.name == "GeneralMenus")
             {
                 GeneralMenus.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
@@ -174,31 +145,14 @@ namespace OutwardVR
             Debug.Log("[InwardVR] done setting up camera.");
         }
 
-        private static readonly BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
-
-        private static readonly FieldInfo fi_m_character = typeof(CharacterControl).GetField("m_character", flags);
-        private static readonly FieldInfo fi_m_controller = typeof(CharacterControl).GetField("m_characterController", flags);
-        private static readonly FieldInfo fi_m_windZone = typeof(CharacterControl).GetField("m_windZone", flags);
-        private static readonly FieldInfo fi_localMoveVector = typeof(CharacterControl).GetField("m_localMovementVector", flags);
-        private static readonly FieldInfo fi_turnAllow = typeof(CharacterControl).GetField("m_turnAllowedInAction", flags);
-        private static readonly FieldInfo fi_slopeSpeed = typeof(CharacterControl).GetField("m_slopeSlowSpeed", flags);
-
-        private static readonly Dictionary<UID, float> LastTurnTimes = new Dictionary<UID, float>();
-
-        public static GameObject playerHead;
-        public static GameObject playerTorso;
-        public static GameObject leftHand;
-        public static GameObject rightHand;
-
 
         [HarmonyPatch(typeof(CharacterJointManager), "Start")]
         public class SetHeadJoint
         {
             private static void Prefix(CharacterJointManager __instance)
             {
-
-                if (__instance.name == "head" && __instance.transform.root.name != "AISquadManagerStructure") {
-                    Logs.WriteWarning("Head found " + __instance.transform.root + " " + __instance.transform.parent);
+                if (__instance.name == "head" && __instance.transform.root.name != "AISquadManagerStructure")
+                {
                     playerHead = __instance.transform.gameObject;
                 }
                 if (__instance.name == "hand_left" && __instance.transform.root.name != "AISquadManagerStructure")
@@ -213,31 +167,26 @@ namespace OutwardVR
         [HarmonyPatch(typeof(LocalCharacterControl), "UpdateMovement")]
         public class LocalCharacterControl_UpdateMovement
         {
-            private static bool startedSneaking = false;
-            private static bool outOfBreathStarted = false;
-
             [HarmonyPrefix]
             public static bool Prefix(LocalCharacterControl __instance, ref Vector3 ___m_inputMoveVector, ref Vector3 ___m_modifMoveInput,
                 Transform ___m_horiControl, ref bool ___m_sprintFacing)
             {
                 Controllers.Update();
+                Character m_char = __instance.m_character;
+                Animator animator = m_char.Animator;
+                TargetingSystem targetSys = m_char.TargetingSystem;
 
-                var m_char = fi_m_character.GetValue(__instance) as Character;
-                var animator = m_char.Animator;
-                var targetSys = m_char.TargetingSystem;
+                CharacterController m_charControl = __instance.m_characterController;
+                WindZone windZone = __instance.m_windZone;
 
-                var m_charControl = fi_m_controller.GetValue(__instance) as CharacterController;
-                var windZone = fi_m_windZone.GetValue(__instance) as WindZone;
-
-                var turnAllow = (int)fi_turnAllow.GetValue(__instance);
-                var slopeSpeed = (float)fi_slopeSpeed.GetValue(__instance);
+                int turnAllow = __instance.m_turnAllowedInAction;
+                float slopeSpeed = __instance.m_slopeSlowSpeed;
 
                 enemyTargetActive = targetSys.Locked;
 
-
+                // If the player isn't moving around, then make the camera rotate on the spot
                 if (___m_modifMoveInput.y >= 0f && ___m_modifMoveInput.x != 0 && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x == 0 && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y == 0 && !targetSys.Locked)
                 {
-
                     // If the player is moving ___m_modifMoveInput.y will be greater than 0.25f which makes turning super slow, but for first person
                     // the turning rate should be the same when moving as it is when you're still. Sprinting for some reason speeds up turning rate so use
                     // this value to make it slower
@@ -256,7 +205,7 @@ namespace OutwardVR
                     ___m_modifMoveInput.x *= hMod;
                 }
 
-                // ========= Vanilla code =========
+
                 float moveModif = 4f;
 
                 if (Vector3.Angle(___m_inputMoveVector, ___m_modifMoveInput) > 160f)
@@ -298,73 +247,28 @@ namespace OutwardVR
                     Vector3 right = __instance.transform.right;
                     right.y = 0f;
                     // Since the cam holder is a child of the player body, we need to offset the movement with this
-                    Camera.main.transform.parent.position += (right * (camDistanceFromBody.x * -0.1f));
+                    Camera.main.transform.parent.position += right * (camDistanceFromBody.x * -0.1f);
                 }
                 if (camDistanceFromBody.z > 0.1f || camDistanceFromBody.z <= -0.1f)
                 {
                     ___m_inputMoveVector.y += camDistanceFromBody.z * 2f;
                     Vector3 forward = __instance.transform.forward;
                     forward.y = 0f;
-                    Camera.main.transform.parent.position += (forward * (camDistanceFromBody.z * -0.1f));
+                    Camera.main.transform.parent.position += forward * (camDistanceFromBody.z * -0.1f);
                 }
 
-                //Vector3 camPosition = Camera.main.transform.parent.localPosition;
-                //if (playerHead != null)
-                //    camPosition = playerHead.transform.position;
-
-                //Camera.main.transform.parent.localPosition = (Camera.main.transform.localPosition * -1) + (camPosition - Camera.main.transform.parent.position);
 
                 // ========= Custom code to lock Y axis =========
-                // This if/else statement locks the characters Y axis to the perfect position, then also when the player crouches or uncrouches, it changes the position
-                // a little bit since the crouching head is more to the right and forward
+                // This is used to negate the headsets height and lock its Y axis
                 Vector3 camPosition = Camera.main.transform.parent.localPosition;
-                //camPosition.y -= 0.3f;
                 camPosition.y = Camera.main.transform.localPosition.y * -1f;
-
-                //if (__instance.Character.Sneaking)
-                //{
-                //    camPosition.y += 0.225f;
-                //    // Don't want the X axis to be locked in so only set the X axis crouching offset the one time
-                //    if (startedSneaking == false)
-                //    {
-                //        startedSneaking = true;
-                //        // Negative in this instance moves it forward and right respectively, not backwards and left
-                //        camPosition += __instance.transform.right * -0.25f;
-                //        camPosition += __instance.transform.forward * -0.45f;
-                //    }
-                //}
-                //else
-                //{
-                //    camPosition.y += 0.65f;
-                //    // Return the players X axis position back to normal after returning from crouching
-                //    if (startedSneaking)
-                //    {
-                //        startedSneaking = false;
-                //        camPosition += __instance.transform.right * 0.25f;
-                //        camPosition += __instance.transform.forward * 0.45f;
-                //    }
-                //}
-                //float staminaAsPercent = m_char.Stats.CurrentStamina / m_char.Stats.MaxStamina;
-
-                //if (staminaAsPercent < 0.35f && !outOfBreathStarted) {
-                //    outOfBreathStarted = true;
-                //    camPosition.y -= 0.2f;
-                //}
-                //else if (staminaAsPercent >= 0.35f && outOfBreathStarted)
-                //{
-                //    outOfBreathStarted = false;
-                //    camPosition.y += 0.2f;
-                //}
-
-
-                //Camera.main.transform.parent.parent.transform.localPosition = Vector3.zero;
                 Camera.main.transform.parent.localPosition = camPosition;
 
                 // ========= Mix of custom and default code to enable sideways and backwards movement =========
                 // This allows the player to move side to side only if a menu isn't open and they're not in dialogue
-                if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress) 
-                        ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
-                
+                if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress)
+                    ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
+
                 // Moving backwards is pretty slow so increase it manually to speed it up. Set the if conditional to the inputMoveVector because the SteamVR input can be active during menus,
                 // whereas inputMoveVector cant
                 if (___m_inputMoveVector.y < -1)
@@ -374,7 +278,7 @@ namespace OutwardVR
                 ___m_inputMoveVector.y = Mathf.Clamp(___m_inputMoveVector.y, -10, 10);
                 ___m_inputMoveVector.x = Mathf.Clamp(___m_inputMoveVector.x, -10, 10);
 
-                var transformMove = (___m_horiControl.forward * ___m_inputMoveVector.y) + (___m_horiControl.right * ___m_inputMoveVector.x);
+                var transformMove = ___m_horiControl.forward * ___m_inputMoveVector.y + ___m_horiControl.right * ___m_inputMoveVector.x;
                 if (m_charControl.enabled)
                     m_charControl.Move(new Vector3(0f, -3f, 0f) * Time.deltaTime);
 
@@ -382,13 +286,9 @@ namespace OutwardVR
                 Vector3 inverseMove = __instance.transform.InverseTransformDirection(transformMove) * slopeSpeed;
 
                 var movementVector = inverseMove;
-                if (inverseMove.x > 0.5 && inverseMove.x < 2) {
+                // Between 0.5 to 2, and -2 to -0.5 are sweet spots where the horizontal movements gets really janky and slow, so increase movement speed manually here
+                if ((inverseMove.x > 0.5 && inverseMove.x < 2) || (inverseMove.x < -0.5 && inverseMove.x > -2))
                     inverseMove.x *= 2f;
-                }
-                if (inverseMove.x < -0.5 && inverseMove.x > -2)
-                {
-                    inverseMove.x *= 2f;
-                }
                 if (m_char.AnimatorInitialized)
                 {
                     animator.SetFloat("moveSide", inverseMove.x);
@@ -400,7 +300,7 @@ namespace OutwardVR
 
                 if (m_char.UseLegacyVisual && windZone != null)
                 {
-                    float b = inverseMove.magnitude * 0.5f + (float)(m_char.NextIsLocomotion ? 0 : 3);
+                    float b = inverseMove.magnitude * 0.5f + (m_char.NextIsLocomotion ? 0 : 3);
                     windZone.windTurbulence = Mathf.Lerp(windZone.windTurbulence, b, 2f * Time.deltaTime);
                 }
                 // ========= Default code, I think for rotating the body =========
@@ -445,33 +345,29 @@ namespace OutwardVR
                         // Rotate body to match camera position - Needs some work
                         Vector3 vrRot = Camera.main.transform.rotation.eulerAngles;
                         Vector3 bodyRot = __instance.transform.rotation.eulerAngles;
-                        if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) > 25f) // If there is a difference of 10f between the body and camera rotation
+                        if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) > HMD_AND_BODY_DIFF_TOLERANCE) // If there is a difference of 17.5f between the body and camera rotation
                         {
-                            // for every 10 degrees of difference in body and camera rotation, rotate the player x * -2f to rotate left or x * 2f to rotate right
-                            clampedDiff = -2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / 25);
+                            // for every 17.5 degrees of difference in body and camera rotation, rotate the player x * -2f to rotate left or x * 2f to rotate right
+                            clampedDiff = -2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / HMD_AND_BODY_DIFF_TOLERANCE);
                             // rotate camera's parents parent the same amount in the reverse direction to offset the rotation of its parent
                             Camera.main.transform.parent.parent.Rotate(0f, clampedDiff * -1, 0f, Space.World);
                         }
-                        else if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) < -25f)
+                        else if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) < -HMD_AND_BODY_DIFF_TOLERANCE)
                         {
-                            clampedDiff = 2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / -25);
+                            clampedDiff = 2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / -HMD_AND_BODY_DIFF_TOLERANCE);
                             Camera.main.transform.parent.parent.Rotate(0f, clampedDiff * -1, 0f, Space.World);
                         }
-
                     }
                     clampedDiff += SteamVR_Actions._default.RightJoystick.axis.x * 4f;
                     __instance.transform.Rotate(0f, clampedDiff, 0f);
                 }
 
                 if (Global.CheatsEnabled)
-                {
-                    m_char.NoFall = (__instance.MovementMultiplier > 4f);
-                }
+                    m_char.NoFall = __instance.MovementMultiplier > 4f;
 
-                // set values that we used manual reflection for
-                fi_localMoveVector.SetValue(__instance, movementVector);
-                fi_turnAllow.SetValue(__instance, turnAllow);
-                fi_slopeSpeed.SetValue(__instance, slopeSpeed);
+                __instance.m_localMovementVector = movementVector;
+                turnAllow = turnAllow;
+                slopeSpeed = slopeSpeed;
 
                 return false;
             }

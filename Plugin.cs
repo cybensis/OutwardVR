@@ -30,20 +30,6 @@ public class Plugin : BaseUnityPlugin
     public static Camera SecondCam = null;
 
 
-    //Create a class that actually inherits from MonoBehaviour
-    public class MyStaticMB : MonoBehaviour
-    {
-        protected virtual void Update()
-        {
-            //if (Camera.main)
-            //{
-            //    CameraPatcher.HandleStereoRendering();
-            //}
-        }
-    }
-
-    ////Variable reference for the class
-    public static MyStaticMB myStaticMB;
 
     private void Awake()
     {
@@ -51,10 +37,7 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
         PlayerPrefs.SetInt("XBOX_EN", 1);
 
-        new AssetLoader();
-
         Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
-
 
         SteamVR_Actions.PreInitialize();
 
@@ -67,15 +50,11 @@ public class Plugin : BaseUnityPlugin
 
         var settings = OpenVRSettings.GetSettings();
         settings.StereoRenderingMode = OpenVRSettings.StereoRenderingModes.MultiPass;
-
-
         generalSettings.Manager = managerSettings;
 
         managerSettings.loaders.Clear();
         managerSettings.loaders.Add(xrLoader);
-
         managerSettings.InitializeLoaderSync(); ;
-
 
         XRGeneralSettings.AttemptInitializeXRSDKOnLoad();
         XRGeneralSettings.AttemptStartXRSDKOnBeforeSplashScreen();
@@ -87,12 +66,8 @@ public class Plugin : BaseUnityPlugin
 
 
         // POSES
-        // Use when eventually trying to get motion controls going
-        SteamVR_Actions._default.ClickRightJoystick.AddOnStateDownListener(ww, SteamVR_Input_Sources.Any);
         SteamVR_Actions._default.RightHandPose.AddOnUpdateListener(SteamVR_Input_Sources.RightHand, UpdateRightHand);
         SteamVR_Actions._default.LeftHandPose.AddOnUpdateListener(SteamVR_Input_Sources.Any, UpdateLeftHand);
-
-
 
         SteamVR_Actions._default.ButtonA.AddOnStateDownListener(TriggerButton, SteamVR_Input_Sources.Any);
         SteamVR_Actions._default.ButtonX.AddOnStateDownListener(InventoryMenuTrigger, SteamVR_Input_Sources.Any);
@@ -100,10 +75,6 @@ public class Plugin : BaseUnityPlugin
     }
 
 
-    public static void ww(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
-    {
-        CameraManager.Setup();
-    }
 
 
 
@@ -111,11 +82,6 @@ public class Plugin : BaseUnityPlugin
     {
         if (CameraManager.RightHand)
         {
-            // Maybe to fix the hand position offset stuff, add a check if the hands are below a certain Y axis, if they are then add until they are at the minimum Y, which is like maybe
-            // just where your hands would be having your arms at your side.
-            //Vector3 newPos = Camera.main.transform.parent.parent.position;
-            //newPos.y -= 0.5f;
-            //CameraManager.VROrigin.transform.position = newPos;
             CameraManager.RightHand.transform.localPosition = fromAction.localPosition;
             CameraManager.RightHand.transform.localRotation = fromAction.localRotation;
 
@@ -127,9 +93,6 @@ public class Plugin : BaseUnityPlugin
     {
         if (CameraManager.LeftHand)
         {
-            //Vector3 newPos = Camera.main.transform.parent.parent.position;
-            //newPos.y -= 0.5f;
-            //CameraManager.VROrigin.transform.position = newPos;
             CameraManager.LeftHand.transform.localPosition = fromAction.localPosition;
             CameraManager.LeftHand.transform.localRotation = fromAction.localRotation;
         }
@@ -139,31 +102,28 @@ public class Plugin : BaseUnityPlugin
 
     public static void TriggerButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
     {
-        if (UI.characterUIInstance.IsMenuFocused || UI.characterUIInstance.IsDialogueInProgress)
+        if (MiscPatches.characterUIInstance.IsMenuFocused || MiscPatches.characterUIInstance.IsDialogueInProgress)
         {
-            // if ui.IsMenuFocused
-            // if ui.CurrentSelectedGameObject has UISelectable allow for A input and if it has ItemDisplayClick allow for X
-            if (UI.characterUIInstance.IsOptionPanelDisplayed && UI.dropdown != null)
+            if (MiscPatches.characterUIInstance.IsOptionPanelDisplayed && MiscPatches.dropdown != null)
             {
-                UI.dropdown.Show();
-                UI.dropdown = null;
+                MiscPatches.dropdown.Show();
+                MiscPatches.dropdown = null;
             }
-            else if (UI.characterUIInstance.IsOptionPanelDisplayed && UI.dropdownItem != null)
+            else if (MiscPatches.characterUIInstance.IsOptionPanelDisplayed && MiscPatches.dropdownItem != null)
             {
-                UI.dropdownItem.GetComponent<UnityEngine.UI.Toggle>().OnSubmit(null);
-                UI.dropdownItem = null;
-                Logs.WriteError("DropdownItem pressed");
+                MiscPatches.dropdownItem.GetComponent<UnityEngine.UI.Toggle>().OnSubmit(null);
+                MiscPatches.dropdownItem = null;
             }
 
-            if (UI.button != null)
+            if (MiscPatches.button != null)
             {
-                UI.button.Press();
-                UI.button = null;
+                MiscPatches.button.Press();
+                MiscPatches.button = null;
             }
 
-            if (UI.characterUIInstance.CurrentSelectedGameObject != null && UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
+            if (MiscPatches.characterUIInstance.CurrentSelectedGameObject != null && MiscPatches.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
             {
-                ItemDisplayClick invItem = UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
+                ItemDisplayClick invItem = MiscPatches.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
                 invItem.SingleClick();
             }
 
@@ -177,20 +137,18 @@ public class Plugin : BaseUnityPlugin
     public static void InventoryMenuTrigger(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
     {
 
-        if (UI.characterUIInstance != null &&
-            UI.characterUIInstance.IsMenuFocused &&
-            UI.characterUIInstance.CurrentSelectedGameObject != null &&
-            UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
+        if (MiscPatches.characterUIInstance != null &&
+            MiscPatches.characterUIInstance.IsMenuFocused &&
+            MiscPatches.characterUIInstance.CurrentSelectedGameObject != null &&
+            MiscPatches.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
         {
-            ItemDisplayClick invItem = UI.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
+            ItemDisplayClick invItem = MiscPatches.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
             PointerEventData _data = new PointerEventData(EventSystem.current);
             _data.pointerPress = invItem.gameObject;
             // Figure out how to set this value based on the items positon in the inventory canvas
             _data.position = new Vector2(1019f, 1143f);
             invItem.RightClick(_data);
 
-            //var reflection = invItem.GetType().GetMethod("RightClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            //reflection.Invoke(invItem, new object[] { _data });
         }
 
     }
@@ -198,7 +156,7 @@ public class Plugin : BaseUnityPlugin
 
     public static void RemoveActiveButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
     {
-        UI.button = null;
+        MiscPatches.button = null;
     }
 
 

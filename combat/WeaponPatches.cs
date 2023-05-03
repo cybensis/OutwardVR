@@ -1,22 +1,10 @@
 ﻿using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using Valve.VR.InteractionSystem;
-using static EffectSynchronizer;
-using static FightRecap;
-using static Rewired.Utils.Classes.Data.SerializedObject;
 
 namespace OutwardVR.combat
 {
     [HarmonyPatch]
-    internal class MeleeWeapon
+    internal class WeaponPatches
     {
         public static bool hitWhileBlocking = false;
    

@@ -1,21 +1,7 @@
-﻿
-using OutwardVR;
-using Rewired;
-using System.Collections;
-using System.Collections.Generic;
-using System.Net.Security;
-using UnityEngine;
-using UnityEngine.Animations;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using UnityEngine.Yoga;
+﻿using UnityEngine;
 using Valve.VR;
-using Valve.VR.Extras;
-using UnityEditor;
-using System.Diagnostics.Eventing.Reader;
-using MapMagic;
 
-namespace OutwardVR
+namespace OutwardVR.body
 {
     public class ArmIK : MonoBehaviour
     {
@@ -92,7 +78,7 @@ namespace OutwardVR
             //init target
             if (Target == null)
             {
-                if (this.name == "hand_left")
+                if (name == "hand_left")
                 {
                     Target = CameraManager.LeftHand.transform;
                     if (Pole == null)
@@ -103,7 +89,8 @@ namespace OutwardVR
                     fingers[3] = transform.GetChild(3).gameObject;
                     fingers[4] = transform.GetChild(4).gameObject;
                 }
-                else {
+                else
+                {
                     Target = CameraManager.RightHand.transform;
                     if (Pole == null)
                         Pole = new GameObject("RightArmPole").transform;
@@ -113,7 +100,7 @@ namespace OutwardVR
                     fingers[3] = transform.GetChild(2).gameObject;
                     fingers[4] = transform.GetChild(3).gameObject;
                 }
-                UnityEngine.Object.DontDestroyOnLoad(Pole);
+                DontDestroyOnLoad(Pole);
                 SetPositionRootSpace(Target, GetPositionRootSpace(transform));
             }
 
@@ -138,7 +125,8 @@ namespace OutwardVR
                     BonesLength[i] = StartDirectionSucc[i].magnitude;
                     CompleteLength += BonesLength[i];
                 }
-                if (this.name == "hand_right") { 
+                if (name == "hand_right")
+                {
                     BonesLength[0] += 0.2f;
                     //BonesLength[1] += 0.05f;
                     CompleteLength += 0.2f;
@@ -150,33 +138,36 @@ namespace OutwardVR
 
         }
 
-        
+
         private float delayLength = 0f;
         private bool delayTracking = false;
         private float delayStartTime;
 
-        public void SetDelay(float timeToDelay) { 
+        public void SetDelay(float timeToDelay)
+        {
             delayLength = timeToDelay;
             delayStartTime = Time.time;
             delayTracking = true;
         }
 
-        public bool isDelayed() { 
+        public bool isDelayed()
+        {
             return delayTracking;
         }
 
         void LateUpdate()
         {
-            if (delayTracking && (Time.time - delayStartTime) <= delayLength)
+            if (delayTracking && Time.time - delayStartTime <= delayLength)
                 return;
-            else if (delayTracking && (Time.time - delayStartTime) > delayLength)
+            else if (delayTracking && Time.time - delayStartTime > delayLength)
                 delayTracking = false;
             ResolveIK();
         }
 
         private void ResolveIK()
         {
-            if (Target == null) { 
+            if (Target == null)
+            {
                 Init();
                 Logs.WriteWarning(name + " target is null");
             }
@@ -186,15 +177,15 @@ namespace OutwardVR
             if (BonesLength.Length != ChainLength)
                 Init();
 
-            // Set the pole position from the VR hand target, it seems forward is actually
-            if (this.name == "hand_left")
-                Pole.position = Camera.main.transform.parent.parent.position + (Camera.main.transform.parent.parent.right * -0.75f) + (Camera.main.transform.parent.parent.forward * 1f) + (Camera.main.transform.parent.parent.up * -0.5f);
+            // Set the pole position from the head
+            if (name == "hand_left")
+                Pole.position = Camera.main.transform.parent.parent.parent.position + Camera.main.transform.parent.parent.parent.right * -0.75f + Camera.main.transform.parent.parent.parent.forward * 1f + Camera.main.transform.parent.parent.parent.up * -0.5f;
             else
-                Pole.position = Camera.main.transform.parent.parent.position + (Camera.main.transform.parent.parent.right * 1.5f) + (Camera.main.transform.parent.parent.forward * 1.25f) + (Camera.main.transform.parent.parent.up * -0.5f);
+                Pole.position = Camera.main.transform.parent.parent.parent.position + Camera.main.transform.parent.parent.parent.right * 1.5f + Camera.main.transform.parent.parent.parent.forward * 1.25f + Camera.main.transform.parent.parent.parent.up * -0.5f;
 
             if (name == "hand_left")
                 TrackLeftHandFingers();
-            else 
+            else
                 TrackRightHandFingers();
 
 
@@ -205,24 +196,23 @@ namespace OutwardVR
             Vector3 targetPosition = Target.position;
             // This offsets the VR hands so they align better with the in game hands
             if (name == "hand_left")
-                targetPosition += (Target.right * 0) + (Target.up * 0.05f) + (Target.forward * -0.15f);
+                targetPosition += Target.right * 0 + Target.up * 0.05f + Target.forward * -0.15f;
             else
-                targetPosition += (Target.right * 0.05f) + (Target.up * 0.05f) + (Target.forward * -0.15f);
+                targetPosition += Target.right * 0.05f + Target.up * 0.05f + Target.forward * -0.15f;
 
             // Trying to figure out how to stick left hand onto two handed weapons
             if (name == "hand_left" && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.Type != Weapon.WeaponType.Bow)
             {
                 Target = CameraManager.RightHand.transform;
                 Transform rightHand = character.CurrentWeapon.CurrentVisual.transform.parent.parent.parent;
-                targetPosition = Target.position + (rightHand.forward * -0.4f) + (rightHand.transform.up * -0.135f) + (rightHand.right * -0.025f);
+                targetPosition = Target.position + rightHand.forward * -0.4f + rightHand.transform.up * -0.135f + rightHand.right * -0.025f;
             }
-            else if (name == "hand_left" && Target.name == "RightHand") {
+            else if (name == "hand_left" && Target.name == "RightHand")
+            {
                 Target = CameraManager.LeftHand.transform;
             }
 
             targetPosition = Quaternion.Inverse(Root.rotation) * (targetPosition - Root.position);
-
-            var targetRotation = GetRotationRootSpace(Target);
 
             //1st is possible to reach?
             if ((targetPosition - GetPositionRootSpace(Bones[0])).sqrMagnitude >= CompleteLength * CompleteLength)
@@ -289,7 +279,7 @@ namespace OutwardVR
                     //{
                     //    Bones[i].rotation = CameraManager.RightHand.transform.rotation;
                     //    Bones[i].Rotate(0,0,180f);
-                       
+
                     //}
                 }
                 else
@@ -336,9 +326,9 @@ namespace OutwardVR
         {
             // Set thumb position
             fingers[0].transform.localRotation = Quaternion.identity;
-            fingers[0].transform.Rotate(10, 90 - (80 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[0]), 40);
+            fingers[0].transform.Rotate(10, 90 - 80 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[0], 40);
             fingers[0].transform.GetChild(0).GetChild(0).localRotation = Quaternion.identity;
-            fingers[0].transform.GetChild(0).GetChild(0).Rotate(360 - (70 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[0]), 360 - (30 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[0]), 0);
+            fingers[0].transform.GetChild(0).GetChild(0).Rotate(360 - 70 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[0], 360 - 30 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[0], 0);
             for (int i = 1; i < 5; i++)
             {
                 // X bends fingers backwards and forwards
@@ -347,42 +337,42 @@ namespace OutwardVR
 
                 fingers[i].transform.localRotation = Quaternion.identity;
                 // Set the 4 fingers rotation to straight, then bend based on finger curl input
-                fingers[i].transform.Rotate(200 + (50 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i]), 250 - (10 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i]), 180 + (10 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i]));
+                fingers[i].transform.Rotate(200 + 50 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i], 250 - 10 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i], 180 + 10 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i]);
 
                 fingers[i].transform.GetChild(0).localRotation = Quaternion.identity;
                 // Pointer and middle finger have an extra joint so 
                 if (i == 1 || i == 2)
                 {
-                    fingers[i].transform.GetChild(0).Rotate(350 - (55 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i]), 0, 0);
+                    fingers[i].transform.GetChild(0).Rotate(350 - 55 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i], 0, 0);
                     fingers[i].transform.GetChild(0).GetChild(0).localRotation = Quaternion.identity;
-                    fingers[i].transform.GetChild(0).GetChild(0).Rotate(350 - (55 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i]), 0, 0);
+                    fingers[i].transform.GetChild(0).GetChild(0).Rotate(350 - 55 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i], 0, 0);
                 }
                 else
-                    fingers[i].transform.GetChild(0).Rotate(350 - (70 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i]), 0, 0);
+                    fingers[i].transform.GetChild(0).Rotate(350 - 70 * SteamVR_Actions._default.SkeletonLeftHand.fingerCurls[i], 0, 0);
             }
         }
         private void TrackRightHandFingers()
         {
             fingers[0].transform.localRotation = Quaternion.identity;
-            fingers[0].transform.Rotate(350, 300 + (50 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[0]), 320);
+            fingers[0].transform.Rotate(350, 300 + 50 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[0], 320);
             fingers[0].transform.GetChild(0).GetChild(0).localRotation = Quaternion.identity;
-            fingers[0].transform.GetChild(0).GetChild(0).Rotate(340 - (20 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[0]), 20, 0 + (70 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[0]));
+            fingers[0].transform.GetChild(0).GetChild(0).Rotate(340 - 20 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[0], 20, 0 + 70 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[0]);
 
             for (int i = 1; i < 5; i++)
             {
                 fingers[i].transform.localRotation = Quaternion.identity;
-                fingers[i].transform.Rotate(350 - (50 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[i]), 275 + (10 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[i]), 0);
+                fingers[i].transform.Rotate(350 - 50 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[i], 275 + 10 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[i], 0);
                 fingers[i].transform.GetChild(0).localRotation = Quaternion.identity;
 
                 if (i == 1 || i == 2)
                 {
-                    fingers[i].transform.GetChild(0).Rotate(350 - (50 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[i]), 0, 0);
+                    fingers[i].transform.GetChild(0).Rotate(350 - 50 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[i], 0, 0);
                     fingers[i].transform.GetChild(0).GetChild(0).localRotation = Quaternion.identity;
-                    fingers[i].transform.GetChild(0).GetChild(0).Rotate(350 - (50 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[i]), 0, 0);
+                    fingers[i].transform.GetChild(0).GetChild(0).Rotate(350 - 50 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[i], 0, 0);
 
                 }
                 else
-                    fingers[i].transform.GetChild(0).Rotate(350 - (80 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[i]), 0, 0);
+                    fingers[i].transform.GetChild(0).Rotate(350 - 80 * SteamVR_Actions._default.SkeletonRightHand.fingerCurls[i], 0, 0);
             }
         }
 

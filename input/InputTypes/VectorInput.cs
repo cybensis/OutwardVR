@@ -1,4 +1,5 @@
-﻿using Rewired;
+﻿using OutwardVR.camera;
+using Rewired;
 using Valve.VR;
 
 namespace OutwardVR
