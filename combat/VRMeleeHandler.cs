@@ -45,14 +45,20 @@ namespace OutwardVR.combat
         Character characterInstance;
         private ArmIK handIK;
 
-        // When the sword is held to the side to block, it should be within range of 1.0 to swordBlockRangeTolerance otherwise its not gunna count as a block
-        private float swordBlockRangeTolerance = 0.875f;
+        // When the sword is held to the side to block, it should be within range of 1.0 to SWORD_MIN_BLOCK_RANGE otherwise its not gunna count as a block
+        private const float SWORD_MIN_BLOCK_RANGE = 0.875f;
         private float attackDelay = 0.7f;
         private float delayLength = 0f;
         private bool delayAttack = false;
         private float delayStartTime;
 
+        private const float STAB_MAINTAINED_THRESHOLD = 0.15f;
+        private const float STAB_MAINTAINED_MIN = 0.05f;
+        // Threshold - min is what this value represents, this is the time difference allowed to be modified by reaching a velocity beyond threshold
+        private const float STAB_VELOCITY_TIME_MODIFIER = STAB_MAINTAINED_THRESHOLD - STAB_MAINTAINED_MIN;
+        private bool possibleStab = true;
 
+        private const float STAB_POSITION_RANGE = 0.8f;
         private void InitVars()
         {
             handIK = transform.parent.parent.parent.GetComponent<ArmIK>();
@@ -86,19 +92,16 @@ namespace OutwardVR.combat
                 return;
             if (handIK == null || characterInstance == null || raycastLength == 0f)
                 InitVars();
-            if (delayAttack) {
-                if (Time.time - delayStartTime > delayLength)
-                    delayAttack = false;
-                else
-                    return;
-            }
-            if (handIK.name == "hand_right")
-            {
-                if (characterInstance.CurrentWeapon.TwoHanded)
-                    transform.parent.localPosition = new Vector3(0f, -0.6f, 0f);
-                else
-                    transform.parent.localPosition = Vector3.zero;
-            }
+            if (delayAttack && Time.time - delayStartTime > delayLength)
+                delayAttack = false;
+            else if (delayAttack)
+                return;
+            
+            if (handIK.name == "hand_right" && characterInstance.CurrentWeapon.TwoHanded)
+                transform.parent.localPosition = new Vector3(0f, -0.6f, 0f);
+            else
+                transform.parent.localPosition = Vector3.zero;
+
 
 
             float swingVelocity;
@@ -106,6 +109,80 @@ namespace OutwardVR.combat
                 swingVelocity = Mathf.Clamp(SteamVR_Actions._default.SkeletonRightHand.velocity.magnitude, 0, MAX_VELOCITY);
             else
                 swingVelocity = Mathf.Clamp(SteamVR_Actions._default.SkeletonLeftHand.velocity.magnitude, 0, MAX_VELOCITY);
+            DetectSlash(swingVelocity);
+            DetectStab(swingVelocity);
+            DetectBlock(swingVelocity);
+            DetectHit();
+
+
+            if (swingVelocity >= VELOCITY_THRESHOLD && !isSwinging)
+            {
+                resetSwingVariables();
+                swingStart = Time.time;
+                isSwinging = true;
+                possibleStab = true;
+                // When a player starts to swing notifiy enemies as early as possible so they can dodge. This is a limitation of the VR mod since
+                // the normal time to attack is pretty slow so AI migh never actually be able to dodge attacks due to the speed of VR combat.
+                characterInstance.NotifyNearbyAIOfAttack();
+            }
+            else if (swingVelocity < VELOCITY_THRESHOLD && isSwinging)
+            {
+                if (swingFired)
+                    SetDelay(attackDelay);
+                resetSwingVariables();
+            }
+        }
+
+
+        private void DetectHit() {
+
+            if (isSwinging && !hasHit && Physics.Raycast(handIK.transform.position, transform.right * -1, out hit, raycastLength, LayerMask.GetMask("Hitbox")) && !hit.collider.GetComponent<Hitbox>().m_ownerChar.IsLocalPlayer)
+                hasHit = true;
+            if (swingFired && hasHit && !hitFired && characterInstance.HasEnoughStamina(characterInstance.CurrentWeapon.StamCost)) {
+                hitFired = true;
+                // Try and add direction here cos I think it'll make enemies bodies ragdoll in that direction if they die
+                characterInstance.CurrentWeapon.HasHit(hit, new Vector3(0, 0, 0));
+            }
+        }
+
+
+        private void DetectBlock(float swingVelocity) {
+            //Don't want blocking to activate mid swing but want to unblock if they try to come out of a block swinging
+            if (swingVelocity < VELOCITY_THRESHOLD)
+            {
+                // This checks if the swords right is pointed in the same direction as the bodies right, if its == 1 then its pointing exactly the same direction
+                // but we want some leeway so the sword doesn't have to be held exactly at the bodies right.
+                if (Mathf.Abs(Vector3.Dot(transform.right, characterInstance.transform.right)) >= 0.9f)
+                {
+                    // BlockInput is called with the argument _active (blocking is or isn't active), which calls on SendBlocKStateTrivial and if _active is true
+                    // it calls on StartBlocking and that sets blocking as true, otherwise it calls StopBlocking which sets blocking to false.
+                    characterInstance.BlockInput(true);
+                    isBlocking = true;
+                }
+                else if (isBlocking && Mathf.Abs(Vector3.Dot(transform.right, characterInstance.transform.right)) < SWORD_MIN_BLOCK_RANGE)
+                {
+                    // Unblock here
+                    characterInstance.BlockInput(false);
+                    isBlocking = false;
+                    // Change this so there is only a delay if the player gets hit while blocking
+                    if (WeaponPatches.hitWhileBlocking)
+                    {
+                        SetDelay(0.7f);
+                        WeaponPatches.hitWhileBlocking = false;
+                    }
+                }
+            }
+            // Only delay after blocking if the player has been hit, since blocking can easily be triggered by accident
+            else if (swingVelocity >= VELOCITY_THRESHOLD && isBlocking && WeaponPatches.hitWhileBlocking)
+            {
+                SetDelay(0.7f);
+                WeaponPatches.hitWhileBlocking = false;
+            }
+        }
+
+
+        private void DetectSlash(float swingVelocity)
+        {
             // Using the constants explained above, we check if the time swung for is greater than or equal to the threshold swing time, with a modified value for extended beyond the threshold velocity
             // The max velocitiy minus the threshold value, 4.65f, divided by the swingvelocity capped at 6f minus the threshold velocity will return a number less than or equal to 1, then this is used
             // by multiplying it against the time modifier which is then substracted from the maintained swing time threshold. E.g. if we have a swing of velocity 6, 4.65 / (6 - 1.35) will be 1, then 1 * 0.23 
@@ -120,75 +197,24 @@ namespace OutwardVR.combat
                     //characterInstance.StartAttack(characterInstance.m_nextAttackType, characterInstance.m_nextAttackID);
                     characterInstance.HitStarted(characterInstance.m_nextAttackID);
                 }
+                Logs.WriteWarning("Swing fired " + characterInstance.m_nextAttackType + " " + characterInstance.m_nextAttackID);
             }
-
-            //if (isSwinging && !hasHit && Physics.Raycast(transform.parent.position, transform.right * -1, out hit, raycastLength, LayerMask.GetMask("Hitbox")) && !hit.collider.GetComponent<Hitbox>().m_ownerChar.IsLocalPlayer)
-            if (isSwinging && !hasHit && Physics.Raycast(handIK.transform.position, transform.right * -1, out hit, raycastLength, LayerMask.GetMask("Hitbox")) && !hit.collider.GetComponent<Hitbox>().m_ownerChar.IsLocalPlayer)
-                hasHit = true;
+        }
 
 
+        private void DetectStab(float swingVelocity) {
+            if (possibleStab && Mathf.Abs(Vector3.Dot(transform.right, characterInstance.transform.forward)) < STAB_POSITION_RANGE)
+                possibleStab = false;
 
-            //Don't want blocking to activate mid swing but want to unblock if they try to come out of a block swinging
-            if (swingVelocity < VELOCITY_THRESHOLD)
+            if (!swingFired && possibleStab && Time.time - swingStart >= STAB_MAINTAINED_THRESHOLD - STAB_VELOCITY_TIME_MODIFIER * ((swingVelocity - VELOCITY_THRESHOLD) / MAX_VELOCITY_MINUS_THRESHOLD))
             {
-                // This checks if the swords right is pointed in the same direction as the bodies right, if its == 1 then its pointing exactly the same direction
-                // but we want some leeway so the sword doesn't have to be held exactly at the bodies right.
-                if (Vector3.Dot(transform.right, characterInstance.transform.right) >= 0.9f)
+                swingFired = true;
+                if (characterInstance != null && characterInstance.HasEnoughStamina(characterInstance.CurrentWeapon.StamCost))
                 {
-                    // BlockInput is called with the argument _active (blocking is or isn't active), which calls on SendBlocKStateTrivial and if _active is true
-                    // it calls on StartBlocking and that sets blocking as true, otherwise it calls StopBlocking which sets blocking to false.
-                    characterInstance.BlockInput(true);
-                    isBlocking = true;
+                    // Figure out what the attack ID's for different combos are and for heavy attacks then manually set these values here or something
+                    characterInstance.AttackInput(characterInstance.m_nextAttackType, characterInstance.m_nextAttackID);
+                    characterInstance.HitStarted(characterInstance.m_nextAttackID);
                 }
-                else if (isBlocking && Mathf.Abs(Vector3.Dot(transform.right, characterInstance.transform.right)) < swordBlockRangeTolerance)
-                {
-                    // Unblock here
-                    characterInstance.BlockInput(false);
-                    isBlocking = false;
-                    // Change this so there is only a delay if the player gets hit while blocking
-                    if (WeaponPatches.hitWhileBlocking)
-                    {
-                        SetDelay(0.7f);
-                        Logs.WriteWarning("Delay after block");
-                        WeaponPatches.hitWhileBlocking = false;
-                    }
-                }
-            }
-            // Only delay after blocking if the player has been hit, since blocking can easily be triggered by accident
-            else if (swingVelocity >= VELOCITY_THRESHOLD && isBlocking && WeaponPatches.hitWhileBlocking)
-            {
-                SetDelay(0.7f);
-                Logs.WriteWarning("Delay after block");
-                WeaponPatches.hitWhileBlocking = false;
-            }
-
-
-            if (swingFired && hasHit && !hitFired && characterInstance.HasEnoughStamina(characterInstance.CurrentWeapon.StamCost))
-            {
-                hitFired = true;
-                // Try and add direction here cos I think it'll make enemies bodies ragdoll in that direction if they die
-                characterInstance.CurrentWeapon.HasHit(hit, new Vector3(0, 0, 0));
-            }
-
-
-            if (swingVelocity >= VELOCITY_THRESHOLD && !isSwinging)
-            {
-                swingStart = Time.time;
-                isSwinging = true;
-                resetSwingVariables();
-                // When a player starts to swing notifiy enemies as early as possible so they can dodge. This is a limitation of the VR mod since
-                // the normal time to attack is pretty slow so AI migh never actually be able to dodge attacks due to the speed of VR combat.
-                characterInstance.NotifyNearbyAIOfAttack();
-            }
-            else if (swingVelocity < VELOCITY_THRESHOLD && isSwinging)
-            {
-                if (swingFired)
-                {
-                    SetDelay(attackDelay);
-                    Logs.WriteWarning("Delay after swing");
-                }
-                isSwinging = false;
-                resetSwingVariables();
             }
         }
 
@@ -198,9 +224,11 @@ namespace OutwardVR.combat
             swingFired = false;
             hasHit = false;
             hitFired = false;
+            possibleStab = false;
+            isSwinging = false;
         }
 
-        public void SetDelay(float timeToDelay)
+        private void SetDelay(float timeToDelay)
         {
             delayLength = timeToDelay;
             delayStartTime = Time.time;

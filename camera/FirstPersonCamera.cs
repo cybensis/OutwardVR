@@ -83,7 +83,7 @@ namespace OutwardVR.camera
                     if (playerHead != null && playerHead.GetComponent<FixHeadRotation>() == null)
                         playerHead.AddComponent<FixHeadRotation>();
 
-                    __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<VRCombat>();
+                    __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<VRMeleeHandler>();
                     FixCamera(__instance, ___m_camera);
                     UI.MenuPatches.gameHasBeenLoadedOnce = true;
                     // CharacterUI is disabled during prologue so re-enable it here

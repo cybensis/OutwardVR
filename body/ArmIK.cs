@@ -9,7 +9,7 @@ namespace OutwardVR.body
         /// <summary>
         /// Chain length of bones
         /// </summary>
-        public int ChainLength = 2;
+        public int ChainLength = 3;
 
         /// <summary>
         /// Target the chain should bent to
@@ -127,8 +127,8 @@ namespace OutwardVR.body
                 }
                 if (name == "hand_right")
                 {
-                    BonesLength[0] += 0.2f;
-                    //BonesLength[1] += 0.05f;
+                    BonesLength[0] += 0.05f;
+                    BonesLength[1] += 0.15f;
                     CompleteLength += 0.2f;
                 }
                 current = current.parent;
@@ -157,10 +157,10 @@ namespace OutwardVR.body
 
         void LateUpdate()
         {
-            if (delayTracking && Time.time - delayStartTime <= delayLength)
-                return;
-            else if (delayTracking && Time.time - delayStartTime > delayLength)
-                delayTracking = false;
+            //if (delayTracking && Time.time - delayStartTime <= delayLength)
+            //    return;
+            //else if (delayTracking && Time.time - delayStartTime > delayLength)
+            //    delayTracking = false;
             ResolveIK();
         }
 

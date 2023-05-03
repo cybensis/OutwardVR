@@ -32,14 +32,14 @@ namespace OutwardVR.combat
 
             if (!__instance.OwnerCharacter.IsLocalPlayer || !NetworkLevelLoader.Instance.IsOverallLoadingDone)
                 return;
-            else if (__instance.CurrentVisual.GetComponent<VRCombat>() == null) {
+            else if (__instance.CurrentVisual.GetComponent<VRMeleeHandler>() == null) {
                 if (__instance.Type != Weapon.WeaponType.Pistol_OH &&
                     __instance.Type != Weapon.WeaponType.Shield &&
                     __instance.Type != Weapon.WeaponType.Arrow &&
                     __instance.Type != Weapon.WeaponType.Bow &&
                      __instance.Type != Weapon.WeaponType.Chakram_OH
                     ) { 
-                    __instance.CurrentVisual.gameObject.AddComponent<VRCombat>();
+                    __instance.CurrentVisual.gameObject.AddComponent<VRMeleeHandler>();
                 }
             }
         }
