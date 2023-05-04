@@ -32,16 +32,19 @@ namespace OutwardVR.combat
 
             if (!__instance.OwnerCharacter.IsLocalPlayer || !NetworkLevelLoader.Instance.IsOverallLoadingDone)
                 return;
-            else if (__instance.CurrentVisual.GetComponent<VRMeleeHandler>() == null) {
+            if (__instance.CurrentVisual.GetComponent<VRMeleeHandler>() == null) {
                 if (__instance.Type != Weapon.WeaponType.Pistol_OH &&
                     __instance.Type != Weapon.WeaponType.Shield &&
                     __instance.Type != Weapon.WeaponType.Arrow &&
                     __instance.Type != Weapon.WeaponType.Bow &&
-                     __instance.Type != Weapon.WeaponType.Chakram_OH
+                     __instance.Type != Weapon.WeaponType.Chakram_OH &&
+                      __instance.Type != Weapon.WeaponType.FistW_2H
                     ) { 
                     __instance.CurrentVisual.gameObject.AddComponent<VRMeleeHandler>();
                 }
             }
+            if (__instance.CurrentVisual.GetComponent<VRFisticuffsHandler>() == null && __instance.Type == Weapon.WeaponType.FistW_2H)
+                __instance.CurrentVisual.gameObject.AddComponent<VRFisticuffsHandler>();
         }
 
         [HarmonyPrefix]
@@ -59,6 +62,7 @@ namespace OutwardVR.combat
         {
             if (!__instance.IsLocalPlayer ||
                 (int)__args[0] >= 2 || 
+                __instance.CurrentWeapon == null ||
                 __instance.CurrentWeapon.Type == Weapon.WeaponType.Pistol_OH ||
                     __instance.CurrentWeapon.Type == Weapon.WeaponType.Shield ||
                     __instance.CurrentWeapon.Type == Weapon.WeaponType.Arrow ||

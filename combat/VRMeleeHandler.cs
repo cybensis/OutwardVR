@@ -4,7 +4,7 @@ using Valve.VR;
 
 namespace OutwardVR.combat
 {
-    public class VRCombat : MonoBehaviour
+    public class VRMeleeHandler : MonoBehaviour
     {
 
         private float x, y, z;
@@ -152,14 +152,15 @@ namespace OutwardVR.combat
             {
                 // This checks if the swords right is pointed in the same direction as the bodies right, if its == 1 then its pointing exactly the same direction
                 // but we want some leeway so the sword doesn't have to be held exactly at the bodies right.
-                if (Mathf.Abs(Vector3.Dot(transform.right, characterInstance.transform.right)) >= 0.9f)
+                float blockingRange = Mathf.Abs(Vector3.Dot(transform.right, characterInstance.transform.right));
+                if (blockingRange >= 0.9f)
                 {
                     // BlockInput is called with the argument _active (blocking is or isn't active), which calls on SendBlocKStateTrivial and if _active is true
                     // it calls on StartBlocking and that sets blocking as true, otherwise it calls StopBlocking which sets blocking to false.
                     characterInstance.BlockInput(true);
                     isBlocking = true;
                 }
-                else if (isBlocking && Mathf.Abs(Vector3.Dot(transform.right, characterInstance.transform.right)) < SWORD_MIN_BLOCK_RANGE)
+                else if (isBlocking && blockingRange < SWORD_MIN_BLOCK_RANGE)
                 {
                     // Unblock here
                     characterInstance.BlockInput(false);
@@ -193,9 +194,10 @@ namespace OutwardVR.combat
                 if (characterInstance != null && characterInstance.HasEnoughStamina(characterInstance.CurrentWeapon.StamCost))
                 {
                     // Figure out what the attack ID's for different combos are and for heavy attacks then manually set these values here or something
-                    characterInstance.AttackInput(characterInstance.m_nextAttackType, characterInstance.m_nextAttackID);
-                    //characterInstance.StartAttack(characterInstance.m_nextAttackType, characterInstance.m_nextAttackID);
-                    characterInstance.HitStarted(characterInstance.m_nextAttackID);
+                    //characterInstance.AttackInput(characterInstance.m_nextAttackType, characterInstance.m_nextAttackID);
+                    //characterInstance.HitStarted(characterInstance.m_nextAttackID);
+                    characterInstance.AttackInput((int)x, characterInstance.m_nextAttackID);
+                    characterInstance.HitStarted((int)x);
                 }
                 Logs.WriteWarning("Swing fired " + characterInstance.m_nextAttackType + " " + characterInstance.m_nextAttackID);
             }

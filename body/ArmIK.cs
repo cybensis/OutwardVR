@@ -9,7 +9,7 @@ namespace OutwardVR.body
         /// <summary>
         /// Chain length of bones
         /// </summary>
-        public int ChainLength = 3;
+        public int ChainLength = 2;
 
         /// <summary>
         /// Target the chain should bent to
@@ -127,9 +127,8 @@ namespace OutwardVR.body
                 }
                 if (name == "hand_right")
                 {
-                    BonesLength[0] += 0.05f;
-                    BonesLength[1] += 0.15f;
-                    CompleteLength += 0.2f;
+                    BonesLength[0] += 0.15f;
+                    CompleteLength += 0.15f;
                 }
                 current = current.parent;
             }
@@ -201,7 +200,7 @@ namespace OutwardVR.body
                 targetPosition += Target.right * 0.05f + Target.up * 0.05f + Target.forward * -0.15f;
 
             // Trying to figure out how to stick left hand onto two handed weapons
-            if (name == "hand_left" && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.Type != Weapon.WeaponType.Bow)
+            if (name == "hand_left" && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.TwoHand != Equipment.TwoHandedType.DualWield && character.CurrentWeapon.Type != Weapon.WeaponType.Bow)
             {
                 Target = CameraManager.RightHand.transform;
                 Transform rightHand = character.CurrentWeapon.CurrentVisual.transform.parent.parent.parent;

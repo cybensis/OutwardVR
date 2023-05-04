@@ -1,12 +1,164 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using UnityEngine;
+using Valve.VR;
+using static FightRecap;
 
 namespace OutwardVR.combat
 {
-    internal class VRFisticuffsHandler
+    public class VRFisticuffsHandler : MonoBehaviour
     {
+        // Use Vector3.Dot on the player bodies up and whatever up would be for the arms or hands, and this time dont use Mathf.abs since we actually only want it blocking if arms are held up
+        // Probably also add a height detection so hands are held within 0.1 tolerance from the cameras height or something like that
+
+        // For punching combat probably just copy the timing from the melee weapon stab stuff but dont bother trying to keep it in any kind of range since punches can happen from many angles
+        private float x, y, z;
+
+        private float attackDelay = 0.7f;
+        private float delayLength = 0f;
+        private bool delayAttack = false;
+        private float delayStartTime;
+
+        private bool isSwinging = false;
+        private bool swingFired = false;
+        private float swingStart = 0f;
+        private bool hasHit = false;
+        private bool hitFired = false;
+        RaycastHit hit;
+        private float raycastLength = 0.2f;
+
+
+        // The right hand kind of bends more to the side so it should have more range
+        private const float RIGHT_HAND_BLOCKING_RANGE = -0.70f;
+        private const float LEFT_HAND_BLOCKING_RANGE = 0.85f;
+        private const float MAX_VELOCITY = 6f;
+        private const float VELOCITY_THRESHOLD = 1.6f;
+
+        // Used in the swing calculation where we divide this value by the current velocity minus the threshold velocity
+        private const float MAX_VELOCITY_MINUS_THRESHOLD = MAX_VELOCITY - VELOCITY_THRESHOLD;
+
+
+        private const float PUNCH_MAINTAINED_THRESHOLD = 0.12f;
+        private const float PUNCH_MAINTAINED_MIN = 0.03f;
+        // Threshold - min is what this value represents, this is the time difference allowed to be modified by reaching a velocity beyond threshold
+        private const float PUNCH_VELOCITY_TIME_MODIFIER = PUNCH_MAINTAINED_THRESHOLD - PUNCH_MAINTAINED_MIN;
+
+        private bool isBlocking = false;
+        private GameObject leftHand;
+        Character characterInstance;
+        private void InitHand() {
+            if (NetworkLevelLoader.Instance.IsOverallLoadingDone && NetworkLevelLoader.Instance.AllPlayerReadyToContinue)
+            {
+                leftHand = (GetComponent<ItemVisual>().m_item as DualMeleeWeapon).LeftHandFollow.gameObject;
+                characterInstance = Camera.main.transform.root.GetComponent<Character>();
+                Logs.WriteWarning("Init hand");
+            }
+        }
+
+        private void Update()
+        {
+            if (leftHand == null || characterInstance == null)
+                InitHand();
+
+            if (delayAttack && Time.time - delayStartTime > delayLength)
+                delayAttack = false;
+            else if (delayAttack)
+                return;
+
+            float leftSwingVelocity = Mathf.Clamp(SteamVR_Actions._default.SkeletonLeftHand.velocity.magnitude, 0, MAX_VELOCITY);
+            float rightSwingVelocity = Mathf.Clamp(SteamVR_Actions._default.SkeletonRightHand.velocity.magnitude, 0, MAX_VELOCITY);
+
+            if (leftSwingVelocity < VELOCITY_THRESHOLD && rightSwingVelocity < VELOCITY_THRESHOLD)
+            {
+                float leftBlockingRange = Vector3.Dot(leftHand.transform.up, Camera.main.transform.root.up);
+                float rightBlockingRange = Vector3.Dot(transform.forward, Camera.main.transform.root.up);
+                // This is a little confusing because when the right hand is upwards, Vector3.Dot will return a negative so we need to check for less than,
+                // but the left hand is the opposite and returns a positive so we check for greater than for the left hand
+                if (rightBlockingRange < RIGHT_HAND_BLOCKING_RANGE && leftBlockingRange > LEFT_HAND_BLOCKING_RANGE)
+                {
+                    // Block here
+                    characterInstance.BlockInput(true);
+                    isBlocking = true;
+                }
+                else if (isBlocking && (rightBlockingRange >= RIGHT_HAND_BLOCKING_RANGE || leftBlockingRange <= LEFT_HAND_BLOCKING_RANGE))
+                {
+                    // Unblock here
+                    characterInstance.BlockInput(false);
+                    isBlocking = false;
+                    if (WeaponPatches.hitWhileBlocking)
+                    {
+                        SetDelay(0.7f);
+                        WeaponPatches.hitWhileBlocking = false;
+                    }
+                }
+                else if (isSwinging)
+                {
+                    if (swingFired)
+                        SetDelay(attackDelay);
+                    resetSwingVariables();
+                }
+            }
+            // The if will fail if either the left or right hand is above the velocity threshold, meaning they must be trying to punch
+            else { 
+                if (!isSwinging)
+                {
+                    resetSwingVariables();
+                    swingStart = Time.time;
+                    isSwinging = true;
+                    characterInstance.NotifyNearbyAIOfAttack();
+                }
+                if (leftSwingVelocity > rightSwingVelocity)
+                {
+                    DetectPunch(leftSwingVelocity);
+                    DetectHit(leftHand.transform.position, leftHand.transform.up);
+                }
+                else { 
+                    DetectPunch(rightSwingVelocity);
+                    DetectHit(transform.position, transform.forward * -1);
+                }
+            }
+        }
+
+
+        private void DetectPunch(float swingVelocity)
+        {
+            if (isSwinging && !swingFired && Time.time - swingStart >= PUNCH_MAINTAINED_THRESHOLD - PUNCH_VELOCITY_TIME_MODIFIER * ((swingVelocity - VELOCITY_THRESHOLD) / MAX_VELOCITY_MINUS_THRESHOLD))
+            {
+                swingFired = true;
+                if (characterInstance.HasEnoughStamina(characterInstance.CurrentWeapon.StamCost))
+                {
+                    // Figure out what the attack ID's for different combos are and for heavy attacks then manually set these values here or something
+                    characterInstance.AttackInput(characterInstance.m_nextAttackType, characterInstance.m_nextAttackID);
+                    characterInstance.HitStarted(characterInstance.m_nextAttackID);
+                    Logs.WriteWarning("Punch fired " + characterInstance.m_nextAttackType + " " + characterInstance.m_nextAttackID);
+                }
+            }
+        }
+
+        private void DetectHit(Vector3 punchingHandPos, Vector3 direction)
+        {
+
+            if (isSwinging && !hasHit && Physics.Raycast(punchingHandPos, direction, out hit, raycastLength, LayerMask.GetMask("Hitbox")) && !hit.collider.GetComponent<Hitbox>().m_ownerChar.IsLocalPlayer)
+                hasHit = true;
+            if (swingFired && hasHit && !hitFired && characterInstance.HasEnoughStamina(characterInstance.CurrentWeapon.StamCost))
+            {
+                hitFired = true;
+                // Try and add direction here cos I think it'll make enemies bodies ragdoll in that direction if they die
+                characterInstance.CurrentWeapon.HasHit(hit, new Vector3(0, 0, 0));
+            }
+        }
+
+        private void resetSwingVariables()
+        {
+            swingFired = false;
+            hasHit = false;
+            hitFired = false;
+            isSwinging = false;
+        }
+
+        private void SetDelay(float timeToDelay)
+        {
+            delayLength = timeToDelay;
+            delayStartTime = Time.time;
+            delayAttack = true;
+        }
     }
 }
