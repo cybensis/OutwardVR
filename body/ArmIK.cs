@@ -44,9 +44,9 @@ namespace OutwardVR.body
         protected Quaternion StartRotationTarget;
         protected Transform Root;
         private GameObject[] fingers;
-        private float x = 0;
-        private float y = 0;
-        private float z = 0;
+        private float x = -0.4f;
+        private float y = -0.135f;
+        private float z = -0.025f;
 
         private Character character;
 
@@ -127,8 +127,8 @@ namespace OutwardVR.body
                 }
                 if (name == "hand_right")
                 {
-                    BonesLength[0] += 0.15f;
-                    CompleteLength += 0.15f;
+                    BonesLength[0] += 0.2f;
+                    CompleteLength += 0.2f;
                 }
                 current = current.parent;
             }
@@ -200,16 +200,16 @@ namespace OutwardVR.body
                 targetPosition += Target.right * 0.05f + Target.up * 0.05f + Target.forward * -0.15f;
 
             // Trying to figure out how to stick left hand onto two handed weapons
-            if (name == "hand_left" && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.TwoHand != Equipment.TwoHandedType.DualWield && character.CurrentWeapon.Type != Weapon.WeaponType.Bow)
-            {
-                Target = CameraManager.RightHand.transform;
-                Transform rightHand = character.CurrentWeapon.CurrentVisual.transform.parent.parent.parent;
-                targetPosition = Target.position + rightHand.forward * -0.4f + rightHand.transform.up * -0.135f + rightHand.right * -0.025f;
-            }
-            else if (name == "hand_left" && Target.name == "RightHand")
-            {
-                Target = CameraManager.LeftHand.transform;
-            }
+            //if (name == "hand_left" && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.TwoHand != Equipment.TwoHandedType.DualWield && character.CurrentWeapon.Type != Weapon.WeaponType.Bow)
+            //{
+            //    Target = CameraManager.RightHand.transform;
+            //    Transform rightHand = character.CurrentWeapon.CurrentVisual.transform.parent.parent.parent;
+            //    targetPosition = Target.position + rightHand.forward * x + rightHand.transform.up * y + rightHand.right * z;
+            //}
+            //else if (name == "hand_left" && Target.name == "RightHand")
+            //{
+            //    Target = CameraManager.LeftHand.transform;
+            //}
 
             targetPosition = Quaternion.Inverse(Root.rotation) * (targetPosition - Root.position);
 

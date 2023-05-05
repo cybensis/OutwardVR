@@ -68,8 +68,8 @@ namespace OutwardVR.combat
 
             if (leftSwingVelocity < VELOCITY_THRESHOLD && rightSwingVelocity < VELOCITY_THRESHOLD)
             {
-                float leftBlockingRange = Vector3.Dot(leftHand.transform.up, Camera.main.transform.root.up);
-                float rightBlockingRange = Vector3.Dot(transform.forward, Camera.main.transform.root.up);
+                float leftBlockingRange = Vector3.Dot(leftHand.transform.up, characterInstance.transform.up);
+                float rightBlockingRange = Vector3.Dot(transform.forward, characterInstance.transform.up);
                 // This is a little confusing because when the right hand is upwards, Vector3.Dot will return a negative so we need to check for less than,
                 // but the left hand is the opposite and returns a positive so we check for greater than for the left hand
                 if (rightBlockingRange < RIGHT_HAND_BLOCKING_RANGE && leftBlockingRange > LEFT_HAND_BLOCKING_RANGE)

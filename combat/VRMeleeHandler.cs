@@ -38,7 +38,6 @@ namespace OutwardVR.combat
         private bool hasHit = false;
         // Once a hit has been found and the minimum swing time has been reached, the hit is fired and this gets set
         private bool hitFired = false;
-        private float lastHitTime = 0f;
         private bool isBlocking = false;
         RaycastHit hit;
         private float raycastLength = 0f;
@@ -47,6 +46,7 @@ namespace OutwardVR.combat
 
         // When the sword is held to the side to block, it should be within range of 1.0 to SWORD_MIN_BLOCK_RANGE otherwise its not gunna count as a block
         private const float SWORD_MIN_BLOCK_RANGE = 0.875f;
+        private const float BLOCK_DELAY = 0.7f;
         private float attackDelay = 0.7f;
         private float delayLength = 0f;
         private bool delayAttack = false;
@@ -58,31 +58,36 @@ namespace OutwardVR.combat
         private const float STAB_VELOCITY_TIME_MODIFIER = STAB_MAINTAINED_THRESHOLD - STAB_MAINTAINED_MIN;
         private bool possibleStab = true;
 
+        private Weapon weaponInstance;
+
         private const float STAB_POSITION_RANGE = 0.8f;
         private void InitVars()
         {
             handIK = transform.parent.parent.parent.GetComponent<ArmIK>();
             characterInstance = Camera.main.transform.root.GetComponent<Character>();
+
             if (handIK.name == "hand_left" && characterInstance.LeftHandWeapon.CurrentVisual.name != name)
                 return;
             else if (handIK.name == "hand_right" && characterInstance.CurrentWeapon.CurrentVisual.name != name)
                 return;
-            MeleeWeapon weapon = GetComponent<ItemVisual>().m_item as MeleeWeapon;
+            weaponInstance = GetComponent<ItemVisual>().m_item as MeleeWeapon;
             // The two BASE vars were made based on the iron swords reach, so by dividing the reach of the current weapon by the iron swords reach, 
             // we get a modifier value to multiply the raycast length by.
-            raycastLength = weapon.Reach / BASE_WEAPON_REACH * BASE_RAYCAST_LENGTH;
+            raycastLength = weaponInstance.Reach / BASE_WEAPON_REACH * BASE_RAYCAST_LENGTH;
 
-            if (weapon.Type == Weapon.WeaponType.Halberd_2H ||
-                weapon.Type == Weapon.WeaponType.Sword_2H ||
-                weapon.Type == Weapon.WeaponType.Axe_2H ||
-                weapon.Type == Weapon.WeaponType.Mace_2H ||
-                weapon.Type == Weapon.WeaponType.Spear_2H
+            if (weaponInstance.Type == Weapon.WeaponType.Halberd_2H ||
+                weaponInstance.Type == Weapon.WeaponType.Sword_2H ||
+                weaponInstance.Type == Weapon.WeaponType.Axe_2H ||
+                weaponInstance.Type == Weapon.WeaponType.Mace_2H ||
+                weaponInstance.Type == Weapon.WeaponType.Spear_2H
             )
                 attackDelay = 0.9f;
-            else if (weapon.Type == Weapon.WeaponType.Dagger_OH)
+            else if (weaponInstance.Type == Weapon.WeaponType.Dagger_OH)
                 attackDelay = 0.2f;
-            if (weapon.Type == Weapon.WeaponType.Halberd_2H)
+
+            if (weaponInstance.Type == Weapon.WeaponType.Halberd_2H)
                 raycastLength += 0.1f;
+        
         }
 
 
@@ -96,13 +101,13 @@ namespace OutwardVR.combat
                 delayAttack = false;
             else if (delayAttack)
                 return;
+            if (characterInstance.LeftHandWeapon.Type == Weapon.WeaponType.Shield && characterInstance.Blocking)
+                return;
             
-            if (handIK.name == "hand_right" && characterInstance.CurrentWeapon.TwoHanded)
+            if (handIK.name == "hand_right" && weaponInstance.TwoHanded)
                 transform.parent.localPosition = new Vector3(0f, -0.6f, 0f);
             else
                 transform.parent.localPosition = Vector3.zero;
-
-
 
             float swingVelocity;
             if (handIK.name == "hand_right")
@@ -135,13 +140,14 @@ namespace OutwardVR.combat
 
 
         private void DetectHit() {
-
-            if (isSwinging && !hasHit && Physics.Raycast(handIK.transform.position, transform.right * -1, out hit, raycastLength, LayerMask.GetMask("Hitbox")) && !hit.collider.GetComponent<Hitbox>().m_ownerChar.IsLocalPlayer)
+            Vector3 raycastDirection = transform.right * -1;
+            if (isSwinging && !hasHit && Physics.Raycast(handIK.transform.position, raycastDirection, out hit, raycastLength, LayerMask.GetMask("Hitbox")) && !hit.collider.GetComponent<Hitbox>().m_ownerChar.IsLocalPlayer)
                 hasHit = true;
-            if (swingFired && hasHit && !hitFired && characterInstance.HasEnoughStamina(characterInstance.CurrentWeapon.StamCost)) {
+            if (swingFired && hasHit && !hitFired && characterInstance.HasEnoughStamina(weaponInstance.StamCost)) {
                 hitFired = true;
                 // Try and add direction here cos I think it'll make enemies bodies ragdoll in that direction if they die
-                characterInstance.CurrentWeapon.HasHit(hit, new Vector3(0, 0, 0));
+                weaponInstance.HasHit(hit, new Vector3(0, 0, 0));
+                Logs.WriteWarning("Hit fired");
             }
         }
 
@@ -151,9 +157,9 @@ namespace OutwardVR.combat
             if (swingVelocity < VELOCITY_THRESHOLD)
             {
                 // This checks if the swords right is pointed in the same direction as the bodies right, if its == 1 then its pointing exactly the same direction
-                // but we want some leeway so the sword doesn't have to be held exactly at the bodies right.
+                // but we want some leeway so the sword doesn't have to be h,eld exactly at the bodies right.
                 float blockingRange = Mathf.Abs(Vector3.Dot(transform.right, characterInstance.transform.right));
-                if (blockingRange >= 0.9f)
+                if (blockingRange >= SWORD_MIN_BLOCK_RANGE)
                 {
                     // BlockInput is called with the argument _active (blocking is or isn't active), which calls on SendBlocKStateTrivial and if _active is true
                     // it calls on StartBlocking and that sets blocking as true, otherwise it calls StopBlocking which sets blocking to false.
@@ -165,18 +171,18 @@ namespace OutwardVR.combat
                     // Unblock here
                     characterInstance.BlockInput(false);
                     isBlocking = false;
-                    // Change this so there is only a delay if the player gets hit while blocking
+                    // Only delay after blocking if the player has been hit, since blocking can easily be triggered by accident
                     if (WeaponPatches.hitWhileBlocking)
                     {
-                        SetDelay(0.7f);
+                        SetDelay(BLOCK_DELAY);
                         WeaponPatches.hitWhileBlocking = false;
                     }
                 }
             }
-            // Only delay after blocking if the player has been hit, since blocking can easily be triggered by accident
+            // The player can come out of a block swinging above the threshold so we need this to catch that and delay them if need be
             else if (swingVelocity >= VELOCITY_THRESHOLD && isBlocking && WeaponPatches.hitWhileBlocking)
             {
-                SetDelay(0.7f);
+                SetDelay(BLOCK_DELAY);
                 WeaponPatches.hitWhileBlocking = false;
             }
         }
@@ -191,15 +197,15 @@ namespace OutwardVR.combat
             if (isSwinging && !swingFired && Time.time - swingStart >= SWING_MAINTAINED_THRESHOLD - SWING_VELOCITY_TIME_MODIFIER * ((swingVelocity - VELOCITY_THRESHOLD) / MAX_VELOCITY_MINUS_THRESHOLD))
             {
                 swingFired = true;
-                if (characterInstance != null && characterInstance.HasEnoughStamina(characterInstance.CurrentWeapon.StamCost))
+                if (characterInstance.HasEnoughStamina(weaponInstance.StamCost))
                 {
                     // Figure out what the attack ID's for different combos are and for heavy attacks then manually set these values here or something
                     //characterInstance.AttackInput(characterInstance.m_nextAttackType, characterInstance.m_nextAttackID);
                     //characterInstance.HitStarted(characterInstance.m_nextAttackID);
                     characterInstance.AttackInput((int)x, characterInstance.m_nextAttackID);
                     characterInstance.HitStarted((int)x);
+                    Logs.WriteWarning("Swing fired " + characterInstance.m_nextAttackType + " " + characterInstance.m_nextAttackID);
                 }
-                Logs.WriteWarning("Swing fired " + characterInstance.m_nextAttackType + " " + characterInstance.m_nextAttackID);
             }
         }
 
@@ -211,7 +217,7 @@ namespace OutwardVR.combat
             if (!swingFired && possibleStab && Time.time - swingStart >= STAB_MAINTAINED_THRESHOLD - STAB_VELOCITY_TIME_MODIFIER * ((swingVelocity - VELOCITY_THRESHOLD) / MAX_VELOCITY_MINUS_THRESHOLD))
             {
                 swingFired = true;
-                if (characterInstance != null && characterInstance.HasEnoughStamina(characterInstance.CurrentWeapon.StamCost))
+                if (characterInstance.HasEnoughStamina(weaponInstance.StamCost))
                 {
                     // Figure out what the attack ID's for different combos are and for heavy attacks then manually set these values here or something
                     characterInstance.AttackInput(characterInstance.m_nextAttackType, characterInstance.m_nextAttackID);

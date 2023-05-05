@@ -45,6 +45,8 @@ namespace OutwardVR.combat
             }
             if (__instance.CurrentVisual.GetComponent<VRFisticuffsHandler>() == null && __instance.Type == Weapon.WeaponType.FistW_2H)
                 __instance.CurrentVisual.gameObject.AddComponent<VRFisticuffsHandler>();
+            if (__instance.CurrentVisual.GetComponent<VRShieldHandler>() == null && __instance.Type == Weapon.WeaponType.Shield)
+                __instance.CurrentVisual.gameObject.AddComponent<VRShieldHandler>();
         }
 
         [HarmonyPrefix]
