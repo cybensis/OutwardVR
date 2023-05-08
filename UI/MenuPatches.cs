@@ -43,7 +43,9 @@ namespace OutwardVR.UI
         private static void PositionCamOnReturnToMenu(MenuManager __instance)
         {
             Logs.WriteWarning("RETURNING TO MENU");
+            Camera.main.transform.parent.parent.SetParent(null);
             __instance.transform.SetParent(null);
+            //__instance.transform.parent.DetachChildren();
             loadingCamHolder.active = true;
             tempCamHolder.transform.position = new Vector3(-3.5f, -1.25f, -0.7861f);
             tempCamHolder.transform.rotation = Quaternion.identity;
@@ -134,13 +136,8 @@ namespace OutwardVR.UI
         private static void PositionIntroCanvas(ProloguePanel __instance)
         {
             Logs.WriteWarning("POSITION INTRO CANVAS");
-            if (gameHasBeenLoadedOnce)
-                tempCamHolder.transform.position = new Vector3(-8f, -3f, -2f);
-            else
-                tempCamHolder.transform.position = new Vector3(-16.5f, -3f, 0);
-
-            tempCamHolder.transform.rotation = new Quaternion(-0.1158f, 0.3311f, -0.0594f, 0.9346f);
-
+            tempCamHolder.transform.position = new Vector3(-3.75f, -1.25f, -3f);
+            tempCamHolder.transform.rotation = Quaternion.identity;
             if (__instance.CharacterUI != null)
                 __instance.CharacterUI.gameObject.active = false;
         }
@@ -181,8 +178,7 @@ namespace OutwardVR.UI
                     break;
                 case TOWNSQUARE_LOADING_SCREEN:
                     tempCamHolder.transform.position = new Vector3(-2.4527f, -2.6422f, -2.3861f);
-                    menuManager.transform.localScale = new Vector3(0.003f, 0.003f, 0.003f);
-                    menuManager.transform.position = new Vector3(-5.3117f, 0f, 2.1f);
+                    menuManager.transform.position = new Vector3(-5.3117f, 1f, 2.1f);
                     menuManager.transform.Rotate(0, 341, 2);
                     break;
             }
@@ -251,7 +247,6 @@ namespace OutwardVR.UI
             loadingCamHolder.active = false;
 
             menuManager = __instance.transform.root.gameObject;
-
             PositionMenuManager(menuManager);
             tempCamHolder.transform.Rotate(0, -25, 0);
         }

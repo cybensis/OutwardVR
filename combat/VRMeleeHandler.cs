@@ -61,6 +61,11 @@ namespace OutwardVR.combat
         private Weapon weaponInstance;
 
         private const float STAB_POSITION_RANGE = 0.8f;
+
+        // When triggering the Hit function, the direction of the swing is passed in but it needs to be multiplied by a modifier to make it actually do something
+        private float weaponDirectionModifier = 5;
+
+        private Vector3 lastPosition = Vector3.zero;
         private void InitVars()
         {
             handIK = transform.parent.parent.parent.GetComponent<ArmIK>();
@@ -80,14 +85,35 @@ namespace OutwardVR.combat
                 weaponInstance.Type == Weapon.WeaponType.Axe_2H ||
                 weaponInstance.Type == Weapon.WeaponType.Mace_2H ||
                 weaponInstance.Type == Weapon.WeaponType.Spear_2H
-            )
+            ) { 
                 attackDelay = 0.9f;
-            else if (weaponInstance.Type == Weapon.WeaponType.Dagger_OH)
+                weaponDirectionModifier = 7.5f;
+            }
+            else if (weaponInstance.Type == Weapon.WeaponType.Dagger_OH) { 
                 attackDelay = 0.2f;
-
-            if (weaponInstance.Type == Weapon.WeaponType.Halberd_2H)
+                weaponDirectionModifier = 3.5f;
+            }
+            if (handIK.name == "hand_left")
+                return;
+            if (weaponInstance.TwoHanded)
                 raycastLength += 0.1f;
-        
+            if (weaponInstance.Type == Weapon.WeaponType.Axe_2H || weaponInstance.Type == Weapon.WeaponType.Mace_2H)
+                transform.parent.localPosition = new Vector3(0f, -0.3f, 0f);
+            else if (weaponInstance.Type == Weapon.WeaponType.Halberd_2H)
+            {
+                transform.parent.localPosition = new Vector3(0f, -0.6f, 0f);
+                raycastLength += 0.1f;
+            }
+            else if (weaponInstance.Type == Weapon.WeaponType.Spear_2H)
+            {
+                transform.parent.localPosition = new Vector3(0f, -0.8f, 0f);
+                raycastLength += 0.2f;
+            }
+            else {
+                transform.parent.localPosition = Vector3.zero;
+            } 
+
+
         }
 
 
@@ -101,23 +127,23 @@ namespace OutwardVR.combat
                 delayAttack = false;
             else if (delayAttack)
                 return;
-            if (characterInstance.LeftHandWeapon.Type == Weapon.WeaponType.Shield && characterInstance.Blocking)
+            if (characterInstance.LeftHandWeapon != null && characterInstance.LeftHandWeapon.Type == Weapon.WeaponType.Shield && characterInstance.Blocking)
                 return;
             
-            if (handIK.name == "hand_right" && weaponInstance.TwoHanded)
-                transform.parent.localPosition = new Vector3(0f, -0.6f, 0f);
-            else
-                transform.parent.localPosition = Vector3.zero;
 
             float swingVelocity;
             if (handIK.name == "hand_right")
                 swingVelocity = Mathf.Clamp(SteamVR_Actions._default.SkeletonRightHand.velocity.magnitude, 0, MAX_VELOCITY);
             else
                 swingVelocity = Mathf.Clamp(SteamVR_Actions._default.SkeletonLeftHand.velocity.magnitude, 0, MAX_VELOCITY);
-            DetectSlash(swingVelocity);
-            DetectStab(swingVelocity);
-            DetectBlock(swingVelocity);
-            DetectHit();
+            // Only call the slash/hit/stab functions if the velocity is over the threshold, otherwise its wasting resources
+            if (swingVelocity < VELOCITY_THRESHOLD)
+                DetectBlock(swingVelocity);
+            else { 
+                DetectSlash(swingVelocity);
+                DetectStab(swingVelocity);
+                DetectHit(swingVelocity);
+            }
 
 
             if (swingVelocity >= VELOCITY_THRESHOLD && !isSwinging)
@@ -139,48 +165,50 @@ namespace OutwardVR.combat
         }
 
 
-        private void DetectHit() {
+        private void DetectHit(float swingVelocity) {
             Vector3 raycastDirection = transform.right * -1;
+                 
             if (isSwinging && !hasHit && Physics.Raycast(handIK.transform.position, raycastDirection, out hit, raycastLength, LayerMask.GetMask("Hitbox")) && !hit.collider.GetComponent<Hitbox>().m_ownerChar.IsLocalPlayer)
                 hasHit = true;
             if (swingFired && hasHit && !hitFired && characterInstance.HasEnoughStamina(weaponInstance.StamCost)) {
                 hitFired = true;
                 // Try and add direction here cos I think it'll make enemies bodies ragdoll in that direction if they die
-                weaponInstance.HasHit(hit, new Vector3(0, 0, 0));
-                Logs.WriteWarning("Hit fired");
+                //Vector3 direction = (SteamVR_Actions._default.RightHandPose.localPosition - SteamVR_Actions._default.RightHandPose.lastLocalPosition) * 4;
+                Vector3 direction = (handIK.transform.position - lastPosition) * weaponDirectionModifier;
+                weaponInstance.HasHit(hit, direction);
+            }
+            // Update the last position only after we've checked for a hit
+            if (isSwinging && swingVelocity >= VELOCITY_THRESHOLD) { 
+                lastPosition = handIK.transform.position;
             }
         }
 
 
         private void DetectBlock(float swingVelocity) {
-            //Don't want blocking to activate mid swing but want to unblock if they try to come out of a block swinging
-            if (swingVelocity < VELOCITY_THRESHOLD)
+            // This checks if the swords right is pointed in the same direction as the bodies right, if its == 1 then its pointing exactly the same direction
+            // but we want some leeway so the sword doesn't have to be h,eld exactly at the bodies right.
+            float blockingRange = Mathf.Abs(Vector3.Dot(transform.right, characterInstance.transform.right));
+            if (blockingRange >= SWORD_MIN_BLOCK_RANGE)
             {
-                // This checks if the swords right is pointed in the same direction as the bodies right, if its == 1 then its pointing exactly the same direction
-                // but we want some leeway so the sword doesn't have to be h,eld exactly at the bodies right.
-                float blockingRange = Mathf.Abs(Vector3.Dot(transform.right, characterInstance.transform.right));
-                if (blockingRange >= SWORD_MIN_BLOCK_RANGE)
+                // BlockInput is called with the argument _active (blocking is or isn't active), which calls on SendBlocKStateTrivial and if _active is true
+                // it calls on StartBlocking and that sets blocking as true, otherwise it calls StopBlocking which sets blocking to false.
+                characterInstance.BlockInput(true);
+                isBlocking = true;
+            }
+            else if (isBlocking && blockingRange < SWORD_MIN_BLOCK_RANGE)
+            {
+                // Unblock here
+                characterInstance.BlockInput(false);
+                isBlocking = false;
+                // Only delay after blocking if the player has been hit, since blocking can easily be triggered by accident
+                if (WeaponPatches.hitWhileBlocking)
                 {
-                    // BlockInput is called with the argument _active (blocking is or isn't active), which calls on SendBlocKStateTrivial and if _active is true
-                    // it calls on StartBlocking and that sets blocking as true, otherwise it calls StopBlocking which sets blocking to false.
-                    characterInstance.BlockInput(true);
-                    isBlocking = true;
-                }
-                else if (isBlocking && blockingRange < SWORD_MIN_BLOCK_RANGE)
-                {
-                    // Unblock here
-                    characterInstance.BlockInput(false);
-                    isBlocking = false;
-                    // Only delay after blocking if the player has been hit, since blocking can easily be triggered by accident
-                    if (WeaponPatches.hitWhileBlocking)
-                    {
-                        SetDelay(BLOCK_DELAY);
-                        WeaponPatches.hitWhileBlocking = false;
-                    }
+                    SetDelay(BLOCK_DELAY);
+                    WeaponPatches.hitWhileBlocking = false;
                 }
             }
             // The player can come out of a block swinging above the threshold so we need this to catch that and delay them if need be
-            else if (swingVelocity >= VELOCITY_THRESHOLD && isBlocking && WeaponPatches.hitWhileBlocking)
+            if (swingVelocity >= VELOCITY_THRESHOLD && isBlocking && WeaponPatches.hitWhileBlocking)
             {
                 SetDelay(BLOCK_DELAY);
                 WeaponPatches.hitWhileBlocking = false;
@@ -200,11 +228,9 @@ namespace OutwardVR.combat
                 if (characterInstance.HasEnoughStamina(weaponInstance.StamCost))
                 {
                     // Figure out what the attack ID's for different combos are and for heavy attacks then manually set these values here or something
-                    //characterInstance.AttackInput(characterInstance.m_nextAttackType, characterInstance.m_nextAttackID);
-                    //characterInstance.HitStarted(characterInstance.m_nextAttackID);
-                    characterInstance.AttackInput((int)x, characterInstance.m_nextAttackID);
-                    characterInstance.HitStarted((int)x);
-                    Logs.WriteWarning("Swing fired " + characterInstance.m_nextAttackType + " " + characterInstance.m_nextAttackID);
+                    int attackType = SteamVR_Actions._default.ButtonA.stateDown ? 0 : 1;
+                    characterInstance.AttackInput(attackType, characterInstance.m_nextAttackID);
+                    characterInstance.HitStarted(attackType);
                 }
             }
         }
@@ -220,8 +246,9 @@ namespace OutwardVR.combat
                 if (characterInstance.HasEnoughStamina(weaponInstance.StamCost))
                 {
                     // Figure out what the attack ID's for different combos are and for heavy attacks then manually set these values here or something
-                    characterInstance.AttackInput(characterInstance.m_nextAttackType, characterInstance.m_nextAttackID);
-                    characterInstance.HitStarted(characterInstance.m_nextAttackID);
+                    int attackType = SteamVR_Actions._default.ButtonA.stateDown ? 0 : 1;
+                    characterInstance.AttackInput(attackType, characterInstance.m_nextAttackID);
+                    characterInstance.HitStarted(attackType);
                 }
             }
         }

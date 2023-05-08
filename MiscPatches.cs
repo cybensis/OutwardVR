@@ -8,10 +8,6 @@ namespace OutwardVR
     [HarmonyPatch]
     internal class MiscPatches
     {
-        public static UnityEngine.UI.Button button;
-        public static Dropdown dropdown;
-        public static Dropdown.DropdownItem dropdownItem;
-        public static ItemDisplayClick invItem;
         public static CharacterUI characterUIInstance;
 
 
@@ -60,33 +56,6 @@ namespace OutwardVR
         }
 
 
-
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(UnityEngine.UI.Selectable), "OnSelect")]
-        private static void SetCurrentButton(UnityEngine.UI.Selectable __instance)
-        {
-            if (__instance.gameObject.GetComponent<UnityEngine.UI.Button>() != null) 
-                button = __instance.gameObject.GetComponent<UnityEngine.UI.Button>();
-            else
-                button = null;
-            
-            if (__instance.gameObject.GetComponent<UnityEngine.UI.Dropdown>() != null)
-                dropdown = __instance.gameObject.GetComponent<UnityEngine.UI.Dropdown>();
-            else    
-                dropdown = null;
-
-            if (__instance.gameObject.GetComponent<Dropdown.DropdownItem>() != null)
-                dropdownItem = __instance.gameObject.GetComponent<Dropdown.DropdownItem>();
-            else
-                dropdownItem = null;
-
-            if (__instance.gameObject.GetComponent<ItemDisplayClick>() != null)
-                invItem = __instance.gameObject.GetComponent<ItemDisplayClick>();
-            else
-                invItem = null;
-        }
-
-
         [HarmonyPrefix]
         [HarmonyPatch(typeof(DialoguePanel), "SkipLine")]
         private static bool PreventAccidentalDialogueSkip(DialoguePanel __instance)
@@ -114,7 +83,7 @@ namespace OutwardVR
                     {
                         GameObject contextButton = __result.transform.parent.GetChild(i).gameObject;
                         // Set the CharacterUI current selected game object to our new button
-                        __instance.GetType().GetField("m_currentSelectedGameObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(__instance, contextButton);
+                        //__instance.GetType().GetField("m_currentSelectedGameObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(__instance, contextButton);
                         // Swap out the result for our new button
                         __result = contextButton;
                         // Just in case the above doesn't work, run Select() on the button

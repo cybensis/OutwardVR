@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿using OutwardVR.input;
+using UnityEngine;
 using Valve.VR;
+using Valve.VR.Extras;
 
 namespace OutwardVR.body
 {
@@ -81,8 +83,11 @@ namespace OutwardVR.body
                 if (name == "hand_left")
                 {
                     Target = CameraManager.LeftHand.transform;
-                    if (Pole == null)
+                    if (Pole == null) { 
                         Pole = new GameObject("LeftArmPole").transform;
+                        Pole.parent = transform.parent.parent.parent.parent;
+                        Pole.localPosition = new Vector3(-0.7f, -0.2f, 0f);
+                    }
                     fingers[0] = transform.GetChild(6).gameObject;
                     fingers[1] = transform.GetChild(1).gameObject;
                     fingers[2] = transform.GetChild(2).gameObject;
@@ -92,8 +97,11 @@ namespace OutwardVR.body
                 else
                 {
                     Target = CameraManager.RightHand.transform;
-                    if (Pole == null)
+                    if (Pole == null) { 
                         Pole = new GameObject("RightArmPole").transform;
+                        Pole.parent = transform.parent.parent.parent.parent;
+                        Pole.localPosition = new Vector3(0.7f, -0.2f, 0f);
+                    }
                     fingers[0] = transform.GetChild(5).gameObject;
                     fingers[1] = transform.GetChild(0).gameObject;
                     fingers[2] = transform.GetChild(1).gameObject;
@@ -103,7 +111,10 @@ namespace OutwardVR.body
                 DontDestroyOnLoad(Pole);
                 SetPositionRootSpace(Target, GetPositionRootSpace(transform));
             }
-
+            //if (name == "hand_left")
+            //    Pole.position = Camera.main.transform.parent.parent.parent.position + Camera.main.transform.parent.parent.parent.right * -0.75f + Camera.main.transform.parent.parent.parent.forward * 1f + Camera.main.transform.parent.parent.parent.up * -0.5f;
+            //else
+            //    Pole.position = Camera.main.transform.parent.parent.parent.position + Camera.main.transform.parent.parent.parent.right * 1.5f + Camera.main.transform.parent.parent.parent.forward * 1.25f + Camera.main.transform.parent.parent.parent.up * -0.5f;
 
             //init data
             var current = transform;
@@ -125,12 +136,19 @@ namespace OutwardVR.body
                     BonesLength[i] = StartDirectionSucc[i].magnitude;
                     CompleteLength += BonesLength[i];
                 }
-                if (name == "hand_right")
-                {
-                    BonesLength[0] += 0.2f;
-                    CompleteLength += 0.2f;
-                }
                 current = current.parent;
+            }
+            if (name == "hand_right")
+            {
+                BonesLength[0] += 0.2f;
+                CompleteLength += 0.2f;
+                //Bones[Bones.Length - 1].gameObject.AddComponent<SteamVR_Behaviour_Pose>();
+                //SteamVR_LaserPointer laser = Bones[Bones.Length - 1].gameObject.AddComponent<SteamVR_LaserPointer>();
+                //Bones[Bones.Length - 1].gameObject.AddComponent<LaserPointer>();
+                //Logs.WriteWarning(laser);
+                ////laser.holder.transform.Rotate(270, 0, 0);
+                //laser.color = new Color(0, 0.5f, 0.6f, 0);
+
             }
 
 
@@ -138,49 +156,18 @@ namespace OutwardVR.body
         }
 
 
-        private float delayLength = 0f;
-        private bool delayTracking = false;
-        private float delayStartTime;
-
-        public void SetDelay(float timeToDelay)
-        {
-            delayLength = timeToDelay;
-            delayStartTime = Time.time;
-            delayTracking = true;
-        }
-
-        public bool isDelayed()
-        {
-            return delayTracking;
-        }
-
         void LateUpdate()
         {
-            //if (delayTracking && Time.time - delayStartTime <= delayLength)
-            //    return;
-            //else if (delayTracking && Time.time - delayStartTime > delayLength)
-            //    delayTracking = false;
             ResolveIK();
         }
 
         private void ResolveIK()
         {
-            if (Target == null)
+            if (Target == null || BonesLength.Length != ChainLength)
             {
                 Init();
                 Logs.WriteWarning(name + " target is null");
             }
-
-
-
-            if (BonesLength.Length != ChainLength)
-                Init();
-
-            // Set the pole position from the head
-            if (name == "hand_left")
-                Pole.position = Camera.main.transform.parent.parent.parent.position + Camera.main.transform.parent.parent.parent.right * -0.75f + Camera.main.transform.parent.parent.parent.forward * 1f + Camera.main.transform.parent.parent.parent.up * -0.5f;
-            else
-                Pole.position = Camera.main.transform.parent.parent.parent.position + Camera.main.transform.parent.parent.parent.right * 1.5f + Camera.main.transform.parent.parent.parent.forward * 1.25f + Camera.main.transform.parent.parent.parent.up * -0.5f;
 
             if (name == "hand_left")
                 TrackLeftHandFingers();
@@ -375,162 +362,6 @@ namespace OutwardVR.body
             }
         }
 
-        //void OnCollisionEnter(Collision collision)
-        //{
-        //    Logs.WriteWarning(collision.gameObject.name + " " + Time.time);
-        //}
-
-        //void OnTriggerEnter(Collider other)
-        //{
-        //    Logs.WriteWarning(other.gameObject.name + " " + Time.time);
-        //}
-
-
-        //private int chainLength = 2;
-        //private Transform target;
-        //private int iterations = 10;
-
-        //private Transform pole;
-
-        //private float delta = 0.001f;
-
-        //private Transform[] bones;
-        //private float[] bonesLength;
-        //private Vector3[] positions;
-        //private float snapBackStrength = 1f;
-        //private Vector3[] startDirectionSucc;
-        //private Quaternion[] startRotationBone;
-        //private Quaternion startRotationTarget;
-        //private Quaternion startRotationRoot;
-
-        //private float completeLength;
-
-        //void Awake() {
-        //    Init();
-        //}
-
-        //void Init()
-        //{
-        //    bones = new Transform[chainLength + 1];
-        //    bonesLength = new float[chainLength];
-        //    positions = new Vector3[chainLength + 1];
-        //    startDirectionSucc = new Vector3[chainLength + 1];
-        //    startRotationBone = new Quaternion[chainLength + 1];
-
-        //    completeLength = 0;
-        //    if (this.name == "hand_left")
-        //    {
-        //        target = CameraManager.LeftHand.transform;
-        //        pole = CameraManager.RightHand.transform;
-        //    }
-        //    else { 
-        //        target = CameraManager.RightHand.transform;
-        //        pole = CameraManager.LeftHand.transform;
-        //    }
-
-        //    startRotationTarget = target.rotation;
-
-        //    Transform currentTransform = transform;
-        //    // Following a tutorial for the IK, not sure why the for loop starts like this just yet
-        //    for (int i = bones.Length - 1; i >= 0; i--) {
-        //        bones[i] = currentTransform;
-
-        //        // i == bones.length-1 is a leaf bone (last bone) that should be attached to the target (hand I think?) and we don't want the length there,
-        //        if (i == bones.Length - 1)
-        //            startDirectionSucc[i] = target.position - currentTransform.position;
-        //        // i < bones.length -1  is a mid bone which we want the length for
-        //        if (i < bones.Length - 1) {
-        //            startDirectionSucc[i] = bones[i + 1].position - currentTransform.position;
-        //            bonesLength[i] = (bones[i + 1].position - currentTransform.position).magnitude;
-        //            completeLength += bonesLength[i];
-        //        } 
-
-        //        currentTransform = currentTransform.parent;
-        //    }
-
-        //}
-
-
-        //void LateUpdate() {
-        //    ResolveIK();
-        //}
-
-        //private void ResolveIK()
-        //{
-        //    if (target == null)
-        //        return;
-
-        //    // If the chain length does not fit to the bone length for whatever reason, init it again
-        //    if (bonesLength.Length != chainLength)
-        //        Init();
-
-        //    // Get positions
-        //    for (int i = 0; i < bones.Length; i++) {
-        //        positions[i] = bones[i].position;
-        //    }
-
-        //    Quaternion rootRot = (bones[0].parent != null) ? bones[0].parent.rotation : Quaternion.identity;
-        //    Quaternion rootRotDiff = rootRot * Quaternion.Inverse(startRotationRoot);
-
-
-        //    // 1st is possible to reach?
-        //    if ((target.position - bones[0].position).sqrMagnitude >= completeLength * completeLength)
-        //    {
-        //        // Get direction by subtracting the shoulder pos from the hand target pos and normalizing it
-        //        Vector3 direction = (target.position - positions[0]).normalized;
-
-        //        for (int i = 1; i < positions.Length; i++)
-        //            // Set the position of the bone to the position of its predecessor plus the direction * the bone length of the predecessor
-        //            positions[i] = positions[i - 1] + direction * bonesLength[i - 1];
-        //    }
-        //    else {
-
-        //        for (int i = 0; i < positions.Length - 1; i++)
-        //            positions[i + 1] = Vector3.Lerp(positions[i + 1], positions[i] + rootRotDiff * startDirectionSucc[i], snapBackStrength);
-
-        //        for (int i = 0; i < iterations; i++) {
-        //            for (int a = positions.Length - 1; a > 0; a--) {
-        //                // moving backwards
-        //                if (a == positions.Length - 1)
-        //                    // set that hand position to the target position
-        //                    positions[a] = target.position;
-        //                else
-        //                    // I think this line makes it so the distance of a joint from another joint is always at the length of the bone
-        //                    positions[a] = positions[a + 1] + (positions[a] - positions[a + 1]).normalized * bonesLength[a];
-
-        //            }
-        //            // moving forward
-        //            for (int a = 1; a < positions.Length; a++) {
-        //                // same as the part above but in reverse
-        //                positions[a] = positions[a - 1] + (positions[a] - positions[a - 1]).normalized * bonesLength[a - 1];       
-        //            }
-        //            if ((positions[positions.Length - 1] - target.position).sqrMagnitude < delta * delta)
-        //                break;
-        //        }
-        //    }
-        //    // move towards pole
-        //    if (pole != null)
-        //    {
-        //        for (int i = 1; i < positions.Length - 1; i++) {
-        //            Plane plane = new Plane(positions[i + 1] - positions[i - 1], positions[ i - 1]);
-        //            Vector3 projectedPole = plane.ClosestPointOnPlane(pole.position);
-        //            Vector3 projectedBone = plane.ClosestPointOnPlane(positions[i]);
-        //            float angle = Vector3.SignedAngle(projectedBone - positions[i - 1], projectedPole - positions[i - 1], plane.normal);
-        //            positions[i] = Quaternion.AngleAxis(angle, plane.normal) * (positions[i] - positions[i - 1]) + positions[i - 1];
-        //        }
-        //    }
-
-        //    // set the bones positions after finishing calculations
-        //    for (int i = 0; i < positions.Length; i++)
-        //    {
-        //        if (i == positions.Length - 1)
-        //            bones[i].rotation = target.rotation * Quaternion.Inverse(startRotationTarget) * startRotationBone[i];
-        //        else
-        //            bones[i].rotation = Quaternion.FromToRotation(startDirectionSucc[i], positions[i + 1] - positions[i]) * startRotationBone[i];
-        //        bones[i].position = positions[i];
-        //    }
-
-        //}
-
+     
     }
 }

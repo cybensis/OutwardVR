@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using OutwardVR.input;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,6 +8,7 @@ using System.Reflection;
 using Unity.XR.OpenVR;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using UnityEngine.XR.Management;
 using Valve.VR;
 
@@ -71,11 +73,24 @@ public class Plugin : BaseUnityPlugin
 
         SteamVR_Actions._default.ButtonA.AddOnStateDownListener(TriggerButton, SteamVR_Input_Sources.Any);
         SteamVR_Actions._default.ButtonX.AddOnStateDownListener(InventoryMenuTrigger, SteamVR_Input_Sources.Any);
-        SteamVR_Actions._default.ButtonB.AddOnStateDownListener(RemoveActiveButton, SteamVR_Input_Sources.Any);
+        //SteamVR_Actions._default.ButtonY.AddOnStateDownListener(InteractDown, SteamVR_Input_Sources.Any);
+        //SteamVR_Actions._default.ButtonY.AddOnStateUpListener(InteractUp, SteamVR_Input_Sources.Any);
     }
 
 
-
+    //public static void InteractDown(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    //{
+    //    if (InteractionDisplayPatches.laser != null && InteractionDisplayPatches.laser.worldItem != null) { 
+    //        Logs.WriteWarning("TEST");
+    //        //Camera.main.transform.root.GetComponent<Character>().OnInteractButtonDown();
+    //        InteractionDisplayPatches.laser.worldItem.transform.parent.GetComponent<InteractionTriggerBase>().TryActivateBasicAction(Camera.main.transform.root.GetComponent<Character>());
+    //    }
+    //}
+    //public static void InteractUp(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    //{
+    //    if (InteractionDisplayPatches.laser != null && InteractionDisplayPatches.laser.worldItem != null)
+    //        Camera.main.transform.root.GetComponent<Character>().OnInteractButtonUp();
+    //}
 
 
     public static void UpdateRightHand(SteamVR_Action_Pose fromAction, SteamVR_Input_Sources fromSource)
@@ -102,31 +117,16 @@ public class Plugin : BaseUnityPlugin
 
     public static void TriggerButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
     {
-        if (MiscPatches.characterUIInstance.IsMenuFocused || MiscPatches.characterUIInstance.IsDialogueInProgress)
+        if ((MiscPatches.characterUIInstance.IsMenuFocused || MiscPatches.characterUIInstance.IsDialogueInProgress) && MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo != null)
         {
-            if (MiscPatches.characterUIInstance.IsOptionPanelDisplayed && MiscPatches.dropdown != null)
-            {
-                MiscPatches.dropdown.Show();
-                MiscPatches.dropdown = null;
-            }
-            else if (MiscPatches.characterUIInstance.IsOptionPanelDisplayed && MiscPatches.dropdownItem != null)
-            {
-                MiscPatches.dropdownItem.GetComponent<UnityEngine.UI.Toggle>().OnSubmit(null);
-                MiscPatches.dropdownItem = null;
-            }
-
-            if (MiscPatches.button != null)
-            {
-                MiscPatches.button.Press();
-                MiscPatches.button = null;
-            }
-
-            if (MiscPatches.characterUIInstance.CurrentSelectedGameObject != null && MiscPatches.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
-            {
-                ItemDisplayClick invItem = MiscPatches.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
-                invItem.SingleClick();
-            }
-
+            if (MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<ItemDisplayClick>() != null)
+                MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<ItemDisplayClick>().SingleClick();
+            else if (MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<UnityEngine.UI.Toggle>() != null)
+                MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<UnityEngine.UI.Toggle>().OnSubmit(null);
+            else if (MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<Dropdown>() != null)
+                MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<Dropdown>().Show();
+            else if (MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<Button>() != null)
+                MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<Button>().Press();
         }
 
     }
@@ -139,10 +139,10 @@ public class Plugin : BaseUnityPlugin
 
         if (MiscPatches.characterUIInstance != null &&
             MiscPatches.characterUIInstance.IsMenuFocused &&
-            MiscPatches.characterUIInstance.CurrentSelectedGameObject != null &&
-            MiscPatches.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>() != null)
+            MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo != null &&
+            MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<ItemDisplayClick>() != null)
         {
-            ItemDisplayClick invItem = MiscPatches.characterUIInstance.CurrentSelectedGameObject.GetComponent<ItemDisplayClick>();
+            ItemDisplayClick invItem = MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<ItemDisplayClick>();
             PointerEventData _data = new PointerEventData(EventSystem.current);
             _data.pointerPress = invItem.gameObject;
             // Figure out how to set this value based on the items positon in the inventory canvas
@@ -153,11 +153,6 @@ public class Plugin : BaseUnityPlugin
 
     }
 
-
-    public static void RemoveActiveButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
-    {
-        MiscPatches.button = null;
-    }
 
 
     private static void InitSteamVR()

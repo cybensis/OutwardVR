@@ -17,9 +17,10 @@ namespace OutwardVR.UI
         {
             try
             {
-                if (Camera.main == null || Camera.main.transform.root == null || Camera.main.transform.root.GetComponent<Character>() == null)
-                    return;
                 Character character = Camera.main.transform.root.GetComponent<Character>();
+
+                if (character == null)
+                    return;
                 // By setting the HUD's parent to the head object it rotates with the body and by setting the local position, it is positioned perfectly
                 if (__instance.transform.parent == null)
                 {

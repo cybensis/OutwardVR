@@ -60,7 +60,7 @@ namespace OutwardVR.combat
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Character), "SendPerformAttackTrivial", new[] { typeof(int), typeof(int), typeof(bool) })]
-        private static bool dd(Character __instance, object[] __args)
+        private static bool PerformAttackWithoutAnimation(Character __instance, object[] __args)
         {
             if (!__instance.IsLocalPlayer ||
                 (int)__args[0] >= 2 || 

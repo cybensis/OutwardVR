@@ -44,12 +44,13 @@ namespace OutwardVR.combat
         private bool isBlocking = false;
         private GameObject leftHand;
         Character characterInstance;
+
+        private Vector3 lastPosition = Vector3.zero;
         private void InitHand() {
             if (NetworkLevelLoader.Instance.IsOverallLoadingDone && NetworkLevelLoader.Instance.AllPlayerReadyToContinue)
             {
                 leftHand = (GetComponent<ItemVisual>().m_item as DualMeleeWeapon).LeftHandFollow.gameObject;
                 characterInstance = Camera.main.transform.root.GetComponent<Character>();
-                Logs.WriteWarning("Init hand");
             }
         }
 
@@ -108,11 +109,11 @@ namespace OutwardVR.combat
                 if (leftSwingVelocity > rightSwingVelocity)
                 {
                     DetectPunch(leftSwingVelocity);
-                    DetectHit(leftHand.transform.position, leftHand.transform.up);
+                    DetectHit(leftHand.transform.position, leftHand.transform.up, leftSwingVelocity);
                 }
                 else { 
                     DetectPunch(rightSwingVelocity);
-                    DetectHit(transform.position, transform.forward * -1);
+                    DetectHit(transform.position, transform.forward * -1, rightSwingVelocity);
                 }
             }
         }
@@ -126,14 +127,14 @@ namespace OutwardVR.combat
                 if (characterInstance.HasEnoughStamina(characterInstance.CurrentWeapon.StamCost))
                 {
                     // Figure out what the attack ID's for different combos are and for heavy attacks then manually set these values here or something
-                    characterInstance.AttackInput(characterInstance.m_nextAttackType, characterInstance.m_nextAttackID);
-                    characterInstance.HitStarted(characterInstance.m_nextAttackID);
-                    Logs.WriteWarning("Punch fired " + characterInstance.m_nextAttackType + " " + characterInstance.m_nextAttackID);
+                    int attackType = SteamVR_Actions._default.ButtonA.stateDown ? 0 : 1;
+                    characterInstance.AttackInput(attackType, characterInstance.m_nextAttackID);
+                    characterInstance.HitStarted(attackType);
                 }
             }
         }
 
-        private void DetectHit(Vector3 punchingHandPos, Vector3 direction)
+        private void DetectHit(Vector3 punchingHandPos, Vector3 direction, float swingVelocity)
         {
 
             if (isSwinging && !hasHit && Physics.Raycast(punchingHandPos, direction, out hit, raycastLength, LayerMask.GetMask("Hitbox")) && !hit.collider.GetComponent<Hitbox>().m_ownerChar.IsLocalPlayer)
@@ -142,7 +143,12 @@ namespace OutwardVR.combat
             {
                 hitFired = true;
                 // Try and add direction here cos I think it'll make enemies bodies ragdoll in that direction if they die
-                characterInstance.CurrentWeapon.HasHit(hit, new Vector3(0, 0, 0));
+                characterInstance.CurrentWeapon.HasHit(hit, (punchingHandPos - lastPosition) * 3);
+            }
+            // Update the last position only after we've checked for a hit
+            if (isSwinging && swingVelocity >= VELOCITY_THRESHOLD)
+            {
+                lastPosition = punchingHandPos;
             }
         }
 
