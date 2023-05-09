@@ -23,7 +23,7 @@ namespace OutwardVR.body
         /// Solver iterations per update
         /// </summary>
         [Header("Solver Parameters")]
-        public int Iterations = 10;
+        public int Iterations = 5;
 
         /// <summary>
         /// Distance when the solver stops

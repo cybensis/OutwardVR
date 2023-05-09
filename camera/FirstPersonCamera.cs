@@ -5,6 +5,7 @@ using OutwardVR.combat;
 using UnityEngine;
 using UnityEngine.UI;
 using Valve.VR;
+using static MapMagic.ObjectPool;
 
 namespace OutwardVR.camera
 {
@@ -18,6 +19,12 @@ namespace OutwardVR.camera
         private static GameObject playerTorso;
         public static GameObject leftHand;
         public static GameObject rightHand;
+
+        private static float x, y, z;
+
+        public static float camInitYHeight = 0;
+        public static float camCurrentHeight = 0;
+        public static Transform camTransform;
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MainScreen), nameof(MainScreen.StartInit))]
@@ -39,6 +46,26 @@ namespace OutwardVR.camera
         }
 
 
+        //private static GameObject pelvis;
+
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(CharacterVisuals), "Awake")]
+        //private static void AttachPhysicalCrouchClass(CharacterVisuals __instance)
+        //{
+        //    if (!__instance.m_character.IsLocalPlayer)
+        //        return;
+        //    try
+        //    {
+        //        pelvis = __instance.RagdollRoot.gameObject;
+        //        __instance.RagdollRoot.gameObject.AddComponent<Test>();
+        //    }
+        //    catch
+        //    {
+        //        return;
+        //    }
+        //}
+
+
 
         [HarmonyPatch(typeof(CharacterCamera), "LateUpdate")]
         public class CharacterCamera_LateUpdate
@@ -46,13 +73,14 @@ namespace OutwardVR.camera
             [HarmonyPostfix]
             public static void Postfix(CharacterCamera __instance)
             {
-                __instance.transform.localPosition = new Vector3(0, 0.2f, 0);
+                //-0.1f, 0.05f, 0.2f
+                __instance.transform.localPosition = new Vector3(0,0.2f,0);
             }
         }
 
         private static void TriggerButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
         {
-            Logs.WriteError("AAAAAAAAAA");
+            camInitYHeight = Camera.main.transform.localPosition.y;
 
         }
 
@@ -88,7 +116,6 @@ namespace OutwardVR.camera
                         rightHand.AddComponent<ArmIK>();
                     if (playerHead != null && playerHead.GetComponent<FixHeadRotation>() == null)
                         playerHead.AddComponent<FixHeadRotation>();
-
                     if (__instance.TargetCharacter.CurrentWeapon != null) {
                         if (__instance.TargetCharacter.CurrentWeapon.Type == Weapon.WeaponType.FistW_2H)
                             __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<VRFisticuffsHandler>();
@@ -111,6 +138,7 @@ namespace OutwardVR.camera
                     __instance.TargetCharacter.Visuals.Head.GetComponent<SkinnedMeshRenderer>().enabled = false;
                     if (__instance.TargetCharacter.Visuals.DefaultHairVisuals != null)
                         __instance.TargetCharacter.Visuals.DefaultHairVisuals.GetComponent<SkinnedMeshRenderer>().enabled = false;
+
                 }
                 catch (Exception e)
                 {
@@ -183,7 +211,6 @@ namespace OutwardVR.camera
         }
 
 
-
         [HarmonyPatch(typeof(LocalCharacterControl), "UpdateMovement")]
         public class LocalCharacterControl_UpdateMovement
         {
@@ -192,6 +219,13 @@ namespace OutwardVR.camera
                 Transform ___m_horiControl, ref bool ___m_sprintFacing)
             {
                 Controllers.Update();
+                if (camInitYHeight == 0) {
+                    camInitYHeight = Camera.main.transform.localPosition.y;
+                    camTransform = Camera.main.transform;
+                    __instance.Character.RagdollRoot.gameObject.AddComponent<Test>();
+                }
+                camCurrentHeight = Camera.main.transform.localPosition.y;
+
                 Character m_char = __instance.m_character;
                 Animator animator = m_char.Animator;
                 TargetingSystem targetSys = m_char.TargetingSystem;
@@ -281,7 +315,9 @@ namespace OutwardVR.camera
                 // ========= Custom code to lock Y axis =========
                 // This is used to negate the headsets height and lock its Y axis
                 Vector3 camPosition = Camera.main.transform.parent.localPosition;
-                camPosition.y = Camera.main.transform.localPosition.y * -1f;
+                //Logs.WriteError(Camera.main.transform.localPosition);
+                //camPosition.y = Camera.main.transform.localPosition.y * -1f;
+                camPosition.y = camInitYHeight * -1;
                 Camera.main.transform.parent.localPosition = camPosition;
 
                 // ========= Mix of custom and default code to enable sideways and backwards movement =========
