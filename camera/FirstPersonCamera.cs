@@ -3,6 +3,7 @@ using HarmonyLib;
 using OutwardVR.body;
 using OutwardVR.combat;
 using UnityEngine;
+using UnityEngine.UI;
 using Valve.VR;
 
 namespace OutwardVR.camera
@@ -48,7 +49,12 @@ namespace OutwardVR.camera
                 __instance.transform.localPosition = new Vector3(0, 0.2f, 0);
             }
         }
-        
+
+        private static void TriggerButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+        {
+            Logs.WriteError("AAAAAAAAAA");
+
+        }
 
 
         [HarmonyPatch(typeof(CharacterCamera), "Update")]
@@ -119,6 +125,7 @@ namespace OutwardVR.camera
         private static void FixCamera(CharacterCamera cameraScript, Camera camera)
         {
             Debug.Log("[InwardVR] setting up camera...");
+            SteamVR_Actions._default.Start.AddOnStateDownListener(TriggerButton, SteamVR_Input_Sources.Any);
             Controllers.Init();
             Camera.main.cullingMask = -1; // Culling mask needs to be -1, otherwise worldspace HUD doesn't show up
             Camera.main.nearClipPlane = NEAR_CLIP_PLANE_VALUE; // Reduce near clipping plane so the HUD can be seen when its close to the camera

@@ -46,9 +46,9 @@ namespace OutwardVR.body
         protected Quaternion StartRotationTarget;
         protected Transform Root;
         private GameObject[] fingers;
-        private float x = -0.4f;
-        private float y = -0.135f;
-        private float z = -0.025f;
+        private Vector3 twoHandOffset;
+
+        private bool isLeftHand = false;
 
         private Character character;
 
@@ -77,10 +77,13 @@ namespace OutwardVR.body
                 Root = Root.parent;
             }
 
+            if (name == "hand_left")
+                isLeftHand = true;
+
             //init target
             if (Target == null)
             {
-                if (name == "hand_left")
+                if (isLeftHand)
                 {
                     Target = CameraManager.LeftHand.transform;
                     if (Pole == null) { 
@@ -111,10 +114,6 @@ namespace OutwardVR.body
                 DontDestroyOnLoad(Pole);
                 SetPositionRootSpace(Target, GetPositionRootSpace(transform));
             }
-            //if (name == "hand_left")
-            //    Pole.position = Camera.main.transform.parent.parent.parent.position + Camera.main.transform.parent.parent.parent.right * -0.75f + Camera.main.transform.parent.parent.parent.forward * 1f + Camera.main.transform.parent.parent.parent.up * -0.5f;
-            //else
-            //    Pole.position = Camera.main.transform.parent.parent.parent.position + Camera.main.transform.parent.parent.parent.right * 1.5f + Camera.main.transform.parent.parent.parent.forward * 1.25f + Camera.main.transform.parent.parent.parent.up * -0.5f;
 
             //init data
             var current = transform;
@@ -138,7 +137,7 @@ namespace OutwardVR.body
                 }
                 current = current.parent;
             }
-            if (name == "hand_right")
+            if (!isLeftHand)
             {
                 BonesLength[0] += 0.2f;
                 CompleteLength += 0.2f;
@@ -148,7 +147,14 @@ namespace OutwardVR.body
                 //Logs.WriteWarning(laser);
                 ////laser.holder.transform.Rotate(270, 0, 0);
                 //laser.color = new Color(0, 0.5f, 0.6f, 0);
+            }
 
+            if (character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded) {
+                Weapon currentWeapon = character.CurrentWeapon;
+                if (currentWeapon.Type == Weapon.WeaponType.Sword_2H || currentWeapon.Type == Weapon.WeaponType.Axe_2H || currentWeapon.Type == Weapon.WeaponType.Mace_2H)
+                    twoHandOffset = new Vector3(-0.275f,-0.02f, -0.015f);
+                else if (currentWeapon.Type == Weapon.WeaponType.Halberd_2H || currentWeapon.Type == Weapon.WeaponType.Spear_2H)
+                    twoHandOffset = new Vector3(-0.6f, -0.19f, -0.08f);
             }
 
 
@@ -169,34 +175,32 @@ namespace OutwardVR.body
                 Logs.WriteWarning(name + " target is null");
             }
 
-            if (name == "hand_left")
+            Vector3 targetPosition = Target.position;
+            if (isLeftHand)
+            {
                 TrackLeftHandFingers();
-            else
+                // This offsets the VR hands so they align better with the in game hands
+                targetPosition += Target.right * 0 + Target.up * 0.05f + Target.forward * -0.15f;
+            }
+            else { 
                 TrackRightHandFingers();
+                targetPosition += Target.right * 0.05f + Target.up * 0.05f + Target.forward * -0.15f;
+            }
 
 
             //get position
             for (int i = 0; i < Bones.Length; i++)
                 Positions[i] = GetPositionRootSpace(Bones[i]);
 
-            Vector3 targetPosition = Target.position;
-            // This offsets the VR hands so they align better with the in game hands
-            if (name == "hand_left")
-                targetPosition += Target.right * 0 + Target.up * 0.05f + Target.forward * -0.15f;
-            else
-                targetPosition += Target.right * 0.05f + Target.up * 0.05f + Target.forward * -0.15f;
 
-            // Trying to figure out how to stick left hand onto two handed weapons
-            //if (name == "hand_left" && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.TwoHand != Equipment.TwoHandedType.DualWield && character.CurrentWeapon.Type != Weapon.WeaponType.Bow)
-            //{
-            //    Target = CameraManager.RightHand.transform;
-            //    Transform rightHand = character.CurrentWeapon.CurrentVisual.transform.parent.parent.parent;
-            //    targetPosition = Target.position + rightHand.forward * x + rightHand.transform.up * y + rightHand.right * z;
-            //}
-            //else if (name == "hand_left" && Target.name == "RightHand")
-            //{
-            //    Target = CameraManager.LeftHand.transform;
-            //}
+
+            if (isLeftHand && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.TwoHand != Equipment.TwoHandedType.DualWield && character.CurrentWeapon.Type != Weapon.WeaponType.Bow)
+            {
+                Target = CameraManager.RightHand.transform;
+                targetPosition = Target.position + Target.forward * twoHandOffset.x + Target.transform.up * twoHandOffset.y + Target.right * twoHandOffset.z;
+            }
+            else if (isLeftHand && Target.name == "RightHand")
+                Target = CameraManager.LeftHand.transform;
 
             targetPosition = Quaternion.Inverse(Root.rotation) * (targetPosition - Root.position);
 
@@ -255,18 +259,10 @@ namespace OutwardVR.body
                 if (i == Positions.Length - 1)
                 {
                     Bones[i].rotation = Target.transform.rotation;
-                    //Bones[i].localRotation = Target.transform.localRotation;
-                    if (name == "hand_left")
+                    if (isLeftHand)
                         Bones[i].Rotate(-34, 15, -217);
                     else
                         Bones[i].Rotate(-34, 15, -200);
-
-                    //if (name == "hand_left" && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded)
-                    //{
-                    //    Bones[i].rotation = CameraManager.RightHand.transform.rotation;
-                    //    Bones[i].Rotate(0,0,180f);
-
-                    //}
                 }
                 else
                     SetRotationRootSpace(Bones[i], Quaternion.FromToRotation(StartDirectionSucc[i], Positions[i + 1] - Positions[i]) * Quaternion.Inverse(StartRotationBone[i]));

@@ -3,6 +3,7 @@ using UnityEngine.Events;
 using UnityEngine;
 using Valve.VR;
 using OutwardVR.camera;
+using UnityEngine.UI;
 
 namespace OutwardVR.UI
 {
@@ -249,6 +250,9 @@ namespace OutwardVR.UI
             menuManager = __instance.transform.root.gameObject;
             PositionMenuManager(menuManager);
             tempCamHolder.transform.Rotate(0, -25, 0);
+            Button firstMenuButton = __instance.FirstSelectable.GetComponent<Button>();
+            if (firstMenuButton != null)
+                firstMenuButton.Select();
         }
 
 
@@ -268,10 +272,10 @@ namespace OutwardVR.UI
         {
             chosenTitleScreen = __args[0] as string;
             Logs.WriteWarning("LOADING TITLE SCREEN");
-            // When returning from a game to the main menu, the main menu FirstUpdate gets ran before
+            // When returning from a game to the main menu, the main menu FirstUpdate gets ran before this so it tries to position the
+            // menu manager based on the title screen from when the game first loaded, so we need to re-load it here
             if (gameHasBeenLoadedOnce)
             {
-
                 PositionMenuManager(menuManager);
             }
         }
