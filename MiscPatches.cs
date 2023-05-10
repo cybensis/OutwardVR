@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using static UnityEngine.UIElements.UIR.BestFitAllocator;
 
 namespace OutwardVR
 {
@@ -34,6 +35,26 @@ namespace OutwardVR
             catch {
                 return;
             }
+        }
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(DialoguePanel), "Update")]
+        private static void TuteFix(DialoguePanel __instance)
+        {
+            if (!DemoManager.DemoIsActive)
+                return;
+            Logs.WriteWarning(__instance.m_lastNpcLocKey);
+            Logs.WriteWarning(__instance.m_displayText);
+            string tuteName = __instance.m_lastNpcLocKey;
+            if (tuteName == "Player_Message_TutorialTitle_Attacks")
+                __instance.m_lblNpcSpeech.text = "Perform attacks by swinging your controller around or for non-fist weapons, stab attack can also be used";
+            else if (tuteName == "Player_Message_TutorialTitle_Blocking")
+                __instance.m_lblNpcSpeech.text = @"Blocking can either be done with <color=#D6A260>[RightGrip]</color> or using the motion controls to prevent the damage from a strike and reduces how much you would be knocked back. 
+To block with a weapon, turn it to the side so the tip of the weapon is facing to the left or right of the player, for shields simply hold it out in front of you as you would an actual shield, and for fist type weapons, holding both
+hands up in front of your face with your fists pointing to the sky will activate blocking.
+
+Shields consume less stamina when blocking and can block arrows.";
         }
 
 

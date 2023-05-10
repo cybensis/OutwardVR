@@ -49,6 +49,7 @@ namespace OutwardVR.body
         private Vector3 twoHandOffset;
 
         private bool isLeftHand = false;
+        private bool twoHanded = false;
 
         private Character character;
 
@@ -149,16 +150,39 @@ namespace OutwardVR.body
                 //laser.color = new Color(0, 0.5f, 0.6f, 0);
             }
 
-            if (character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded) {
+            if (isLeftHand && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded) {
                 Weapon currentWeapon = character.CurrentWeapon;
                 if (currentWeapon.Type == Weapon.WeaponType.Sword_2H || currentWeapon.Type == Weapon.WeaponType.Axe_2H || currentWeapon.Type == Weapon.WeaponType.Mace_2H)
-                    twoHandOffset = new Vector3(-0.275f,-0.02f, -0.015f);
+                    twoHandOffset = new Vector3(-0.175f, -0.1f, -0.03f);
                 else if (currentWeapon.Type == Weapon.WeaponType.Halberd_2H || currentWeapon.Type == Weapon.WeaponType.Spear_2H)
-                    twoHandOffset = new Vector3(-0.6f, -0.19f, -0.08f);
+                    twoHandOffset = new Vector3(-0.35f, -0.225f, -0.07f);
+                    //twoHandOffset = new Vector3(-0.6f, -0.19f, -0.08f);
             }
 
 
 
+        }
+
+
+        public void ChangeWeapon(bool isValidTwoHandWeapon) {
+            //if (isLeftHand && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.TwoHand != Equipment.TwoHandedType.DualWield && character.CurrentWeapon.Type != Weapon.WeaponType.Bow)
+            Logs.WriteWarning("AAAAAAAAAAAAAA");
+            if (isLeftHand && isValidTwoHandWeapon)
+            {
+                Target = CameraManager.RightHand.transform;
+                twoHanded = true;
+                Weapon.WeaponType currentWeaponType = character.CurrentWeapon.Type;
+                if (currentWeaponType == Weapon.WeaponType.Sword_2H || currentWeaponType == Weapon.WeaponType.Axe_2H || currentWeaponType == Weapon.WeaponType.Mace_2H)
+                    twoHandOffset = new Vector3(-0.175f, -0.1f, -0.03f);
+                    //twoHandOffset = new Vector3(-0.275f, -0.175f, -0.06f);
+                    //twoHandOffset = new Vector3(-0.275f, -0.02f, -0.015f);
+                else if (currentWeaponType == Weapon.WeaponType.Halberd_2H || currentWeaponType == Weapon.WeaponType.Spear_2H)
+                    twoHandOffset = new Vector3(-0.35f, -0.225f, -0.07f);
+            }
+            else if (isLeftHand && !isValidTwoHandWeapon) { 
+                Target = CameraManager.LeftHand.transform;
+                twoHanded = false;
+            }
         }
 
 
@@ -176,8 +200,9 @@ namespace OutwardVR.body
             }
 
             Vector3 targetPosition = Target.position;
-            if (isLeftHand)
-            {
+            if (isLeftHand && twoHanded)
+                targetPosition += Target.forward * twoHandOffset.x + Target.transform.up * twoHandOffset.y + Target.right * twoHandOffset.z;
+            if (isLeftHand) {
                 TrackLeftHandFingers();
                 // This offsets the VR hands so they align better with the in game hands
                 targetPosition += Target.right * 0 + Target.up * 0.05f + Target.forward * -0.15f;
@@ -187,20 +212,10 @@ namespace OutwardVR.body
                 targetPosition += Target.right * 0.05f + Target.up * 0.05f + Target.forward * -0.15f;
             }
 
-
             //get position
             for (int i = 0; i < Bones.Length; i++)
                 Positions[i] = GetPositionRootSpace(Bones[i]);
 
-
-
-            if (isLeftHand && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.TwoHand != Equipment.TwoHandedType.DualWield && character.CurrentWeapon.Type != Weapon.WeaponType.Bow)
-            {
-                Target = CameraManager.RightHand.transform;
-                targetPosition = Target.position + Target.forward * twoHandOffset.x + Target.transform.up * twoHandOffset.y + Target.right * twoHandOffset.z;
-            }
-            else if (isLeftHand && Target.name == "RightHand")
-                Target = CameraManager.LeftHand.transform;
 
             targetPosition = Quaternion.Inverse(Root.rotation) * (targetPosition - Root.position);
 

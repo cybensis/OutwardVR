@@ -1,5 +1,7 @@
 ﻿using OutwardVR.body;
+using OutwardVR.camera;
 using UnityEngine;
+using UnityEngine.TextCore;
 using Valve.VR;
 
 namespace OutwardVR.combat
@@ -66,16 +68,33 @@ namespace OutwardVR.combat
         private float weaponDirectionModifier = 5;
 
         private Vector3 lastPosition = Vector3.zero;
+
+        private bool isLeftHand = false;
+
+
+        private void OnDisable() {
+            // Need to do this so it reruns InitVars when enabled again, but cant use OnEnable because the weapon won't be equipped when its ran so just use the InitVars call in Update()
+            handIK = null;
+        }
+
         private void InitVars()
         {
-            handIK = transform.parent.parent.parent.GetComponent<ArmIK>();
-            characterInstance = Camera.main.transform.root.GetComponent<Character>();
+            if (handIK == null)
+                handIK = transform.parent.parent.parent.GetComponent<ArmIK>();
 
-            if (handIK.name == "hand_left" && characterInstance.LeftHandWeapon.CurrentVisual.name != name)
+            if (weaponInstance == null)
+                weaponInstance = GetComponent<ItemVisual>().m_item as MeleeWeapon;
+
+            if (characterInstance == null)
+                characterInstance = weaponInstance.OwnerCharacter;
+
+            if (handIK.name == "hand_left")
+                isLeftHand = true;
+            if (isLeftHand && characterInstance.LeftHandWeapon.CurrentVisual.name != name)
                 return;
-            else if (handIK.name == "hand_right" && characterInstance.CurrentWeapon.CurrentVisual.name != name)
+            else if (!isLeftHand && characterInstance.CurrentWeapon.CurrentVisual.name != name)
                 return;
-            weaponInstance = GetComponent<ItemVisual>().m_item as MeleeWeapon;
+
             // The two BASE vars were made based on the iron swords reach, so by dividing the reach of the current weapon by the iron swords reach, 
             // we get a modifier value to multiply the raycast length by.
             raycastLength = weaponInstance.Reach / BASE_WEAPON_REACH * BASE_RAYCAST_LENGTH;
@@ -93,10 +112,11 @@ namespace OutwardVR.combat
                 attackDelay = 0.2f;
                 weaponDirectionModifier = 3.5f;
             }
-            if (handIK.name == "hand_left")
+            if (isLeftHand)
                 return;
             if (weaponInstance.TwoHanded)
                 raycastLength += 0.1f;
+
             if (weaponInstance.Type == Weapon.WeaponType.Axe_2H || weaponInstance.Type == Weapon.WeaponType.Mace_2H)
                 transform.parent.localPosition = new Vector3(0f, -0.3f, 0f);
             else if (weaponInstance.Type == Weapon.WeaponType.Halberd_2H)
@@ -109,17 +129,15 @@ namespace OutwardVR.combat
                 transform.parent.localPosition = new Vector3(0f, -0.8f, 0f);
                 raycastLength += 0.2f;
             }
-            else {
+            else
                 transform.parent.localPosition = Vector3.zero;
-            } 
-
 
         }
 
 
         void Update()
         {
-            if (!NetworkLevelLoader.Instance.IsOverallLoadingDone || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue)
+            if (!NetworkLevelLoader.Instance.IsOverallLoadingDone || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue || !gameObject.GetActive())
                 return;
             if (handIK == null || characterInstance == null || raycastLength == 0f)
                 InitVars();
@@ -132,10 +150,10 @@ namespace OutwardVR.combat
             
 
             float swingVelocity;
-            if (handIK.name == "hand_right")
-                swingVelocity = Mathf.Clamp(SteamVR_Actions._default.SkeletonRightHand.velocity.magnitude, 0, MAX_VELOCITY);
-            else
+            if (isLeftHand)
                 swingVelocity = Mathf.Clamp(SteamVR_Actions._default.SkeletonLeftHand.velocity.magnitude, 0, MAX_VELOCITY);
+            else
+                swingVelocity = Mathf.Clamp(SteamVR_Actions._default.SkeletonRightHand.velocity.magnitude, 0, MAX_VELOCITY);
             // Only call the slash/hit/stab functions if the velocity is over the threshold, otherwise its wasting resources
             if (swingVelocity < VELOCITY_THRESHOLD)
                 DetectBlock(swingVelocity);

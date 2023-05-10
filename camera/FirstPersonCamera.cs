@@ -109,25 +109,6 @@ namespace OutwardVR.camera
                 try
                 {
                     CameraManager.Setup();
-
-                    if (leftHand != null && leftHand.GetComponent<ArmIK>() == null)
-                        leftHand.AddComponent<ArmIK>();
-                    if (rightHand != null && rightHand.GetComponent<ArmIK>() == null)
-                        rightHand.AddComponent<ArmIK>();
-                    if (playerHead != null && playerHead.GetComponent<FixHeadRotation>() == null)
-                        playerHead.AddComponent<FixHeadRotation>();
-                    if (__instance.TargetCharacter.CurrentWeapon != null) {
-                        if (__instance.TargetCharacter.CurrentWeapon.Type == Weapon.WeaponType.FistW_2H)
-                            __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<VRFisticuffsHandler>();
-                        else
-                            __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<VRMeleeHandler>();
-                    }
-                    if (__instance.TargetCharacter.LeftHandWeapon != null) {
-                        if (__instance.TargetCharacter.LeftHandWeapon.Type == Weapon.WeaponType.Shield)
-                            __instance.TargetCharacter.LeftHandWeapon.EquippedVisuals.gameObject.AddComponent<VRShieldHandler>();
-                        else if (__instance.TargetCharacter.LeftHandWeapon.Type == Weapon.WeaponType.Dagger_OH)
-                            __instance.TargetCharacter.LeftHandWeapon.EquippedVisuals.gameObject.AddComponent<VRMeleeHandler>();
-                    }
                     FixCamera(__instance, ___m_camera);
                     UI.MenuPatches.gameHasBeenLoadedOnce = true;
                     // CharacterUI is disabled during prologue so re-enable it here
@@ -138,6 +119,28 @@ namespace OutwardVR.camera
                     __instance.TargetCharacter.Visuals.Head.GetComponent<SkinnedMeshRenderer>().enabled = false;
                     if (__instance.TargetCharacter.Visuals.DefaultHairVisuals != null)
                         __instance.TargetCharacter.Visuals.DefaultHairVisuals.GetComponent<SkinnedMeshRenderer>().enabled = false;
+
+
+                    if (leftHand != null && leftHand.GetComponent<ArmIK>() == null)
+                        leftHand.AddComponent<ArmIK>();
+                    if (rightHand != null && rightHand.GetComponent<ArmIK>() == null)
+                        rightHand.AddComponent<ArmIK>();
+                    if (playerHead != null && playerHead.GetComponent<FixHeadRotation>() == null)
+                        playerHead.AddComponent<FixHeadRotation>();
+                    if (__instance.TargetCharacter.CurrentWeapon != null)
+                    {
+                        if (__instance.TargetCharacter.CurrentWeapon.Type == Weapon.WeaponType.FistW_2H)
+                            __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<VRFisticuffsHandler>();
+                        else
+                            __instance.TargetCharacter.CurrentWeapon.EquippedVisuals.gameObject.AddComponent<VRMeleeHandler>();
+                    }
+                    if (__instance.TargetCharacter.LeftHandWeapon != null)
+                    {
+                        if (__instance.TargetCharacter.LeftHandWeapon.Type == Weapon.WeaponType.Shield)
+                            __instance.TargetCharacter.LeftHandWeapon.EquippedVisuals.gameObject.AddComponent<VRShieldHandler>();
+                        else if (__instance.TargetCharacter.LeftHandWeapon.Type == Weapon.WeaponType.Dagger_OH)
+                            __instance.TargetCharacter.LeftHandWeapon.EquippedVisuals.gameObject.AddComponent<VRMeleeHandler>();
+                    }
 
                 }
                 catch (Exception e)
@@ -222,7 +225,7 @@ namespace OutwardVR.camera
                 if (camInitYHeight == 0) {
                     camInitYHeight = Camera.main.transform.localPosition.y;
                     camTransform = Camera.main.transform;
-                    __instance.Character.RagdollRoot.gameObject.AddComponent<Test>();
+                    __instance.Character.RagdollRoot.gameObject.AddComponent<VRCrouch>();
                 }
                 camCurrentHeight = Camera.main.transform.localPosition.y;
 

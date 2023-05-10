@@ -1,4 +1,6 @@
 ﻿using HarmonyLib;
+using OutwardVR.body;
+using OutwardVR.camera;
 using UnityEngine;
 
 namespace OutwardVR.combat
@@ -7,9 +9,9 @@ namespace OutwardVR.combat
     internal class WeaponPatches
     {
         public static bool hitWhileBlocking = false;
-   
 
-        [HarmonyPrefix]
+
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(Weapon), "OnEquip")]
         private static void AddVRToWeaponOnEquip(Weapon __instance, object[] __args)
         {
@@ -32,6 +34,10 @@ namespace OutwardVR.combat
 
             if (!__instance.OwnerCharacter.IsLocalPlayer || !NetworkLevelLoader.Instance.IsOverallLoadingDone)
                 return;
+            if (FirstPersonCamera.leftHand != null && __instance.TwoHanded && __instance.TwoHand != Equipment.TwoHandedType.DualWield && __instance.Type != Weapon.WeaponType.Bow)
+                FirstPersonCamera.leftHand.GetComponent<ArmIK>().ChangeWeapon(true);
+            else if (FirstPersonCamera.leftHand != null)
+                FirstPersonCamera.leftHand.GetComponent<ArmIK>().ChangeWeapon(false);
             if (__instance.CurrentVisual.GetComponent<VRMeleeHandler>() == null) {
                 if (__instance.Type != Weapon.WeaponType.Pistol_OH &&
                     __instance.Type != Weapon.WeaponType.Shield &&
@@ -39,14 +45,15 @@ namespace OutwardVR.combat
                     __instance.Type != Weapon.WeaponType.Bow &&
                      __instance.Type != Weapon.WeaponType.Chakram_OH &&
                       __instance.Type != Weapon.WeaponType.FistW_2H
-                    ) { 
+                    ) {
                     __instance.CurrentVisual.gameObject.AddComponent<VRMeleeHandler>();
                 }
             }
             if (__instance.CurrentVisual.GetComponent<VRFisticuffsHandler>() == null && __instance.Type == Weapon.WeaponType.FistW_2H)
                 __instance.CurrentVisual.gameObject.AddComponent<VRFisticuffsHandler>();
-            if (__instance.CurrentVisual.GetComponent<VRShieldHandler>() == null && __instance.Type == Weapon.WeaponType.Shield)
+            if (__instance.CurrentVisual.GetComponent<VRShieldHandler>() == null && __instance.Type == Weapon.WeaponType.Shield) 
                 __instance.CurrentVisual.gameObject.AddComponent<VRShieldHandler>();
+
         }
 
         [HarmonyPrefix]

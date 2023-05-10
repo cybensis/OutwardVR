@@ -119,6 +119,8 @@ public class Plugin : BaseUnityPlugin
     {
         if ((MiscPatches.characterUIInstance.IsMenuFocused || MiscPatches.characterUIInstance.IsDialogueInProgress) && MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo != null)
         {
+
+
             if (MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<ItemDisplayClick>() != null)
                 MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<ItemDisplayClick>().SingleClick();
             else if (MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<UnityEngine.UI.Toggle>() != null)
@@ -128,7 +130,6 @@ public class Plugin : BaseUnityPlugin
             else if (MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<Button>() != null)
                 MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<Button>().Press();
         }
-
     }
 
 
@@ -136,7 +137,6 @@ public class Plugin : BaseUnityPlugin
 
     public static void InventoryMenuTrigger(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
     {
-
         if (MiscPatches.characterUIInstance != null &&
             MiscPatches.characterUIInstance.IsMenuFocused &&
             MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo != null &&
@@ -150,7 +150,6 @@ public class Plugin : BaseUnityPlugin
             invItem.RightClick(_data);
 
         }
-
     }
 
 
