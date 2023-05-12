@@ -28,7 +28,7 @@ namespace OutwardVR.UI
                     __instance.transform.localRotation = Quaternion.identity;
                 }
 
-                __instance.transform.localPosition = new Vector3(-0.05f, 0.15f, 0.425f);
+                __instance.transform.localPosition = new Vector3(-0.05f, 0.225f, 0.5f);
                 //if (character.Sneaking)
                 //    __instance.transform.localPosition += new Vector3(0, -0.4f, 0);
             }
@@ -172,6 +172,16 @@ namespace OutwardVR.UI
 
 
         [HarmonyPostfix]
+        [HarmonyPatch(typeof(QuestDisplay), "AwakeInit")]
+        private static void FixQuestDisplayPosition(QuestDisplay __instance)
+        {
+            Vector3 newPos = __instance.transform.parent.localPosition;
+            newPos.z = 0;
+            __instance.transform.parent.localPosition = newPos;
+        }
+
+
+            [HarmonyPostfix]
         [HarmonyPatch(typeof(DeveloperToolManager), "Awake")]
         private static void PositionDebugToolWindow(DeveloperToolManager __instance)
         {

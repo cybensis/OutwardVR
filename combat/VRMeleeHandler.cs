@@ -48,8 +48,8 @@ namespace OutwardVR.combat
 
         // When the sword is held to the side to block, it should be within range of 1.0 to SWORD_MIN_BLOCK_RANGE otherwise its not gunna count as a block
         private const float SWORD_MIN_BLOCK_RANGE = 0.875f;
-        private const float BLOCK_DELAY = 0.7f;
-        private float attackDelay = 0.7f;
+        private const float BLOCK_DELAY = 0.45f;
+        private float attackDelay = 0.45f;
         private float delayLength = 0f;
         private bool delayAttack = false;
         private float delayStartTime;
@@ -105,7 +105,7 @@ namespace OutwardVR.combat
                 weaponInstance.Type == Weapon.WeaponType.Mace_2H ||
                 weaponInstance.Type == Weapon.WeaponType.Spear_2H
             ) { 
-                attackDelay = 0.9f;
+                attackDelay = 0.7f;
                 weaponDirectionModifier = 7.5f;
             }
             else if (weaponInstance.Type == Weapon.WeaponType.Dagger_OH) { 
@@ -141,8 +141,10 @@ namespace OutwardVR.combat
                 return;
             if (handIK == null || characterInstance == null || raycastLength == 0f)
                 InitVars();
-            if (delayAttack && Time.time - delayStartTime > delayLength)
+            if (delayAttack && Time.time - delayStartTime > delayLength) { 
                 delayAttack = false;
+                FirstPersonCamera.UnfreezeMovement();
+            }
             else if (delayAttack)
                 return;
             if (characterInstance.LeftHandWeapon != null && characterInstance.LeftHandWeapon.Type == Weapon.WeaponType.Shield && characterInstance.Blocking)
@@ -286,6 +288,7 @@ namespace OutwardVR.combat
             delayLength = timeToDelay;
             delayStartTime = Time.time;
             delayAttack = true;
+            FirstPersonCamera.SetFreezeMovement();
         }
 
     }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using OutwardVR.camera;
+using UnityEngine;
 using Valve.VR;
 using static FightRecap;
 
@@ -12,7 +13,7 @@ namespace OutwardVR.combat
         // For punching combat probably just copy the timing from the melee weapon stab stuff but dont bother trying to keep it in any kind of range since punches can happen from many angles
         private float x, y, z;
 
-        private float attackDelay = 0.7f;
+        private float attackDelay = 0.4f;
         private float delayLength = 0f;
         private bool delayAttack = false;
         private float delayStartTime;
@@ -59,8 +60,10 @@ namespace OutwardVR.combat
             if (leftHand == null || characterInstance == null)
                 InitHand();
 
-            if (delayAttack && Time.time - delayStartTime > delayLength)
+            if (delayAttack && Time.time - delayStartTime > delayLength) { 
                 delayAttack = false;
+                FirstPersonCamera.UnfreezeMovement();
+            }
             else if (delayAttack)
                 return;
 
@@ -88,6 +91,7 @@ namespace OutwardVR.combat
                     {
                         SetDelay(0.7f);
                         WeaponPatches.hitWhileBlocking = false;
+                        FirstPersonCamera.SetFreezeMovement();
                     }
                 }
                 else if (isSwinging)

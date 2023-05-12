@@ -2,6 +2,7 @@
 using UnityEngine;
 using Valve.VR;
 using Valve.VR.Extras;
+using static MapMagic.ObjectPool;
 
 namespace OutwardVR.body
 {
@@ -77,7 +78,7 @@ namespace OutwardVR.body
                     throw new UnityException("The chain value is longer than the ancestor chain!");
                 Root = Root.parent;
             }
-
+            Root.localScale = new Vector3(1.1f, 1.1f, 1.1f);
             if (name == "hand_left")
                 isLeftHand = true;
 
@@ -138,10 +139,12 @@ namespace OutwardVR.body
                 }
                 current = current.parent;
             }
+            // Increase the right arms length because the bodies standing pose usually has the body turend to the right slightly, ergo the right shoulder comes back further than the left
+            // and has less reach because of it
             if (!isLeftHand)
             {
-                BonesLength[0] += 0.2f;
-                CompleteLength += 0.2f;
+                BonesLength[0] += 0.1f;
+                CompleteLength += 0.1f;
                 //Bones[Bones.Length - 1].gameObject.AddComponent<SteamVR_Behaviour_Pose>();
                 //SteamVR_LaserPointer laser = Bones[Bones.Length - 1].gameObject.AddComponent<SteamVR_LaserPointer>();
                 //Bones[Bones.Length - 1].gameObject.AddComponent<LaserPointer>();
@@ -149,24 +152,13 @@ namespace OutwardVR.body
                 ////laser.holder.transform.Rotate(270, 0, 0);
                 //laser.color = new Color(0, 0.5f, 0.6f, 0);
             }
-
-            if (isLeftHand && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded) {
-                Weapon currentWeapon = character.CurrentWeapon;
-                if (currentWeapon.Type == Weapon.WeaponType.Sword_2H || currentWeapon.Type == Weapon.WeaponType.Axe_2H || currentWeapon.Type == Weapon.WeaponType.Mace_2H)
-                    twoHandOffset = new Vector3(-0.175f, -0.1f, -0.03f);
-                else if (currentWeapon.Type == Weapon.WeaponType.Halberd_2H || currentWeapon.Type == Weapon.WeaponType.Spear_2H)
-                    twoHandOffset = new Vector3(-0.35f, -0.225f, -0.07f);
-                    //twoHandOffset = new Vector3(-0.6f, -0.19f, -0.08f);
+            if (isLeftHand && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.TwoHand != Equipment.TwoHandedType.DualWield && character.CurrentWeapon.Type != Weapon.WeaponType.Bow) {
+                ChangeWeapon(true);
             }
-
-
-
         }
 
 
         public void ChangeWeapon(bool isValidTwoHandWeapon) {
-            //if (isLeftHand && character.CurrentWeapon != null && character.CurrentWeapon.TwoHanded && character.CurrentWeapon.TwoHand != Equipment.TwoHandedType.DualWield && character.CurrentWeapon.Type != Weapon.WeaponType.Bow)
-            Logs.WriteWarning("AAAAAAAAAAAAAA");
             if (isLeftHand && isValidTwoHandWeapon)
             {
                 Target = CameraManager.RightHand.transform;
@@ -174,8 +166,6 @@ namespace OutwardVR.body
                 Weapon.WeaponType currentWeaponType = character.CurrentWeapon.Type;
                 if (currentWeaponType == Weapon.WeaponType.Sword_2H || currentWeaponType == Weapon.WeaponType.Axe_2H || currentWeaponType == Weapon.WeaponType.Mace_2H)
                     twoHandOffset = new Vector3(-0.175f, -0.1f, -0.03f);
-                    //twoHandOffset = new Vector3(-0.275f, -0.175f, -0.06f);
-                    //twoHandOffset = new Vector3(-0.275f, -0.02f, -0.015f);
                 else if (currentWeaponType == Weapon.WeaponType.Halberd_2H || currentWeaponType == Weapon.WeaponType.Spear_2H)
                     twoHandOffset = new Vector3(-0.35f, -0.225f, -0.07f);
             }

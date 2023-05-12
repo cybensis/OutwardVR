@@ -3,9 +3,7 @@ using HarmonyLib;
 using OutwardVR.body;
 using OutwardVR.combat;
 using UnityEngine;
-using UnityEngine.UI;
 using Valve.VR;
-using static MapMagic.ObjectPool;
 
 namespace OutwardVR.camera
 {
@@ -20,7 +18,8 @@ namespace OutwardVR.camera
         public static GameObject leftHand;
         public static GameObject rightHand;
 
-        private static float x, y, z;
+        public static bool freezeMovement = false;
+        public static float freezeStartTime = 0f;
 
         public static float camInitYHeight = 0;
         public static float camCurrentHeight = 0;
@@ -46,25 +45,6 @@ namespace OutwardVR.camera
         }
 
 
-        //private static GameObject pelvis;
-
-        //[HarmonyPostfix]
-        //[HarmonyPatch(typeof(CharacterVisuals), "Awake")]
-        //private static void AttachPhysicalCrouchClass(CharacterVisuals __instance)
-        //{
-        //    if (!__instance.m_character.IsLocalPlayer)
-        //        return;
-        //    try
-        //    {
-        //        pelvis = __instance.RagdollRoot.gameObject;
-        //        __instance.RagdollRoot.gameObject.AddComponent<Test>();
-        //    }
-        //    catch
-        //    {
-        //        return;
-        //    }
-        //}
-
 
 
         [HarmonyPatch(typeof(CharacterCamera), "LateUpdate")]
@@ -81,7 +61,6 @@ namespace OutwardVR.camera
         private static void TriggerButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
         {
             camInitYHeight = Camera.main.transform.localPosition.y;
-
         }
 
 
@@ -214,6 +193,16 @@ namespace OutwardVR.camera
         }
 
 
+        public static void SetFreezeMovement() { 
+            freezeMovement = true;
+            freezeStartTime = Time.time;
+        }
+
+        public static void UnfreezeMovement() {
+            freezeMovement = false;
+        }
+
+
         [HarmonyPatch(typeof(LocalCharacterControl), "UpdateMovement")]
         public class LocalCharacterControl_UpdateMovement
         {
@@ -222,6 +211,11 @@ namespace OutwardVR.camera
                 Transform ___m_horiControl, ref bool ___m_sprintFacing)
             {
                 Controllers.Update();
+                // Should only need the boolean but use the timer just in case something goes wrong and the boolean doesn't get flipped, so it unfreezes after 2 seconds
+                if (freezeMovement && Time.time - freezeStartTime >= 2) {
+                    freezeMovement = false;
+                }
+
                 if (camInitYHeight == 0) {
                     camInitYHeight = Camera.main.transform.localPosition.y;
                     camTransform = Camera.main.transform;
@@ -247,18 +241,19 @@ namespace OutwardVR.camera
                     // If the player is moving ___m_modifMoveInput.y will be greater than 0.25f which makes turning super slow, but for first person
                     // the turning rate should be the same when moving as it is when you're still. Sprinting for some reason speeds up turning rate so use
                     // this value to make it slower
-                    if (m_char.Sprinting)
-                        ___m_modifMoveInput.y = 0.5f;
-                    else
-                        ___m_modifMoveInput.y = 0.25f;
+                    //if (m_char.Sprinting)
+                    //    ___m_modifMoveInput.y = 0.5f;
+                    //else
+                    //    ___m_modifMoveInput.y = 0.25f;
+                    ___m_modifMoveInput.y = 0.25f;
 
                     float yAmount = ___m_modifMoveInput.y;
                     if (yAmount < 0) yAmount *= -1;
 
                     // typical Y input will be 0 to 3.2
                     var yRatio = (float)((decimal)yAmount / (decimal)3.2f);
-                    //float hMod = Mathf.Lerp(0.01f, 0.05f, yRatio);
-                    float hMod = Mathf.Lerp(0.01f, 0.025f, yRatio);
+                    // Raise the second Lerp value to lower turn sensitivity
+                    float hMod = Mathf.Lerp(0.01f, 0.04f, yRatio);
                     ___m_modifMoveInput.x *= hMod;
                 }
 
@@ -318,24 +313,34 @@ namespace OutwardVR.camera
                 // ========= Custom code to lock Y axis =========
                 // This is used to negate the headsets height and lock its Y axis
                 Vector3 camPosition = Camera.main.transform.parent.localPosition;
-                //Logs.WriteError(Camera.main.transform.localPosition);
-                //camPosition.y = Camera.main.transform.localPosition.y * -1f;
-                camPosition.y = camInitYHeight * -1;
+
+                if (__instance.Character.Sneaking)
+                    camPosition.y = Camera.main.transform.localPosition.y * -1f;
+                else
+                    camPosition.y = camInitYHeight * -1;
                 Camera.main.transform.parent.localPosition = camPosition;
 
                 // ========= Mix of custom and default code to enable sideways and backwards movement =========
                 // This allows the player to move side to side only if a menu isn't open and they're not in dialogue
-                if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress)
-                    ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
 
-                // Moving backwards is pretty slow so increase it manually to speed it up. Set the if conditional to the inputMoveVector because the SteamVR input can be active during menus,
-                // whereas inputMoveVector cant
-                if (___m_inputMoveVector.y < -1)
-                    ___m_inputMoveVector.y = SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y * 5f;
+                if (freezeMovement)
+                {
+                    ___m_inputMoveVector.x = 0;
+                    ___m_inputMoveVector.y = 0;
+                }
+                else { 
+                    if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress)
+                        ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
 
-                // Keep the movement from exceeding 10
-                ___m_inputMoveVector.y = Mathf.Clamp(___m_inputMoveVector.y, -10, 10);
-                ___m_inputMoveVector.x = Mathf.Clamp(___m_inputMoveVector.x, -10, 10);
+                    // Moving backwards is pretty slow so increase it manually to speed it up. Set the if conditional to the inputMoveVector because the SteamVR input can be active during menus,
+                    // whereas inputMoveVector cant
+                    if (___m_inputMoveVector.y < -1)
+                        ___m_inputMoveVector.y = SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y * 5f;
+
+                    // Keep the movement from exceeding 10
+                    ___m_inputMoveVector.y = Mathf.Clamp(___m_inputMoveVector.y, -10, 10);
+                    ___m_inputMoveVector.x = Mathf.Clamp(___m_inputMoveVector.x, -10, 10);
+                }
 
                 var transformMove = ___m_horiControl.forward * ___m_inputMoveVector.y + ___m_horiControl.right * ___m_inputMoveVector.x;
                 if (m_charControl.enabled)

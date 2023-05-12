@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using static UnityEngine.UIElements.UIR.BestFitAllocator;
+using Valve.VR;
+using NodeCanvas.Framework;
 
 namespace OutwardVR
 {
@@ -44,8 +46,7 @@ namespace OutwardVR
         {
             if (!DemoManager.DemoIsActive)
                 return;
-            Logs.WriteWarning(__instance.m_lastNpcLocKey);
-            Logs.WriteWarning(__instance.m_displayText);
+
             string tuteName = __instance.m_lastNpcLocKey;
             if (tuteName == "Player_Message_TutorialTitle_Attacks")
                 __instance.m_lblNpcSpeech.text = "Perform attacks by swinging your controller around or for non-fist weapons, stab attack can also be used";
@@ -56,6 +57,131 @@ hands up in front of your face with your fists pointing to the sky will activate
 
 Shields consume less stamina when blocking and can block arrows.";
         }
+
+
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MapMarkerSimpleDisplay), "Update")]
+        private static void UpdateControllersOnMainwMenu(MapMarkerSimpleDisplay __instance)
+        {
+            bool isHovering = Vector2.Distance(new Vector2(__instance.RectTransform.localPosition.x, __instance.RectTransform.localPosition.y), MapDisplay.Instance.ControllerCursor.anchoredPosition) <= 20;
+            if (!__instance.m_hover && isHovering)
+                __instance.OnPointerEnter(null);
+            else if (__instance.m_hover && !isHovering)
+                __instance.OnPointerExit(null);
+            
+            if (isHovering && SteamVR_Actions._default.ButtonA.stateDown) {
+                PointerEventData pointerData = new PointerEventData(EventSystem.current);
+                __instance.OnPointerClick(pointerData);
+            }
+        }
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(RadialSelectorItem), "Update")]
+        private static void Testtttt(RadialSelectorItem __instance)
+        {
+            // Definitely can find a more efficient method of doing this but since its only active when the map is open its not that big a deal
+
+            // Get the tip of the arrow selector
+            Vector3 tipOfSelector = __instance.Selector.ArrowTrans.position + (__instance.Selector.ArrowTrans.transform.up * __instance.Selector.ArrowTrans.transform.localScale.y / 2);
+
+            // Position of the second object
+            Vector3 marker = __instance.transform.position;
+            bool isPointedAt = (Vector3.Distance(tipOfSelector, marker) <= 0.4765);
+
+
+            if (!__instance.m_hover && isPointedAt)
+                __instance.OnPointerEnter(null);
+            else if (__instance.m_hover && !isPointedAt)
+                __instance.OnPointerExit(null);
+
+            if (__instance.m_hover && SteamVR_Actions._default.ButtonA.stateDown)
+                __instance.OnPointerClick(null);
+        }
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MapDisplay), "Update")]
+        private static void EnableBackgroundClick(MapDisplay __instance) {
+            if (__instance.HoveredMarker == null && SteamVR_Actions._default.ButtonA.stateDown)
+                __instance.OnMapBackgroundClicked(true);
+
+        }
+
+        private static float radialLastDirection = 0;
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(RadialSelector), "Update")]
+        private static bool wdwdwdww(RadialSelector __instance)
+        {
+
+            if (!__instance.TargetActive)
+            {
+                __instance.m_alpha = Mathf.MoveTowards(__instance.m_alpha, 0f, __instance.ActiveAnimSpeed * Time.deltaTime);
+                if (__instance.m_alpha == 0f)
+                {
+                    __instance.gameObject.SetActive(value: false);
+                }
+                __instance.m_canvasGroup.alpha = __instance.m_alpha;
+            }
+            else if (__instance.m_alpha != 1f)
+            {
+                __instance.m_alpha = Mathf.MoveTowards(__instance.m_alpha, 1f, __instance.ActiveAnimSpeed * Time.deltaTime);
+                __instance.m_canvasGroup.alpha = __instance.m_alpha;
+            }
+            Vector3 targetDir = __instance.m_characterUI.VirtualCursor.RectTransform.position - __instance.transform.position;
+            //float z = __instance.transform.up.AngleWithDir(targetDir, __instance.transform.forward);
+            float z = radialLastDirection;
+            if (SteamVR_Actions._default.LeftJoystick.axis.magnitude != 0) { 
+                z = Mathf.Atan2(targetDir.y, targetDir.x) * Mathf.Rad2Deg;
+                z -= 90;
+                if (z < 0)
+                    z += 360;
+                radialLastDirection = z;
+            }
+            if ((bool)__instance.ArrowTrans && (bool)(Object)(object)__instance.ArrowCanvas)
+            {
+                __instance.ArrowTrans.ResetLocal();
+                __instance.ArrowTrans.Rotate(new Vector3(0f, 0f, z), Space.Self);
+            }
+            if (ControlsInput.IsLastActionGamepad(__instance.PlayerID))
+            {
+                Vector3 vector = new Vector3(ControlsInput.MenuHorizontalAxis(__instance.PlayerID), ControlsInput.MenuVerticalAxis(__instance.PlayerID), 0f);
+                __instance.m_characterUI.VirtualCursor.SetPosition(__instance.transform.position + vector.normalized * __instance.Radius);
+            }
+            __instance.ArrowCanvas.alpha = 1f;
+            return false;
+        }
+
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MapDisplay), "OnMapBackgroundClicked")]
+        private static bool FixMapBackgroundClick(MapDisplay __instance, object[] __args)
+        {
+            bool _left = (bool)__args[0];
+            if (!__instance.m_currentAreaHasMap || __instance.HoveredMarker)
+            {
+                return false;
+            }
+            if (!__instance.m_markerSelector.TargetActive)
+            {
+                bool flag = ControlsInput.IsLastActionGamepad(__instance.PlayerID);
+                if ((_left == flag) ? true : false)
+                {
+                    __instance.m_markerSelector.transform.position = MapDisplay.Instance.ControllerCursor.position;
+                    __instance.m_markerSelector.transform.localPosition = MapDisplay.Instance.ControllerCursor.anchoredPosition;
+                    __instance.m_markerSelector.SetActiveWithAnim(_active: true);
+                }
+            }
+            else
+            {
+                __instance.m_markerSelector.SetActiveWithAnim(_active: false);
+            }
+            return false;
+        }
+
 
 
 

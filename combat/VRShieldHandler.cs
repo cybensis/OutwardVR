@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using OutwardVR.camera;
+using UnityEngine;
 using Valve.VR;
 
 namespace OutwardVR.combat
@@ -13,7 +14,7 @@ namespace OutwardVR.combat
         private const float UP_SHIELD_MIN_BLOCK_RANGE = 0.8f;
         private const float SIDEWAYS_SHIELD_MIN_BLOCK_RANGE = 0.75f;
 
-        private const float BLOCK_DELAY = 0.7f;
+        private const float BLOCK_DELAY = 0.45f;
         private float delayLength = 0f;
         private bool delayAttack = false;
         private float delayStartTime;
@@ -24,8 +25,10 @@ namespace OutwardVR.combat
         }
 
         private void Update() {
-            if (delayAttack && Time.time - delayStartTime > delayLength)
+            if (delayAttack && Time.time - delayStartTime > delayLength) { 
                 delayAttack = false;
+                FirstPersonCamera.UnfreezeMovement();
+            }
             else if (delayAttack)
                 return;
             // We still want to check the right hand velocity to see if the player is swinging something around 
@@ -38,14 +41,12 @@ namespace OutwardVR.combat
                 if (upBlockingRange >= UP_SHIELD_MIN_BLOCK_RANGE && sidewaysBlockingRange >= SIDEWAYS_SHIELD_MIN_BLOCK_RANGE)
                 {
                     characterInstance.BlockInput(true);
-                    Logs.WriteWarning("IS blocking");
                     isBlocking = true;
                 }
                 else if (isBlocking && (upBlockingRange < UP_SHIELD_MIN_BLOCK_RANGE || sidewaysBlockingRange < SIDEWAYS_SHIELD_MIN_BLOCK_RANGE))
                 {
                     characterInstance.BlockInput(false);
                     isBlocking = false;
-                    Logs.WriteWarning("Cancel blocking");
                     if (WeaponPatches.hitWhileBlocking)
                     {
                         SetDelay(BLOCK_DELAY);
@@ -66,6 +67,7 @@ namespace OutwardVR.combat
             delayLength = timeToDelay;
             delayStartTime = Time.time;
             delayAttack = true;
+            FirstPersonCamera.SetFreezeMovement();
         }
     }
 }
