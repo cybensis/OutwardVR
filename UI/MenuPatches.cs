@@ -34,6 +34,7 @@ namespace OutwardVR.UI
             {
                 Logs.WriteWarning("POSITION MENU AFTER LOADING");
                 menuManager.transform.root.localRotation = Quaternion.identity;
+                menuManager.transform.root.localPosition = Vector3.zero;
                 tempCamHolder.transform.rotation = Quaternion.identity;
                 tempCamHolder.transform.position = menuManager.transform.root.position + (menuManager.transform.root.right * -0.15f) + (menuManager.transform.root.up * 0.3f) + (menuManager.transform.root.forward * -1.5f);
             }

@@ -54,7 +54,7 @@ namespace OutwardVR.camera
             public static void Postfix(CharacterCamera __instance)
             {
                 //-0.1f, 0.05f, 0.2f
-                __instance.transform.localPosition = new Vector3(0,0.2f,0);
+                __instance.transform.localPosition = new Vector3(0,0.15f,0);
             }
         }
 
@@ -257,7 +257,6 @@ namespace OutwardVR.camera
                     ___m_modifMoveInput.x *= hMod;
                 }
 
-
                 float moveModif = 4f;
 
                 if (Vector3.Angle(___m_inputMoveVector, ___m_modifMoveInput) > 160f)
@@ -313,11 +312,12 @@ namespace OutwardVR.camera
                 // ========= Custom code to lock Y axis =========
                 // This is used to negate the headsets height and lock its Y axis
                 Vector3 camPosition = Camera.main.transform.parent.localPosition;
+                camPosition.y = Camera.main.transform.localPosition.y * -1f;
 
-                if (__instance.Character.Sneaking)
-                    camPosition.y = Camera.main.transform.localPosition.y * -1f;
-                else
-                    camPosition.y = camInitYHeight * -1;
+                //if (__instance.Character.Sneaking)
+                //    camPosition.y = Camera.main.transform.localPosition.y * -1f;
+                //else
+                //    camPosition.y = camInitYHeight * -1;
                 Camera.main.transform.parent.localPosition = camPosition;
 
                 // ========= Mix of custom and default code to enable sideways and backwards movement =========
@@ -422,7 +422,7 @@ namespace OutwardVR.camera
                             Camera.main.transform.parent.parent.Rotate(0f, clampedDiff * -1, 0f, Space.World);
                         }
                     }
-                    clampedDiff += SteamVR_Actions._default.RightJoystick.axis.x * 4f;
+                    clampedDiff += SteamVR_Actions._default.RightJoystick.axis.x * OptionManager.Instance.GetMouseSense(MenuManager.Instance.MapOwnerPlayerID);
                     __instance.transform.Rotate(0f, clampedDiff, 0f);
                 }
 

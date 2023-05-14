@@ -1,6 +1,5 @@
 ﻿using BepInEx;
 using HarmonyLib;
-using OutwardVR.input;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;

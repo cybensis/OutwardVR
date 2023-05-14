@@ -1,7 +1,7 @@
 {
    "action_manifest_version" : 0,
    "alias_info" : {},
-   "app_key" : "application.generated.unity.myproject3.exe",
+   "app_key" : "steam.app.794260",
    "bindings" : {
       "/actions/buggy" : {
          "chords" : [],
@@ -12,13 +12,6 @@
       },
       "/actions/default" : {
          "chords" : [
-            {
-               "inputs" : [
-                  [ "/user/hand/right/input/grip", "click" ],
-                  [ "/user/hand/left/input/grip", "click" ]
-               ],
-               "output" : "/actions/default/in/back"
-            },
             {
                "inputs" : [
                   [ "/user/hand/left/input/grip", "click" ],
@@ -122,6 +115,9 @@
                "inputs" : {
                   "click" : {
                      "output" : "/actions/default/in/buttonb"
+                  },
+                  "long" : {
+                     "output" : "/actions/default/in/back"
                   }
                },
                "mode" : "button",
@@ -192,7 +188,9 @@
    "controller_type" : "oculus_touch",
    "description" : "",
    "interaction_profile" : "",
-   "name" : "My My project (3) [Testing] configuration for Oculus Touch Controller",
-   "options" : {},
+   "name" : "My Outward Definitive Edition configuration for Oculus Touch Controller",
+   "options" : {
+      "simulated_controller_type" : "none"
+   },
    "simulated_actions" : []
 }

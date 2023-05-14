@@ -27,10 +27,8 @@ namespace OutwardVR.UI
                     __instance.transform.parent = Camera.main.transform.parent.parent.parent.transform;
                     __instance.transform.localRotation = Quaternion.identity;
                 }
-
-                __instance.transform.localPosition = new Vector3(-0.05f, 0.225f, 0.5f);
-                //if (character.Sneaking)
-                //    __instance.transform.localPosition += new Vector3(0, -0.4f, 0);
+                if (NetworkLevelLoader.Instance.IsOverallLoadingDone && NetworkLevelLoader.Instance.AllPlayerReadyToContinue)
+                    __instance.transform.localPosition = new Vector3(-0.05f, 0.225f, 0.5f);
             }
             catch
             {

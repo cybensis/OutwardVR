@@ -19,7 +19,7 @@ namespace OutwardVR.body
 
         //private Vector3 pelvisRot = new Vector3(-1, +25, -7);
         //private Vector3 pelvisPosition = new Vector3(-0.1f, -0.29f, -0.06f);
-        private Vector3 pelvisPosition = new Vector3(-0.1f, -0.15f, -0.06f);
+        private Vector3 pelvisPosition = new Vector3(-0.1f, -0.29f, -0.06f);
 
         private float crouchModifier = 0;
 
@@ -44,12 +44,12 @@ namespace OutwardVR.body
             //RC -3 +14 +61
             //PE -1 +25 -7
             //if (!actualCrouchEnabled && crouchModifier >= 0.6f)
-            if (!actualCrouchEnabled && crouchModifier >= 0.7f)
+            if (!actualCrouchEnabled && crouchModifier >= 1f)
             {
                 MiscPatches.characterUIInstance.m_targetCharacter.StealthInput(true);
                 actualCrouchEnabled = true;
             }
-            else if (actualCrouchEnabled && crouchModifier < 0.7f)
+            else if (actualCrouchEnabled && crouchModifier < 1f)
             //else if (actualCrouchEnabled && crouchModifier < 0.6f)
             {
                 MiscPatches.characterUIInstance.m_targetCharacter.StealthInput(false);

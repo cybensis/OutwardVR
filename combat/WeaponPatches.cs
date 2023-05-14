@@ -12,6 +12,18 @@ namespace OutwardVR.combat
 
 
         [HarmonyPostfix]
+        [HarmonyPatch(typeof(Weapon), "OnUnequip")]
+        private static void ResetArmIKOnUnequip(Weapon __instance) {
+            if (!__instance.OwnerCharacter.IsLocalPlayer || !NetworkLevelLoader.Instance.IsOverallLoadingDone)
+                return;
+            // Only run this if nothing is being equipped to replace it
+            if (FirstPersonCamera.leftHand != null && __instance.OwnerCharacter.CurrentWeapon == null)
+                FirstPersonCamera.leftHand.GetComponent<ArmIK>().ChangeWeapon(false);
+
+        }
+
+
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(Weapon), "OnEquip")]
         private static void AddVRToWeaponOnEquip(Weapon __instance, object[] __args)
         {
