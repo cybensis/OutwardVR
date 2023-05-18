@@ -6,7 +6,6 @@ namespace OutwardVR.combat
 {
     internal class VRShieldHandler : MonoBehaviour
     {
-        private float x, y, z;
         private Character characterInstance;
         private const float VELOCITY_THRESHOLD = 1.6f;
         private const float MAX_VELOCITY = 6f;

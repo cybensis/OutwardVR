@@ -13,17 +13,15 @@ namespace OutwardVR.camera
         public static bool enemyTargetActive = false;
         public const float NEAR_CLIP_PLANE_VALUE = 0.1f;
         private const float HMD_AND_BODY_DIFF_TOLERANCE = 17.5f;
-        private static GameObject playerHead;
-        private static GameObject playerTorso;
-        public static GameObject leftHand;
-        public static GameObject rightHand;
 
         public static bool freezeMovement = false;
         public static float freezeStartTime = 0f;
 
         public static float camInitYHeight = 0;
         public static float camCurrentHeight = 0;
+        private static Vector3 nonBobHeadLocalPos = new Vector3(0.2f,1.6f,0);
         public static Transform camTransform;
+
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MainScreen), nameof(MainScreen.StartInit))]
@@ -44,7 +42,7 @@ namespace OutwardVR.camera
             }
         }
 
-
+        private static bool hasBodyBeenDisabledOnSleep = false; 
 
 
         [HarmonyPatch(typeof(CharacterCamera), "LateUpdate")]
@@ -53,8 +51,33 @@ namespace OutwardVR.camera
             [HarmonyPostfix]
             public static void Postfix(CharacterCamera __instance)
             {
-                //-0.1f, 0.05f, 0.2f
-                __instance.transform.localPosition = new Vector3(0,0.15f,0);
+                if (!NetworkLevelLoader.Instance.IsOverallLoadingDone || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue)
+                    return;
+                __instance.transform.localPosition = new Vector3(0, 0f, 0);
+                if (VRInstanceManager.headBobOn)
+                    __instance.transform.localPosition = new Vector3(0, 0.15f, 0);
+                else if (!VRInstanceManager.headBobOn && __instance.m_targetCharacter.ReadyToSleep)
+                    __instance.transform.parent.localPosition = new Vector3(0.2f, 0.6f, 0);
+                else { 
+                    Vector3 newPos = nonBobHeadLocalPos;
+                    newPos.y -= 0.29f * Mathf.Clamp(FirstPersonCamera.camInitYHeight - FirstPersonCamera.camCurrentHeight, 0, 1) * 1.25f;
+                    __instance.transform.parent.localPosition = newPos;
+                }
+
+                if ((!hasBodyBeenDisabledOnSleep && __instance.m_targetCharacter.ReadyToSleep) || (hasBodyBeenDisabledOnSleep && !__instance.m_targetCharacter.ReadyToSleep)) {
+                    CharacterVisuals visuals = __instance.m_targetCharacter.Visuals;
+                    bool activeVisuals = !__instance.m_targetCharacter.ReadyToSleep;
+                    if (visuals.EquippedBodyVisuals != null)
+                        visuals.EquippedBodyVisuals.gameObject.SetActive(activeVisuals);
+                    if (visuals.EquippedFootVisuals != null)
+                        visuals.EquippedFootVisuals.gameObject.SetActive(activeVisuals);
+                    if (visuals.EquippedBodyVisuals visuals.DefaultBodyVisuals != null)
+                        visuals.DefaultBodyVisuals.gameObject.SetActive(activeVisuals);
+                    hasBodyBeenDisabledOnSleep = !hasBodyBeenDisabledOnSleep;
+
+                }
+
+
             }
         }
 
@@ -70,10 +93,10 @@ namespace OutwardVR.camera
             [HarmonyPrefix]
             public static bool Prefix(CharacterCamera __instance, Camera ___m_camera)
             {
-                if (NetworkLevelLoader.Instance.IsOverallLoadingDone && UI.MenuPatches.isLoading)
+                if (NetworkLevelLoader.Instance.IsOverallLoadingDone && VRInstanceManager.isLoading)
                 {
                     UI.MenuPatches.PositionMenuAfterLoading();
-                    UI.MenuPatches.isLoading = false;
+                    VRInstanceManager.isLoading = false;
                 }
 
                 if (cameraFixed
@@ -88,24 +111,29 @@ namespace OutwardVR.camera
                 try
                 {
                     CameraManager.Setup();
+                    VRInstanceManager.characterInstance = __instance.TargetCharacter;
+                    VRInstanceManager.nonBobPlayerHead = __instance.TargetCharacter.Visuals.Head.gameObject;
                     FixCamera(__instance, ___m_camera);
-                    UI.MenuPatches.gameHasBeenLoadedOnce = true;
+                    VRInstanceManager.gameHasBeenLoadedOnce = true;
                     // CharacterUI is disabled during prologue so re-enable it here
                     __instance.TargetCharacter.CharacterUI.gameObject.active = true;
                     // Disable the loading cam once the player is loaded in
                     UI.MenuPatches.loadingCamHolder.gameObject.active = false;
+
                     // disable the head
-                    __instance.TargetCharacter.Visuals.Head.GetComponent<SkinnedMeshRenderer>().enabled = false;
+                    VRInstanceManager.nonBobPlayerHead.GetComponent<SkinnedMeshRenderer>().enabled = false;
                     if (__instance.TargetCharacter.Visuals.DefaultHairVisuals != null)
                         __instance.TargetCharacter.Visuals.DefaultHairVisuals.GetComponent<SkinnedMeshRenderer>().enabled = false;
 
 
-                    if (leftHand != null && leftHand.GetComponent<ArmIK>() == null)
-                        leftHand.AddComponent<ArmIK>();
-                    if (rightHand != null && rightHand.GetComponent<ArmIK>() == null)
-                        rightHand.AddComponent<ArmIK>();
-                    if (playerHead != null && playerHead.GetComponent<FixHeadRotation>() == null)
-                        playerHead.AddComponent<FixHeadRotation>();
+
+
+                    if (VRInstanceManager.modelLeftHand != null && VRInstanceManager.leftHandIK == null)
+                        VRInstanceManager.leftHandIK = VRInstanceManager.modelLeftHand.AddComponent<ArmIK>();
+                    if (VRInstanceManager.modelRightHand != null && VRInstanceManager.rightHandIK == null)
+                        VRInstanceManager.rightHandIK = VRInstanceManager.modelRightHand.AddComponent<ArmIK>();
+                    if (VRInstanceManager.modelPlayerHead != null && VRInstanceManager.modelPlayerHead.GetComponent<FixHeadRotation>() == null)
+                        VRInstanceManager.modelPlayerHead.AddComponent<FixHeadRotation>();
                     if (__instance.TargetCharacter.CurrentWeapon != null)
                     {
                         if (__instance.TargetCharacter.CurrentWeapon.Type == Weapon.WeaponType.FistW_2H)
@@ -148,8 +176,12 @@ namespace OutwardVR.camera
             // get the root gameobject of the camera (parent of camHolder)
             var camRoot = camera.transform.root;
             // set the parent to the head transform, then reset local position
-            if (playerHead)
-                camRoot.SetParent(playerHead.transform, false);
+            if (VRInstanceManager.modelPlayerHead != null) { 
+            if (VRInstanceManager.headBobOn)
+                camRoot.SetParent(VRInstanceManager.modelPlayerHead.transform, false);
+            else 
+                camRoot.SetParent(VRInstanceManager.nonBobPlayerHead.transform, false);
+            }
             camRoot.ResetLocal();
             camHolder.localPosition = Vector3.zero;
             camRoot.rotation = Quaternion.identity;
@@ -183,12 +215,12 @@ namespace OutwardVR.camera
             {
                 if (__instance.name == "head" && __instance.transform.root.name != "AISquadManagerStructure")
                 {
-                    playerHead = __instance.transform.gameObject;
+                    VRInstanceManager.modelPlayerHead = __instance.transform.gameObject;
                 }
                 if (__instance.name == "hand_left" && __instance.transform.root.name != "AISquadManagerStructure")
-                    leftHand = __instance.transform.gameObject;
+                    VRInstanceManager.modelLeftHand = __instance.transform.gameObject;
                 if (__instance.name == "hand_right" && __instance.transform.root.name != "AISquadManagerStructure")
-                    rightHand = __instance.transform.gameObject;
+                    VRInstanceManager.modelRightHand = __instance.transform.gameObject;
             }
         }
 

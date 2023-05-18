@@ -17,8 +17,8 @@ namespace OutwardVR.combat
             if (!__instance.OwnerCharacter.IsLocalPlayer || !NetworkLevelLoader.Instance.IsOverallLoadingDone)
                 return;
             // Only run this if nothing is being equipped to replace it
-            if (FirstPersonCamera.leftHand != null && __instance.OwnerCharacter.CurrentWeapon == null)
-                FirstPersonCamera.leftHand.GetComponent<ArmIK>().ChangeWeapon(false);
+            if (VRInstanceManager.leftHandIK != null && __instance.OwnerCharacter.CurrentWeapon == null)
+                VRInstanceManager.leftHandIK.ChangeWeapon(false);
 
         }
 
@@ -46,10 +46,10 @@ namespace OutwardVR.combat
 
             if (!__instance.OwnerCharacter.IsLocalPlayer || !NetworkLevelLoader.Instance.IsOverallLoadingDone)
                 return;
-            if (FirstPersonCamera.leftHand != null && __instance.TwoHanded && __instance.TwoHand != Equipment.TwoHandedType.DualWield && __instance.Type != Weapon.WeaponType.Bow)
-                FirstPersonCamera.leftHand.GetComponent<ArmIK>().ChangeWeapon(true);
-            else if (FirstPersonCamera.leftHand != null)
-                FirstPersonCamera.leftHand.GetComponent<ArmIK>().ChangeWeapon(false);
+            if (VRInstanceManager.leftHandIK != null && __instance.TwoHanded && __instance.TwoHand != Equipment.TwoHandedType.DualWield && __instance.Type != Weapon.WeaponType.Bow)
+                VRInstanceManager.leftHandIK.ChangeWeapon(true);
+            else if (VRInstanceManager.leftHandIK != null)
+                VRInstanceManager.leftHandIK.ChangeWeapon(false);
             if (__instance.CurrentVisual.GetComponent<VRMeleeHandler>() == null) {
                 if (__instance.Type != Weapon.WeaponType.Pistol_OH &&
                     __instance.Type != Weapon.WeaponType.Shield &&

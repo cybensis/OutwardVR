@@ -15,8 +15,6 @@ namespace OutwardVR.UI
         private static GameObject newCharacterCamHolder = new GameObject("newCharacterCamHolder");
         public static GameObject loadingCamHolder;
         private static GameObject menuManager;
-        public static bool gameHasBeenLoadedOnce = false;
-        public static bool isLoading = false;
 
         private const string CAVE_LOADING_SCREEN = "0";
         private const string TABLE_LOADING_SCREEN = "A";
@@ -96,7 +94,7 @@ namespace OutwardVR.UI
                 }
             }
 
-            isLoading = true;
+            VRInstanceManager.isLoading = true;
         }
 
         [HarmonyPostfix]
@@ -275,7 +273,7 @@ namespace OutwardVR.UI
             Logs.WriteWarning("LOADING TITLE SCREEN");
             // When returning from a game to the main menu, the main menu FirstUpdate gets ran before this so it tries to position the
             // menu manager based on the title screen from when the game first loaded, so we need to re-load it here
-            if (gameHasBeenLoadedOnce)
+            if (VRInstanceManager.gameHasBeenLoadedOnce)
             {
                 PositionMenuManager(menuManager);
             }

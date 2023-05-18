@@ -24,11 +24,17 @@ namespace OutwardVR.UI
                 // By setting the HUD's parent to the head object it rotates with the body and by setting the local position, it is positioned perfectly
                 if (__instance.transform.parent == null)
                 {
-                    __instance.transform.parent = Camera.main.transform.parent.parent.parent.transform;
+                    if (VRInstanceManager.headBobOn && VRInstanceManager.modelPlayerHead != null)
+                        __instance.transform.parent = VRInstanceManager.modelPlayerHead.transform;
+                    else
+                        __instance.transform.parent = VRInstanceManager.nonBobPlayerHead.transform;
                     __instance.transform.localRotation = Quaternion.identity;
                 }
                 if (NetworkLevelLoader.Instance.IsOverallLoadingDone && NetworkLevelLoader.Instance.AllPlayerReadyToContinue)
-                    __instance.transform.localPosition = new Vector3(-0.05f, 0.225f, 0.5f);
+                    if (VRInstanceManager.headBobOn)
+                        __instance.transform.localPosition = new Vector3(-0.05f, 0.225f, 0.5f);
+                    else
+                        __instance.transform.localPosition = new Vector3(-0.2f, 0.075f, 0.5f);
             }
             catch
             {
