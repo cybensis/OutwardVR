@@ -28,7 +28,7 @@ namespace OutwardVR
             if (xAxisID == Controllers.LeftJoyStickHor)
                     vrController.SetAxisValueById(xAxisID, vectorAction.axis.x);
             else if (xAxisID == Controllers.RightJoyStickHor) {
-                if (FirstPersonCamera.enemyTargetActive)
+                if (CameraHandler.enemyTargetActive)
                     vrController.SetAxisValueById(xAxisID, SteamVR_Actions._default.LeftJoystick.axis.x);
                 else
                     vrController.SetAxisValueById(xAxisID, vectorAction.axis.x);

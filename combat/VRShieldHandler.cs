@@ -26,7 +26,7 @@ namespace OutwardVR.combat
         private void Update() {
             if (delayAttack && Time.time - delayStartTime > delayLength) { 
                 delayAttack = false;
-                FirstPersonCamera.UnfreezeMovement();
+                CameraHandler.UnfreezeMovement();
             }
             else if (delayAttack)
                 return;
@@ -66,7 +66,7 @@ namespace OutwardVR.combat
             delayLength = timeToDelay;
             delayStartTime = Time.time;
             delayAttack = true;
-            FirstPersonCamera.SetFreezeMovement();
+            CameraHandler.SetFreezeMovement();
         }
     }
 }

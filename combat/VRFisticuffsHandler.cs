@@ -62,7 +62,7 @@ namespace OutwardVR.combat
 
             if (delayAttack && Time.time - delayStartTime > delayLength) { 
                 delayAttack = false;
-                FirstPersonCamera.UnfreezeMovement();
+                CameraHandler.UnfreezeMovement();
             }
             else if (delayAttack)
                 return;
@@ -91,7 +91,7 @@ namespace OutwardVR.combat
                     {
                         SetDelay(0.7f);
                         WeaponPatches.hitWhileBlocking = false;
-                        FirstPersonCamera.SetFreezeMovement();
+                        CameraHandler.SetFreezeMovement();
                     }
                 }
                 else if (isSwinging)

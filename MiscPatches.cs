@@ -13,6 +13,13 @@ namespace OutwardVR
     {
         public static CharacterUI characterUIInstance;
 
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Character), "DodgeInput", new System.Type[] { typeof(Vector3) })]
+        private static void CorrectDodgeDireciton(Character __instance, ref Vector3 _direction)
+        {
+            _direction = __instance.transform.forward * SteamVR_Actions._default.LeftJoystick.axis.y + __instance.transform.right * SteamVR_Actions._default.LeftJoystick.axis.x;
+        }
+
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterUI), "Awake")]
@@ -25,14 +32,19 @@ namespace OutwardVR
         [HarmonyPatch(typeof(CharacterVisuals), "EquipVisuals")]
         private static void DisableHelmet(CharacterVisuals __instance)
         {
-            if (!__instance.m_character.IsLocalPlayer)
+
+            if (!VRInstanceManager.firstPerson || !__instance.m_character.IsLocalPlayer)
                 return;
             try
             {
-                if (__instance.ActiveVisualsHelmOrHead != null && __instance.ActiveVisualsHelmOrHead.Renderer != null)
-                    __instance.ActiveVisualsHelmOrHead.Renderer.enabled = false;
-                if (__instance.DefaultHairVisuals != null && __instance.DefaultHairVisuals.gameObject != null)
-                    __instance.DefaultHairVisuals.gameObject.active = false;
+                if (__instance.ActiveVisualsHelmOrHead != null && __instance.ActiveVisualsHelmOrHead.Renderer != null) {
+                    VRInstanceManager.activeVisualsHelmOrHead = __instance.ActiveVisualsHelmOrHead.Renderer;
+                    VRInstanceManager.activeVisualsHelmOrHead.enabled = false;
+                }
+                if (__instance.DefaultHairVisuals != null && __instance.DefaultHairVisuals.gameObject != null) {
+                    VRInstanceManager.playerHair = __instance.DefaultHairVisuals.GetComponent<SkinnedMeshRenderer>();
+                    VRInstanceManager.playerHair.enabled = false;
+                }
             }
             catch {
                 return;
@@ -63,7 +75,7 @@ Shields consume less stamina when blocking and can block arrows.";
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MapMarkerSimpleDisplay), "Update")]
-        private static void UpdateControllersOnMainwMenu(MapMarkerSimpleDisplay __instance)
+        private static void FixMapMarkerCursor(MapMarkerSimpleDisplay __instance)
         {
             bool isHovering = Vector2.Distance(new Vector2(__instance.RectTransform.localPosition.x, __instance.RectTransform.localPosition.y), MapDisplay.Instance.ControllerCursor.anchoredPosition) <= 20;
             if (!__instance.m_hover && isHovering)
@@ -80,7 +92,7 @@ Shields consume less stamina when blocking and can block arrows.";
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(RadialSelectorItem), "Update")]
-        private static void Testtttt(RadialSelectorItem __instance)
+        private static void ActivateRadialItem(RadialSelectorItem __instance)
         {
             // Definitely can find a more efficient method of doing this but since its only active when the map is open its not that big a deal
 
@@ -114,7 +126,7 @@ Shields consume less stamina when blocking and can block arrows.";
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(RadialSelector), "Update")]
-        private static bool wdwdwdww(RadialSelector __instance)
+        private static bool FixRadialMenu(RadialSelector __instance)
         {
 
             if (!__instance.TargetActive)
@@ -213,6 +225,19 @@ Shields consume less stamina when blocking and can block arrows.";
             if (UnityEngine.Time.time - __instance.m_timeOfLastSelectedChoice > 1)
                 __instance.m_activeDialogue[0].Continue();
             return false;
+        }
+
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CharacterJointManager), "Start")]
+        private static void SetHeadJoint(CharacterJointManager __instance)
+        {
+            if (__instance.name == "head" && __instance.transform.root.name != "AISquadManagerStructure")
+                VRInstanceManager.modelPlayerHead = __instance.transform.gameObject;
+            if (__instance.name == "hand_left" && __instance.transform.root.name != "AISquadManagerStructure")
+                VRInstanceManager.modelLeftHand = __instance.transform.gameObject;
+            if (__instance.name == "hand_right" && __instance.transform.root.name != "AISquadManagerStructure")
+                VRInstanceManager.modelRightHand = __instance.transform.gameObject;
         }
 
 

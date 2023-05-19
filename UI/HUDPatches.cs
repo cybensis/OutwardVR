@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
+using System;
 using UnityEngine;
+using UnityEngine.TextCore;
 using Valve.VR;
 
 namespace OutwardVR.UI
@@ -15,30 +17,44 @@ namespace OutwardVR.UI
         [HarmonyPatch(typeof(MenuManager), "Update")]
         private static void PositionHUD(MenuManager __instance)
         {
+            if (!NetworkLevelLoader.Instance.IsOverallLoadingDone || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue)
+                return;
+
             try
             {
-                Character character = Camera.main.transform.root.GetComponent<Character>();
+                if (VRInstanceManager.firstPerson) {
+                    Character character = Camera.main.transform.root.GetComponent<Character>();
 
-                if (character == null)
-                    return;
-                // By setting the HUD's parent to the head object it rotates with the body and by setting the local position, it is positioned perfectly
-                if (__instance.transform.parent == null)
-                {
-                    if (VRInstanceManager.headBobOn && VRInstanceManager.modelPlayerHead != null)
-                        __instance.transform.parent = VRInstanceManager.modelPlayerHead.transform;
-                    else
-                        __instance.transform.parent = VRInstanceManager.nonBobPlayerHead.transform;
-                    __instance.transform.localRotation = Quaternion.identity;
-                }
-                if (NetworkLevelLoader.Instance.IsOverallLoadingDone && NetworkLevelLoader.Instance.AllPlayerReadyToContinue)
+                    if (character == null)
+                        return;
+                    // By setting the HUD's parent to the head object it rotates with the body and by setting the local position, it is positioned perfectly
+                    if (VRInstanceManager.modelPlayerHead != null && __instance.transform.parent != VRInstanceManager.modelPlayerHead.transform && __instance.transform.parent != VRInstanceManager.nonBobPlayerHead.transform)
+                    {
+                        if (VRInstanceManager.headBobOn)
+                            __instance.transform.parent = VRInstanceManager.modelPlayerHead.transform;
+                        else
+                            __instance.transform.parent = VRInstanceManager.nonBobPlayerHead.transform;
+                        __instance.transform.localRotation = Quaternion.identity;
+                    }
                     if (VRInstanceManager.headBobOn)
                         __instance.transform.localPosition = new Vector3(-0.05f, 0.225f, 0.5f);
                     else
                         __instance.transform.localPosition = new Vector3(-0.2f, 0.075f, 0.5f);
+                }
+                else {
+                    CharacterCamera characterCamera = Camera.main.transform.root.GetComponent<CharacterCamera>();
+                    if (characterCamera == null)
+                        return;
+                    if ( __instance.transform.parent != characterCamera.transform)
+                        __instance.transform.parent = characterCamera.transform;
+                    __instance.transform.localPosition = new Vector3(0.15f, 1.15f, -0.8f);
+                    __instance.transform.rotation = Quaternion.identity;
+                    __instance.transform.localRotation = Quaternion.identity;
+                }
             }
-            catch
+            catch (Exception e)
             {
-                return;
+                Logs.WriteError(e.ToString());
             }
 
         }

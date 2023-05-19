@@ -72,6 +72,10 @@ public class Plugin : BaseUnityPlugin
 
         SteamVR_Actions._default.ButtonA.AddOnStateDownListener(TriggerButton, SteamVR_Input_Sources.Any);
         SteamVR_Actions._default.ButtonX.AddOnStateDownListener(InventoryMenuTrigger, SteamVR_Input_Sources.Any);
+
+        SteamVR_Actions._default.ClickRightJoystick.AddOnStateDownListener(StartToggleThirdPerson, SteamVR_Input_Sources.Any);
+        SteamVR_Actions._default.ClickRightJoystick.AddOnStateUpListener(EndToggleThirdPerson, SteamVR_Input_Sources.Any);
+
         //SteamVR_Actions._default.ButtonY.AddOnStateDownListener(InteractDown, SteamVR_Input_Sources.Any);
         //SteamVR_Actions._default.ButtonY.AddOnStateUpListener(InteractUp, SteamVR_Input_Sources.Any);
     }
@@ -90,9 +94,20 @@ public class Plugin : BaseUnityPlugin
     //    if (InteractionDisplayPatches.laser != null && InteractionDisplayPatches.laser.worldItem != null)
     //        Camera.main.transform.root.GetComponent<Character>().OnInteractButtonUp();
     //}
+    private static float timeHeldFor = 0;
 
+    private static void StartToggleThirdPerson(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    {
+        timeHeldFor = Time.time;
+    }
 
-    public static void UpdateRightHand(SteamVR_Action_Pose fromAction, SteamVR_Input_Sources fromSource)
+    private static void EndToggleThirdPerson(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    {
+        if (Time.time - timeHeldFor > 1)
+            VRInstanceManager.ToggleThirdPerson();
+
+    }
+    private static void UpdateRightHand(SteamVR_Action_Pose fromAction, SteamVR_Input_Sources fromSource)
     {
         if (CameraManager.RightHand)
         {
@@ -103,7 +118,7 @@ public class Plugin : BaseUnityPlugin
 
     }
 
-    public static void UpdateLeftHand(SteamVR_Action_Pose fromAction, SteamVR_Input_Sources fromSource)
+    private static void UpdateLeftHand(SteamVR_Action_Pose fromAction, SteamVR_Input_Sources fromSource)
     {
         if (CameraManager.LeftHand)
         {
@@ -114,7 +129,7 @@ public class Plugin : BaseUnityPlugin
 
 
 
-    public static void TriggerButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    private static void TriggerButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
     {
         if ((MiscPatches.characterUIInstance.IsMenuFocused || MiscPatches.characterUIInstance.IsDialogueInProgress) && MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo != null)
         {
@@ -134,7 +149,7 @@ public class Plugin : BaseUnityPlugin
 
 
 
-    public static void InventoryMenuTrigger(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    private static void InventoryMenuTrigger(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
     {
         if (MiscPatches.characterUIInstance != null &&
             MiscPatches.characterUIInstance.IsMenuFocused &&

@@ -53,7 +53,7 @@ namespace OutwardVR.UI
             loadingCam.cullingMask = 32;
             loadingCam.clearFlags = CameraClearFlags.SolidColor;
             loadingCam.backgroundColor = Color.black;
-            loadingCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
+            loadingCam.nearClipPlane = CameraHandler.NEAR_CLIP_PLANE_VALUE;
             loadingCam.depth = 10;
             __instance.transform.position = tempCamHolder.transform.position + (tempCamHolder.transform.right * -0.5f) + (tempCamHolder.transform.up * 1.25f) + (tempCamHolder.transform.forward * 5f);
             __instance.transform.localRotation = Quaternion.identity;
@@ -61,6 +61,24 @@ namespace OutwardVR.UI
 
         }
 
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(PauseMenu), "AwakeInit")]
+        private static void AddVRSettings(PauseMenu __instance)
+        {
+            if (__instance.FirstSelectable.transform.parent.GetChildCount() == 2) {
+                GameObject newButton = Object.Instantiate(__instance.m_btnTogglePause.gameObject);
+                newButton.transform.parent = __instance.m_btnTogglePause.transform.parent;
+                newButton.transform.GetChild(0).GetComponent<Text>().text = "Allow headbob: " + ((VRInstanceManager.headBobOn) ? "On" : "Off");
+                Button buttonComp = newButton.GetComponent<Button>();
+                buttonComp.onClick.RemoveAllListeners();
+            }
+        }
+
+
+        //private static UnityAction Test() {
+        //    __instance.transform.localScale = new Vector3(5,5,5);
+        //}
 
 
         [HarmonyPostfix]
@@ -84,7 +102,7 @@ namespace OutwardVR.UI
                 loadingCam.cullingMask = 32;
                 loadingCam.clearFlags = CameraClearFlags.SolidColor;
                 loadingCam.backgroundColor = Color.black;
-                loadingCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
+                loadingCam.nearClipPlane = CameraHandler.NEAR_CLIP_PLANE_VALUE;
                 loadingCam.depth = 10;
                 Transform GeneralMenus = __instance.transform.GetChild(2); // Maybe change this to loop over all children, its place might change
                 if (GeneralMenus.name == "GeneralMenus")
@@ -221,7 +239,7 @@ namespace OutwardVR.UI
 
             mainCam.transform.parent = tempCamHolder.transform;
             mainCam.cullingMask = -1;
-            mainCam.nearClipPlane = FirstPersonCamera.NEAR_CLIP_PLANE_VALUE;
+            mainCam.nearClipPlane = CameraHandler.NEAR_CLIP_PLANE_VALUE;
             mainCam.targetTexture = null;
             mainCam.gameObject.AddComponent<SteamVR_TrackedObject>();
 

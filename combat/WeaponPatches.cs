@@ -14,7 +14,7 @@ namespace OutwardVR.combat
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Weapon), "OnUnequip")]
         private static void ResetArmIKOnUnequip(Weapon __instance) {
-            if (!__instance.OwnerCharacter.IsLocalPlayer || !NetworkLevelLoader.Instance.IsOverallLoadingDone)
+            if (!VRInstanceManager.firstPerson || !__instance.OwnerCharacter.IsLocalPlayer || !NetworkLevelLoader.Instance.IsOverallLoadingDone)
                 return;
             // Only run this if nothing is being equipped to replace it
             if (VRInstanceManager.leftHandIK != null && __instance.OwnerCharacter.CurrentWeapon == null)
@@ -44,7 +44,7 @@ namespace OutwardVR.combat
             //Arrow = 150,
             //Bow = 200
 
-            if (!__instance.OwnerCharacter.IsLocalPlayer || !NetworkLevelLoader.Instance.IsOverallLoadingDone)
+            if (!VRInstanceManager.firstPerson || !__instance.OwnerCharacter.IsLocalPlayer || !NetworkLevelLoader.Instance.IsOverallLoadingDone)
                 return;
             if (VRInstanceManager.leftHandIK != null && __instance.TwoHanded && __instance.TwoHand != Equipment.TwoHandedType.DualWield && __instance.Type != Weapon.WeaponType.Bow)
                 VRInstanceManager.leftHandIK.ChangeWeapon(true);
@@ -81,14 +81,15 @@ namespace OutwardVR.combat
         [HarmonyPatch(typeof(Character), "SendPerformAttackTrivial", new[] { typeof(int), typeof(int), typeof(bool) })]
         private static bool PerformAttackWithoutAnimation(Character __instance, object[] __args)
         {
-            if (!__instance.IsLocalPlayer ||
+            if (!VRInstanceManager.firstPerson || 
+                !__instance.IsLocalPlayer ||
                 (int)__args[0] >= 2 || 
                 __instance.CurrentWeapon == null ||
                 __instance.CurrentWeapon.Type == Weapon.WeaponType.Pistol_OH ||
-                    __instance.CurrentWeapon.Type == Weapon.WeaponType.Shield ||
-                    __instance.CurrentWeapon.Type == Weapon.WeaponType.Arrow ||
-                    __instance.CurrentWeapon.Type == Weapon.WeaponType.Bow ||
-                     __instance.CurrentWeapon.Type == Weapon.WeaponType.Chakram_OH)
+                __instance.CurrentWeapon.Type == Weapon.WeaponType.Shield ||
+                __instance.CurrentWeapon.Type == Weapon.WeaponType.Arrow ||
+                __instance.CurrentWeapon.Type == Weapon.WeaponType.Bow ||
+                __instance.CurrentWeapon.Type == Weapon.WeaponType.Chakram_OH)
                 return true;
             __instance.SetHitTrans(-1);
             __instance.StopBlocking();

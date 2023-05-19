@@ -36,7 +36,7 @@ namespace OutwardVR.body
 
         void LateUpdate()
         {
-            crouchModifier = Mathf.Clamp(FirstPersonCamera.camInitYHeight - FirstPersonCamera.camCurrentHeight, 0, 1) * 1.25f;
+            crouchModifier = Mathf.Clamp(CameraHandler.camInitYHeight - CameraHandler.camCurrentHeight, 0, 1) * 1.25f;
 
             //LT 20, 6, 47
             //LC -3 -6 -40
