@@ -13,13 +13,6 @@ namespace OutwardVR
     {
         public static CharacterUI characterUIInstance;
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(Character), "DodgeInput", new System.Type[] { typeof(Vector3) })]
-        private static void CorrectDodgeDireciton(Character __instance, ref Vector3 _direction)
-        {
-            _direction = __instance.transform.forward * SteamVR_Actions._default.LeftJoystick.axis.y + __instance.transform.right * SteamVR_Actions._default.LeftJoystick.axis.x;
-        }
-
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CharacterUI), "Awake")]

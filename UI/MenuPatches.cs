@@ -25,16 +25,17 @@ namespace OutwardVR.UI
         private static string chosenTitleScreen;
 
 
-
         public static void PositionMenuAfterLoading()
         {
-            if (menuManager.transform.parent != null)
+            if (MenuManager.Instance.transform.parent != null)
             {
-                Logs.WriteWarning("POSITION MENU AFTER LOADING");
-                menuManager.transform.root.localRotation = Quaternion.identity;
-                menuManager.transform.root.localPosition = Vector3.zero;
+                MenuManager.Instance.transform.root.localRotation = Quaternion.identity;
                 tempCamHolder.transform.rotation = Quaternion.identity;
-                tempCamHolder.transform.position = menuManager.transform.root.position + (menuManager.transform.root.right * -0.15f) + (menuManager.transform.root.up * 0.3f) + (menuManager.transform.root.forward * -1.5f);
+                MenuManager.Instance.m_masterLoading.transform.parent.rotation = Quaternion.identity;
+                if (VRInstanceManager.firstPerson)
+                    tempCamHolder.transform.position = MenuManager.Instance.transform.root.position + (MenuManager.Instance.transform.root.up * 0.4f) +(MenuManager.Instance.transform.root.forward * -0.2f);
+                else
+                    tempCamHolder.transform.position = MenuManager.Instance.transform.root.position + (MenuManager.Instance.transform.root.forward * -1.5f);
             }
         }
 
@@ -43,8 +44,9 @@ namespace OutwardVR.UI
         private static void PositionCamOnReturnToMenu(MenuManager __instance)
         {
             Logs.WriteWarning("RETURNING TO MENU");
-            Camera.main.transform.parent.parent.SetParent(null);
+            VRInstanceManager.camRoot.transform.SetParent(null);
             __instance.transform.SetParent(null);
+            Logs.WriteWarning("DEPARENTING");
             //__instance.transform.parent.DetachChildren();
             loadingCamHolder.active = true;
             tempCamHolder.transform.position = new Vector3(-3.5f, -1.25f, -0.7861f);
@@ -66,19 +68,47 @@ namespace OutwardVR.UI
         [HarmonyPatch(typeof(PauseMenu), "AwakeInit")]
         private static void AddVRSettings(PauseMenu __instance)
         {
-            if (__instance.FirstSelectable.transform.parent.GetChildCount() == 2) {
-                GameObject newButton = Object.Instantiate(__instance.m_btnTogglePause.gameObject);
-                newButton.transform.parent = __instance.m_btnTogglePause.transform.parent;
-                newButton.transform.GetChild(0).GetComponent<Text>().text = "Allow headbob: " + ((VRInstanceManager.headBobOn) ? "On" : "Off");
-                Button buttonComp = newButton.GetComponent<Button>();
-                buttonComp.onClick.RemoveAllListeners();
+            if (__instance.m_btnTogglePause.transform.parent.childCount == 2) {
+                //if (__instance.transform.GetChild(0).name == "Blackscreen")
+                //    __instance.transform.GetChild(0).gameObject.active = false;
+
+                GameObject toggleBobButton = Object.Instantiate(__instance.m_btnTogglePause.gameObject);
+                toggleBobButton.transform.parent = __instance.m_btnTogglePause.transform.parent;
+                toggleBobButton.transform.localPosition = new Vector3(0,-195,0);
+                toggleBobButton.transform.GetChild(0).GetComponent<Text>().text = "Allow headbob: " + ((VRInstanceManager.headBobOn) ? "On" : "Off");
+                Button buttonComp = toggleBobButton.GetComponent<Button>();
+                buttonComp.onClick = new Button.ButtonClickedEvent();
+                buttonComp.onClick.AddListener(() => HeadbobButtonHandler(toggleBobButton.transform.GetChild(0).GetComponent<Text>()));
+                
+                GameObject combatFreezeButton = Object.Instantiate(__instance.m_btnTogglePause.gameObject);
+                combatFreezeButton.transform.parent = __instance.m_btnTogglePause.transform.parent;
+                combatFreezeButton.transform.localPosition = new Vector3(0, -245, 0);
+                combatFreezeButton.transform.GetChild(0).GetComponent<Text>().text = "Move during attack: " + ((VRInstanceManager.freezeCombat) ? "Off" : "On");
+                buttonComp = combatFreezeButton.GetComponent<Button>();
+                buttonComp.onClick = new Button.ButtonClickedEvent();
+                buttonComp.onClick.AddListener(() => FreezeCombatButtonHandler(combatFreezeButton.transform.GetChild(0).GetComponent<Text>()));
+
+
+                GameObject background = toggleBobButton.transform.parent.parent.GetChild(1).gameObject;
+                if (background.name == "BG") {
+                    background.transform.localScale = new Vector3(1, 1.2f, 1);
+                    background.transform.localPosition = new Vector3(0, -50, 0);
+                }
             }
         }
 
 
-        //private static UnityAction Test() {
-        //    __instance.transform.localScale = new Vector3(5,5,5);
-        //}
+        private static void HeadbobButtonHandler(Text buttonText)
+        {
+            VRInstanceManager.ToggleHeadBob();
+            buttonText.text = "Allow headbob: " + ((VRInstanceManager.headBobOn) ? "On" : "Off");
+        }
+
+        private static void FreezeCombatButtonHandler(Text buttonText)
+        {
+            VRInstanceManager.freezeCombat = !VRInstanceManager.freezeCombat;
+            buttonText.text = "Move during attack: " + ((VRInstanceManager.freezeCombat) ? "Off" : "On");
+        }
 
 
         [HarmonyPostfix]
@@ -104,12 +134,9 @@ namespace OutwardVR.UI
                 loadingCam.backgroundColor = Color.black;
                 loadingCam.nearClipPlane = CameraHandler.NEAR_CLIP_PLANE_VALUE;
                 loadingCam.depth = 10;
-                Transform GeneralMenus = __instance.transform.GetChild(2); // Maybe change this to loop over all children, its place might change
-                if (GeneralMenus.name == "GeneralMenus")
-                {
-                    GeneralMenus.rotation = Quaternion.identity;
-                    GeneralMenus.localRotation = Quaternion.identity;
-                }
+                Transform GeneralMenus = __instance.m_masterLoading.transform.parent;
+                GeneralMenus.rotation = Quaternion.identity;
+                GeneralMenus.localRotation = Quaternion.identity;
             }
 
             VRInstanceManager.isLoading = true;

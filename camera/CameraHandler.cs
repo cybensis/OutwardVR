@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using HarmonyLib;
+using NodeCanvas.Framework;
 using OutwardVR;
 using OutwardVR.body;
 using OutwardVR.combat;
@@ -26,6 +28,15 @@ namespace OutwardVR.camera
 
 
 
+        [HarmonyPatch(typeof(Character), "DodgeInput", new Type[] { typeof(Vector3) })]
+        public class CorrectDodgeDireciton
+        {
+            [HarmonyPrefix]
+            public static void Prefix(Character __instance, ref Vector3 _direction)
+            {
+                _direction = __instance.transform.forward * SteamVR_Actions._default.LeftJoystick.axis.y + __instance.transform.right * SteamVR_Actions._default.LeftJoystick.axis.x;
+            }
+        }
 
 
         [HarmonyPatch(typeof(Character), "DodgeEndAnimEvent")]
@@ -72,6 +83,8 @@ namespace OutwardVR.camera
                     {
                         Vector3 newPos = nonBobHeadLocalPos;
                         newPos.y -= 0.29f * Mathf.Clamp(CameraHandler.camInitYHeight - CameraHandler.camCurrentHeight, 0, 1) * 1.25f;
+                        if (__instance.m_targetCharacter.Sneaking)
+                            newPos.y -= 0.3f;
                         __instance.transform.parent.localPosition = newPos;
                     }
 
@@ -101,8 +114,11 @@ namespace OutwardVR.camera
         private static void TriggerButton(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
         {
             camInitYHeight = Camera.main.transform.localPosition.y;
-            if (!VRInstanceManager.firstPerson && VRInstanceManager.characterInstance != null)
-                VRInstanceManager.camRoot.transform.rotation = VRInstanceManager.characterInstance.transform.rotation;
+            if (!VRInstanceManager.firstPerson && VRInstanceManager.characterInstance != null) {
+                VRInstanceManager.camRoot.transform.rotation = Quaternion.identity;
+                VRInstanceManager.camRoot.transform.Rotate(0, Camera.main.transform.localEulerAngles.y,0);
+            
+            }
         }
 
 
@@ -130,13 +146,13 @@ namespace OutwardVR.camera
                 try
                 {
                     CameraManager.Setup();
-                    Logs.WriteError("Fix camera");
                     FixCamera(__instance, ___m_camera);
+                    VRInstanceManager.isLoading = false;
 
                 }
                 catch (Exception e)
                 {
-                    Debug.Log(e.ToString());
+                    Logs.WriteError(e.ToString());
                 }
                 return false;
             }
@@ -146,7 +162,7 @@ namespace OutwardVR.camera
 
         private static void FixCamera(CharacterCamera cameraScript, Camera camera)
         {
-            Debug.Log("[InwardVR] setting up camera...");
+            Logs.WriteInfo("[InwardVR] setting up camera...");
             VRInstanceManager.characterInstance = cameraScript.TargetCharacter;
             VRInstanceManager.nonBobPlayerHead = cameraScript.TargetCharacter.Visuals.Head.gameObject;
             VRInstanceManager.gameHasBeenLoadedOnce = true;
@@ -189,7 +205,7 @@ namespace OutwardVR.camera
             cameraScript.TargetCharacter.CharacterUI.gameObject.active = true;
             // Disable the loading cam once the player is loaded in
             UI.MenuPatches.loadingCamHolder.gameObject.active = false;
-            Debug.Log("[InwardVR] done setting up camera.");
+            Logs.WriteInfo("[InwardVR] done setting up camera.");
         }
 
         private static void SetupThirdPerson(CharacterCamera cameraScript, Camera camera)
@@ -334,26 +350,17 @@ namespace OutwardVR.camera
 
             // ========= Mix of custom and default code to enable sideways and backwards movement =========
             // This allows the player to move side to side only if a menu isn't open and they're not in dialogue
+            if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress)
+                ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
 
-            if (freezeMovement)
-            {
-                ___m_inputMoveVector.x = 0;
-                ___m_inputMoveVector.y = 0;
-            }
-            else
-            {
-                if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress)
-                    ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
+            // Moving backwards is pretty slow so increase it manually to speed it up. Set the if conditional to the inputMoveVector because the SteamVR input can be active during menus,
+            // whereas inputMoveVector cant
+            if (___m_inputMoveVector.y < -1)
+                ___m_inputMoveVector.y = SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y * 5f;
 
-                // Moving backwards is pretty slow so increase it manually to speed it up. Set the if conditional to the inputMoveVector because the SteamVR input can be active during menus,
-                // whereas inputMoveVector cant
-                if (___m_inputMoveVector.y < -1)
-                    ___m_inputMoveVector.y = SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y * 5f;
-
-                // Keep the movement from exceeding 10
-                ___m_inputMoveVector.y = Mathf.Clamp(___m_inputMoveVector.y, -10, 10);
-                ___m_inputMoveVector.x = Mathf.Clamp(___m_inputMoveVector.x, -10, 10);
-            }
+            // Keep the movement from exceeding 10
+            ___m_inputMoveVector.y = Mathf.Clamp(___m_inputMoveVector.y, -10, 10);
+            ___m_inputMoveVector.x = Mathf.Clamp(___m_inputMoveVector.x, -10, 10);
 
             var transformMove = ___m_horiControl.forward * ___m_inputMoveVector.y + ___m_horiControl.right * ___m_inputMoveVector.x;
             if (m_charControl.enabled)
@@ -416,9 +423,20 @@ namespace OutwardVR.camera
                 else
                     clampedDiff = Mathf.Clamp(clampedDiff, 0f - angleDiff, angleDiff);
 
-                clampedDiff += SteamVR_Actions._default.RightJoystick.axis.x * OptionManager.Instance.GetMouseSense(MenuManager.Instance.MapOwnerPlayerID);
-                __instance.transform.Rotate(0f, clampedDiff, 0f);
-                VRInstanceManager.camRoot.transform.Rotate(0f, clampedDiff, 0f);
+                if (targetSys.Locked)
+                {
+                    __instance.transform.Rotate(0f, clampedDiff, 0f);
+                    VRInstanceManager.camRoot.transform.rotation = __instance.transform.rotation;
+                }
+                else { 
+                    clampedDiff += SteamVR_Actions._default.RightJoystick.axis.x * OptionManager.Instance.GetMouseSense(MenuManager.Instance.MapOwnerPlayerID);
+                    VRInstanceManager.camRoot.transform.Rotate(0f, clampedDiff, 0f);
+                
+                    // Only rotate the body if the player isn't moving so we can get a full 360 degree view if we want
+                    if (SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x != 0 || SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y != 0)
+                        __instance.transform.rotation = Quaternion.Lerp(__instance.transform.rotation, VRInstanceManager.camRoot.transform.rotation, 5 * Time.deltaTime);
+                }
+                
             }
 
             if (Global.CheatsEnabled)
@@ -543,7 +561,8 @@ namespace OutwardVR.camera
             // ========= Mix of custom and default code to enable sideways and backwards movement =========
             // This allows the player to move side to side only if a menu isn't open and they're not in dialogue
 
-            if (freezeMovement)
+
+            if (VRInstanceManager.freezeCombat && freezeMovement)
             {
                 ___m_inputMoveVector.x = 0;
                 ___m_inputMoveVector.y = 0;

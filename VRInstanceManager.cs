@@ -30,7 +30,8 @@ namespace OutwardVR
         public static bool isLoading = false;
 
         public static bool headBobOn = false;
-        public static bool firstPerson = false;
+        public static bool freezeCombat = false;
+        public static bool firstPerson = true;
 
 
         // First person elements
@@ -44,7 +45,7 @@ namespace OutwardVR
 
         public static void ToggleHeadBob() { 
             headBobOn = !headBobOn;
-            if (modelPlayerHead != null)
+            if (VRInstanceManager.firstPerson && modelPlayerHead != null)
             {
                 if (headBobOn)
                    camRoot.transform.SetParent(modelPlayerHead.transform, false);
@@ -75,7 +76,7 @@ namespace OutwardVR
                     VRInstanceManager.playerHair.enabled = !firstPerson;
                 if (VRInstanceManager.activeVisualsHelmOrHead != null)
                     VRInstanceManager.activeVisualsHelmOrHead.enabled = !firstPerson;
-
+                // Use this to re-run FixCamera
                 CameraHandler.cameraFixed = false;
             }
         }
