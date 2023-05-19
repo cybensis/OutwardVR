@@ -47,7 +47,7 @@ namespace OutwardVR.combat
         private ArmIK handIK;
 
         // When the sword is held to the side to block, it should be within range of 1.0 to SWORD_MIN_BLOCK_RANGE otherwise its not gunna count as a block
-        private const float SWORD_MIN_BLOCK_RANGE = 0.875f;
+        private const float SWORD_MIN_BLOCK_RANGE = 0.825f;
         private const float BLOCK_DELAY = 0.45f;
         private float attackDelay = 0.45f;
         private float delayLength = 0f;

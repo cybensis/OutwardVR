@@ -7,11 +7,6 @@ namespace OutwardVR.combat
 {
     public class VRFisticuffsHandler : MonoBehaviour
     {
-        // Use Vector3.Dot on the player bodies up and whatever up would be for the arms or hands, and this time dont use Mathf.abs since we actually only want it blocking if arms are held up
-        // Probably also add a height detection so hands are held within 0.1 tolerance from the cameras height or something like that
-
-        // For punching combat probably just copy the timing from the melee weapon stab stuff but dont bother trying to keep it in any kind of range since punches can happen from many angles
-        private float x, y, z;
 
         private float attackDelay = 0.4f;
         private float delayLength = 0f;
