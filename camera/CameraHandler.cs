@@ -5,6 +5,8 @@ using NodeCanvas.Framework;
 using OutwardVR;
 using OutwardVR.body;
 using OutwardVR.combat;
+using Rewired;
+using Rewired.Data.Mapping;
 using UnityEngine;
 using Valve.VR;
 using static MapMagic.ObjectPool;
@@ -34,7 +36,14 @@ namespace OutwardVR.camera
             [HarmonyPrefix]
             public static void Prefix(Character __instance, ref Vector3 _direction)
             {
-                _direction = __instance.transform.forward * SteamVR_Actions._default.LeftJoystick.axis.y + __instance.transform.right * SteamVR_Actions._default.LeftJoystick.axis.x;
+                if (VRInstanceManager.firstPerson)
+                    _direction = __instance.transform.forward * SteamVR_Actions._default.LeftJoystick.axis.y + __instance.transform.right * SteamVR_Actions._default.LeftJoystick.axis.x;
+                else
+                    if (Input.GetJoystickNames().Length > 0 && Input.GetJoystickNames()[0] != "")
+                        _direction = VRInstanceManager.camRoot.transform.forward * SteamVR_Actions._default.LeftJoystick.axis.y + VRInstanceManager.camRoot.transform.right * SteamVR_Actions._default.LeftJoystick.axis.x;
+                    else
+                        _direction = VRInstanceManager.camRoot.transform.forward * ControlsInput.MoveVertical(__instance.OwnerPlayerSys.PlayerID) + VRInstanceManager.camRoot.transform.right * ControlsInput.MoveHorizontal(__instance.OwnerPlayerSys.PlayerID);
+
             }
         }
 
@@ -290,8 +299,11 @@ namespace OutwardVR.camera
             {
                 Controllers.Update();
                 camCurrentHeight = Camera.main.transform.localPosition.y;
+                if (__instance.Character.Dodging)
+                    return true;
                 if (!VRInstanceManager.firstPerson)
                     HandleThirdPersonUpdate(__instance, ref ___m_inputMoveVector, ref ___m_modifMoveInput, ___m_horiControl, ref ___m_sprintFacing);
+                    //return true;
                 else
                     HandleFirstPersonUpdate(__instance, ref ___m_inputMoveVector, ref ___m_modifMoveInput, ___m_horiControl, ref ___m_sprintFacing);
                 return false;
@@ -309,11 +321,17 @@ namespace OutwardVR.camera
 
             int turnAllow = __instance.m_turnAllowedInAction;
             float slopeSpeed = __instance.m_slopeSlowSpeed;
-
             enemyTargetActive = targetSys.Locked;
-
+            bool useGamepad = (Input.GetJoystickNames().Length > 0 && Input.GetJoystickNames()[0] != "");
+            float xMovement = SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x;
+            float yMovement = SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y;
+            if (useGamepad) {
+                xMovement = ControlsInput.MoveHorizontal(m_char.OwnerPlayerSys.PlayerID) / 1.5f;
+                yMovement = ControlsInput.MoveVertical(m_char.OwnerPlayerSys.PlayerID);
+                Logs.WriteWarning(ControlsInput.MoveHorizontal(m_char.OwnerPlayerSys.PlayerID) + " " + SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x);
+            }
             // If the player isn't moving around, then make the camera rotate on the spot
-            if (___m_modifMoveInput.y >= 0f && ___m_modifMoveInput.x != 0 && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x == 0 && SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y == 0 && !targetSys.Locked)
+            if (___m_modifMoveInput.y >= 0f && ___m_modifMoveInput.x != 0 && xMovement == 0 && yMovement == 0 && !targetSys.Locked)
             {
                 ___m_modifMoveInput.y = 0.25f;
 
@@ -351,12 +369,12 @@ namespace OutwardVR.camera
             // ========= Mix of custom and default code to enable sideways and backwards movement =========
             // This allows the player to move side to side only if a menu isn't open and they're not in dialogue
             if (!m_char.CharacterUI.IsMenuFocused && !m_char.CharacterUI.IsDialogueInProgress)
-                ___m_inputMoveVector.x += SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x / 2;
+                ___m_inputMoveVector.x += xMovement / 2;
 
             // Moving backwards is pretty slow so increase it manually to speed it up. Set the if conditional to the inputMoveVector because the SteamVR input can be active during menus,
             // whereas inputMoveVector cant
             if (___m_inputMoveVector.y < -1)
-                ___m_inputMoveVector.y = SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y * 5f;
+                ___m_inputMoveVector.y = yMovement * 5f;
 
             // Keep the movement from exceeding 10
             ___m_inputMoveVector.y = Mathf.Clamp(___m_inputMoveVector.y, -10, 10);
@@ -429,12 +447,15 @@ namespace OutwardVR.camera
                     VRInstanceManager.camRoot.transform.rotation = __instance.transform.rotation;
                 }
                 else { 
-                    clampedDiff += SteamVR_Actions._default.RightJoystick.axis.x * OptionManager.Instance.GetMouseSense(MenuManager.Instance.MapOwnerPlayerID);
+                    if (useGamepad)
+                        clampedDiff += ControlsInput.RotateCameraHorizontal(m_char.OwnerPlayerSys.PlayerID) * OptionManager.Instance.GetMouseSense(MenuManager.Instance.MapOwnerPlayerID);
+                    else
+                        clampedDiff += SteamVR_Actions._default.RightJoystick.axis.x * OptionManager.Instance.GetMouseSense(MenuManager.Instance.MapOwnerPlayerID);
                     VRInstanceManager.camRoot.transform.Rotate(0f, clampedDiff, 0f);
                 
                     // Only rotate the body if the player isn't moving so we can get a full 360 degree view if we want
-                    if (SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).x != 0 || SteamVR_Actions._default.LeftJoystick.GetAxis(SteamVR_Input_Sources.Any).y != 0)
-                        __instance.transform.rotation = Quaternion.Lerp(__instance.transform.rotation, VRInstanceManager.camRoot.transform.rotation, 5 * Time.deltaTime);
+                    if (xMovement != 0 ||yMovement != 0)
+                        __instance.transform.rotation = Quaternion.Lerp(__instance.transform.rotation, VRInstanceManager.camRoot.transform.rotation, 8 * Time.deltaTime);
                 }
                 
             }

@@ -46,7 +46,7 @@ namespace OutwardVR.UI
                     if (__instance.transform.parent != characterCamera.transform)
                         __instance.transform.parent = characterCamera.transform;
 
-                    __instance.transform.localPosition = new Vector3(0.15f, 1.15f, -0.8f);
+                    __instance.transform.localPosition = new Vector3(0.075f, 1.15f, -0.7f);
                     __instance.transform.rotation = Quaternion.identity;
                     __instance.transform.localRotation = Quaternion.identity;
                 }

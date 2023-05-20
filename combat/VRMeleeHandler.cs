@@ -182,6 +182,9 @@ namespace OutwardVR.combat
                     SetDelay(attackDelay);
                 resetSwingVariables();
             }
+
+            transform.localScale = Vector3.one;
+
         }
 
 
