@@ -88,11 +88,18 @@ namespace OutwardVR.UI
                 buttonComp.onClick = new Button.ButtonClickedEvent();
                 buttonComp.onClick.AddListener(() => FreezeCombatButtonHandler(combatFreezeButton.transform.GetChild(0).GetComponent<Text>()));
 
+                GameObject moveDirectionButton = Object.Instantiate(__instance.m_btnTogglePause.gameObject);
+                moveDirectionButton.transform.parent = __instance.m_btnTogglePause.transform.parent;
+                moveDirectionButton.transform.localPosition = new Vector3(0, -295, 0);
+                moveDirectionButton.transform.GetChild(0).GetComponent<Text>().text = "Move direction: " + (VRInstanceManager.moveFromHeadset ? "Headset" : "Hand");
+                buttonComp = moveDirectionButton.GetComponent<Button>();
+                buttonComp.onClick = new Button.ButtonClickedEvent();
+                buttonComp.onClick.AddListener(() => MoveDirectionButtonHandler(moveDirectionButton.transform.GetChild(0).GetComponent<Text>()));
 
                 GameObject background = toggleBobButton.transform.parent.parent.GetChild(1).gameObject;
                 if (background.name == "BG") {
-                    background.transform.localScale = new Vector3(1, 1.2f, 1);
-                    background.transform.localPosition = new Vector3(0, -50, 0);
+                    background.transform.localScale = new Vector3(1, 1.3f, 1);
+                    background.transform.localPosition = new Vector3(0, -75, 0);
                 }
             }
         }
@@ -109,6 +116,13 @@ namespace OutwardVR.UI
             VRInstanceManager.freezeCombat = !VRInstanceManager.freezeCombat;
             buttonText.text = "Move during attack: " + ((VRInstanceManager.freezeCombat) ? "Off" : "On");
         }
+
+        private static void MoveDirectionButtonHandler(Text buttonText)
+        {
+            VRInstanceManager.moveFromHeadset = !VRInstanceManager.moveFromHeadset;
+            buttonText.text = "Move direction: " + (VRInstanceManager.moveFromHeadset ? "Headset" : "Hand");
+        }
+
 
 
         [HarmonyPostfix]

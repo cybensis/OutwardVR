@@ -1,7 +1,9 @@
 ﻿using HarmonyLib;
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.TextCore;
+using UnityEngine.UI;
 using Valve.VR;
 
 namespace OutwardVR.UI
@@ -17,7 +19,10 @@ namespace OutwardVR.UI
         [HarmonyPatch(typeof(MenuManager), "Update")]
         private static void PositionHUD(MenuManager __instance)
         {
-            if (!NetworkLevelLoader.Instance.IsOverallLoadingDone || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue || MenuManager.Instance.IsReturningToMainMenu)
+
+            if (MiscPatches.characterUIInstance == null)
+                return;
+            if (!__instance.IsInMainMenuScene && (!NetworkLevelLoader.Instance.IsOverallLoadingDone || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue || MenuManager.Instance.IsReturningToMainMenu))
                 return;
 
             try
@@ -25,30 +30,69 @@ namespace OutwardVR.UI
                 if (VRInstanceManager.firstPerson) {
                     Character character = Camera.main.transform.root.GetComponent<Character>();
 
-                    if (character == null)
-                        return;
-                    // By setting the HUD's parent to the head object it rotates with the body and by setting the local position, it is positioned perfectly
-                    if (VRInstanceManager.modelPlayerHead != null && VRInstanceManager.headBobOn && __instance.transform.parent != VRInstanceManager.modelPlayerHead.transform)
-                        __instance.transform.parent = VRInstanceManager.modelPlayerHead.transform;
-                    else if (VRInstanceManager.nonBobPlayerHead != null && !VRInstanceManager.headBobOn && __instance.transform.parent != VRInstanceManager.nonBobPlayerHead.transform)
-                        __instance.transform.parent = VRInstanceManager.nonBobPlayerHead.transform;
-                    __instance.transform.localRotation = Quaternion.identity;
+                    if (character != null) {
+                        // By setting the HUD's parent to the head object it rotates with the body and by setting the local position, it is positioned perfectly
+                        if (VRInstanceManager.modelPlayerHead != null && VRInstanceManager.headBobOn && __instance.transform.parent != VRInstanceManager.modelPlayerHead.transform)
+                            __instance.transform.parent = VRInstanceManager.modelPlayerHead.transform;
+                        else if (VRInstanceManager.nonBobPlayerHead != null && !VRInstanceManager.headBobOn && __instance.transform.parent != VRInstanceManager.nonBobPlayerHead.transform)
+                            __instance.transform.parent = VRInstanceManager.nonBobPlayerHead.transform;
+                        __instance.transform.localRotation = Quaternion.identity;
 
-                    if (VRInstanceManager.headBobOn)
-                        __instance.transform.localPosition = new Vector3(-0.05f, 0.225f, 0.5f);
-                    else
-                        __instance.transform.localPosition = new Vector3(-0.2f, 0.075f, 0.5f);
+
+                        if (VRInstanceManager.headBobOn)
+                            __instance.transform.localPosition = new Vector3(-0.05f, 0.225f, 0.5f);
+                        else
+                            __instance.transform.localPosition = new Vector3(-0.2f, 0.075f, 0.5f);
+                    
+                    }
                 }
                 else {
                     CharacterCamera characterCamera = Camera.main.transform.root.GetComponent<CharacterCamera>();
-                    if (characterCamera == null)
-                        return;
-                    if (__instance.transform.parent != characterCamera.transform)
-                        __instance.transform.parent = characterCamera.transform;
 
-                    __instance.transform.localPosition = new Vector3(0.075f, 1.15f, -0.7f);
-                    __instance.transform.rotation = Quaternion.identity;
-                    __instance.transform.localRotation = Quaternion.identity;
+                    if (characterCamera != null) { 
+                        if (__instance.transform.parent != characterCamera.transform)
+                            __instance.transform.parent = characterCamera.transform;
+
+                        __instance.transform.localPosition = new Vector3(0.075f, 1.15f, -0.7f);
+                        __instance.transform.rotation = Quaternion.identity;
+                        __instance.transform.localRotation = Quaternion.identity;
+
+                    }
+
+                }
+
+                //Logs.WriteError(ControlsInput.MenuShowDetails(VRInstanceManager.currentPlayerId) + " " + MiscPatches.characterUIInstance.m_targetCharacter.OwnerPlayerSys.PlayerID);
+                bool aPressed = SteamVR_Actions._default.ButtonA.stateDown; 
+                bool xPressed = SteamVR_Actions._default.ButtonX.stateDown; 
+                if (VRInstanceManager.gamepadInUse) {
+                    aPressed = ControlsInput.MenuQuickAction(VRInstanceManager.currentPlayerId);
+                    xPressed = ControlsInput.MenuShowDetails(VRInstanceManager.currentPlayerId) ;
+                }
+
+                if ((MiscPatches.characterUIInstance.IsMenuFocused || MiscPatches.characterUIInstance.IsDialogueInProgress) && MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo != null)
+                {
+
+                    if (aPressed)
+                    {
+
+                        if (MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<ItemDisplayClick>() != null)
+                            MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<ItemDisplayClick>().SingleClick();
+                        else if (MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<UnityEngine.UI.Toggle>() != null)
+                            MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<UnityEngine.UI.Toggle>().OnSubmit(null);
+                        else if (MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<Dropdown>() != null)
+                            MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<Dropdown>().Show();
+                        else if (MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<Button>() != null)
+                            MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<Button>().Press();
+                    }
+                    else if (xPressed && MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<ItemDisplayClick>() != null) { 
+                        ItemDisplayClick invItem = MiscPatches.characterUIInstance.EventSystemCurrentSelectedGo.GetComponent<ItemDisplayClick>();
+                        PointerEventData _data = new PointerEventData(EventSystem.current);
+                        _data.pointerPress = invItem.gameObject;
+                        // Figure out how to set this value based on the items positon in the inventory canvas
+                        _data.position = new Vector2(1019f, 1143f);
+                        invItem.RightClick(_data);
+                    }
+
                 }
             }
             catch (Exception e)
@@ -56,6 +100,17 @@ namespace OutwardVR.UI
                 Logs.WriteError(e.ToString());
             }
 
+        }
+
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MessagePanel), "AwakeInit")]
+        private static void PositionSellMenu(MessagePanel __instance)
+        {
+
+            Vector3 newPos = Vector3.zero;
+            newPos.y = -200f;
+            __instance.transform.parent.localPosition = newPos;
         }
 
 
@@ -173,7 +228,10 @@ namespace OutwardVR.UI
         private static void DisplayQuickSlots(CharacterUI __instance)
         {
             // Display QuickSlots and hide player status bars only if left or right trigger is being held down
-            if (SteamVR_Actions._default.LeftTrigger.GetAxis(SteamVR_Input_Sources.Any) > 0.3f || SteamVR_Actions._default.RightTrigger.GetAxis(SteamVR_Input_Sources.Any) > 0.3f)
+            bool triggerPulled = SteamVR_Actions._default.LeftTrigger.GetAxis(SteamVR_Input_Sources.Any) > 0.3f || SteamVR_Actions._default.RightTrigger.GetAxis(SteamVR_Input_Sources.Any) > 0.3f;
+            if (VRInstanceManager.gamepadInUse)
+                triggerPulled = ControlsInput.QuickSlotToggle1(VRInstanceManager.currentPlayerId) || ControlsInput.QuickSlotToggle2(VRInstanceManager.currentPlayerId);
+            if (triggerPulled)
             {
                 if (quickSlots != null)
                     quickSlots.gameObject.SetActive(true);

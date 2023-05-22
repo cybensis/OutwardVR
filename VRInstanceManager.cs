@@ -32,6 +32,12 @@ namespace OutwardVR
         public static bool headBobOn = false;
         public static bool freezeCombat = false;
         public static bool firstPerson = true;
+        public static bool moveFromHeadset = false;
+
+        public static bool gamepadInUse = false;
+
+
+        public static int currentPlayerId = 0;
 
 
         // First person elements
@@ -60,14 +66,7 @@ namespace OutwardVR
             if (Time.time - timeLastToggled > 2.5f) { 
                 timeLastToggled = Time.time;
                 firstPerson = !firstPerson;
-                if (leftHandIK != null)
-                    leftHandIK.enabled = firstPerson;
-                if (rightHandIK != null)
-                    rightHandIK.enabled = firstPerson;
-                if (vrWeaponController != null)
-                    vrWeaponController.enabled = firstPerson;
-                if (shieldHandlerInstance != null)
-                    shieldHandlerInstance.enabled = firstPerson;
+                ToggleMotionControls((gamepadInUse) ? false : firstPerson ? true : false);
                 if (crouchInstance != null)
                     crouchInstance.enabled = firstPerson;
                 if (fixHeadRotationInstance != null)
@@ -79,6 +78,28 @@ namespace OutwardVR
                 // Use this to re-run FixCamera
                 CameraHandler.cameraFixed = false;
             }
+        }
+
+        public static void ToggleMotionControls(bool enable) {
+            if (leftHandIK != null)
+                leftHandIK.enabled = enable;
+            if (rightHandIK != null)
+                rightHandIK.enabled = enable;
+            if (vrWeaponController != null)
+                vrWeaponController.enabled = enable;
+            if (shieldHandlerInstance != null)
+                shieldHandlerInstance.enabled = enable;
+
+        }
+
+
+        public static void SetGamepad(bool useGamepad)
+        {
+            if (firstPerson && gamepadInUse != useGamepad) {
+                ToggleMotionControls(!useGamepad);
+            }
+            gamepadInUse = useGamepad;
+
         }
 
 

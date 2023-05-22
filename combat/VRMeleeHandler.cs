@@ -79,15 +79,17 @@ namespace OutwardVR.combat
 
         private void InitVars()
         {
-            if (handIK == null)
-                handIK = transform.parent.parent.parent.GetComponent<ArmIK>();
+
 
             if (weaponInstance == null)
                 weaponInstance = GetComponent<ItemVisual>().m_item as MeleeWeapon;
-
             if (characterInstance == null)
                 characterInstance = weaponInstance.OwnerCharacter;
-
+            if (characterInstance.Sheathed)
+                return;
+            
+            if (handIK == null)
+                handIK = transform.parent.parent.parent.GetComponent<ArmIK>();
             if (handIK.name == "hand_left")
                 isLeftHand = true;
             if (isLeftHand && characterInstance.LeftHandWeapon.CurrentVisual.name != name)
@@ -139,7 +141,7 @@ namespace OutwardVR.combat
         {
             if (!NetworkLevelLoader.Instance.IsOverallLoadingDone || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue || !gameObject.GetActive())
                 return;
-            if (handIK == null || characterInstance == null || raycastLength == 0f)
+            if (handIK == null || characterInstance == null  || raycastLength == 0f)
                 InitVars();
             if (delayAttack && Time.time - delayStartTime > delayLength) { 
                 delayAttack = false;

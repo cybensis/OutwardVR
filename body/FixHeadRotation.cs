@@ -6,7 +6,6 @@ namespace OutwardVR.body
     {
 
         private GameObject character;
-        private static float x, y, z;
         void Start()
         {
             character = Camera.main.transform.root.gameObject;
@@ -14,9 +13,6 @@ namespace OutwardVR.body
 
         void LateUpdate()
         {
-            //if (transform.GetChild(3) != null) { 
-            //    transform.GetChild(3).localPosition = new Vector3(x, y, z);
-            //}
             transform.localRotation = Quaternion.identity;
             transform.localPosition = Vector3.zero;
             transform.rotation = Quaternion.identity;

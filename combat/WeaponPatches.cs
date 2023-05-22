@@ -43,7 +43,7 @@ namespace OutwardVR.combat
             //Shield = 100,
             //Arrow = 150,
             //Bow = 200
-
+            MonoBehaviour handlerAdded = null;
             if (!VRInstanceManager.firstPerson || !__instance.OwnerCharacter.IsLocalPlayer || !NetworkLevelLoader.Instance.IsOverallLoadingDone)
                 return;
             if (VRInstanceManager.leftHandIK != null && __instance.TwoHanded && __instance.TwoHand != Equipment.TwoHandedType.DualWield && __instance.Type != Weapon.WeaponType.Bow)
@@ -58,14 +58,15 @@ namespace OutwardVR.combat
                      __instance.Type != Weapon.WeaponType.Chakram_OH &&
                       __instance.Type != Weapon.WeaponType.FistW_2H
                     ) {
-                    __instance.CurrentVisual.gameObject.AddComponent<VRMeleeHandler>();
+                    handlerAdded = __instance.CurrentVisual.gameObject.AddComponent<VRMeleeHandler>();
                 }
             }
             if (__instance.CurrentVisual.GetComponent<VRFisticuffsHandler>() == null && __instance.Type == Weapon.WeaponType.FistW_2H)
-                __instance.CurrentVisual.gameObject.AddComponent<VRFisticuffsHandler>();
-            if (__instance.CurrentVisual.GetComponent<VRShieldHandler>() == null && __instance.Type == Weapon.WeaponType.Shield) 
-                __instance.CurrentVisual.gameObject.AddComponent<VRShieldHandler>();
-
+                handlerAdded = __instance.CurrentVisual.gameObject.AddComponent<VRFisticuffsHandler>();
+            if (__instance.CurrentVisual.GetComponent<VRShieldHandler>() == null && __instance.Type == Weapon.WeaponType.Shield)
+                handlerAdded = __instance.CurrentVisual.gameObject.AddComponent<VRShieldHandler>();
+            if (VRInstanceManager.gamepadInUse && handlerAdded != null)
+                handlerAdded.enabled = false;
         }
 
         [HarmonyPrefix]
@@ -81,7 +82,8 @@ namespace OutwardVR.combat
         [HarmonyPatch(typeof(Character), "SendPerformAttackTrivial", new[] { typeof(int), typeof(int), typeof(bool) })]
         private static bool PerformAttackWithoutAnimation(Character __instance, object[] __args)
         {
-            if (!VRInstanceManager.firstPerson || 
+            if (VRInstanceManager.gamepadInUse || 
+                !VRInstanceManager.firstPerson || 
                 !__instance.IsLocalPlayer ||
                 (int)__args[0] >= 2 || 
                 __instance.CurrentWeapon == null ||

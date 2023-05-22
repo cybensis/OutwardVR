@@ -204,6 +204,10 @@ Shields consume less stamina when blocking and can block arrows.";
         [HarmonyPatch(typeof(ControlsInput), "IsLastActionGamepad")]
         private static bool SetUsingGamepad(ref bool __result)
         {
+
+            bool useGamepad = Input.GetJoystickNames().Length > 0 && Input.GetJoystickNames()[0] != "";
+            VRInstanceManager.SetGamepad(useGamepad);
+
             __result = true;
             return false;
         }
