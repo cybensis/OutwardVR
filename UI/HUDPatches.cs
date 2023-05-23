@@ -22,6 +22,7 @@ namespace OutwardVR.UI
 
             if (MiscPatches.characterUIInstance == null)
                 return;
+            // When on the main menu, some of the NetworklevelLoader variables here are set to true so first check if its not in the main menu scene
             if (!__instance.IsInMainMenuScene && (!NetworkLevelLoader.Instance.IsOverallLoadingDone || !NetworkLevelLoader.Instance.AllPlayerReadyToContinue || MenuManager.Instance.IsReturningToMainMenu))
                 return;
 
@@ -49,9 +50,11 @@ namespace OutwardVR.UI
                 else {
                     CharacterCamera characterCamera = Camera.main.transform.root.GetComponent<CharacterCamera>();
 
-                    if (characterCamera != null) { 
-                        if (__instance.transform.parent != characterCamera.transform)
+                    if (characterCamera != null) {
+                        if (__instance.transform.parent != characterCamera.transform) { 
                             __instance.transform.parent = characterCamera.transform;
+                            __instance.transform.localScale = new Vector3(0.0006f, 0.0006f, 0.0006f);
+                        }
 
                         __instance.transform.localPosition = new Vector3(0.075f, 1.15f, -0.7f);
                         __instance.transform.rotation = Quaternion.identity;

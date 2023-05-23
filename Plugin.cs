@@ -38,6 +38,7 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
         PlayerPrefs.SetInt("XBOX_EN", 1);
 
+
         Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
         SteamVR_Actions.PreInitialize();

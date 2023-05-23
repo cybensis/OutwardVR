@@ -29,10 +29,10 @@ namespace OutwardVR
         public static bool gameHasBeenLoadedOnce = false;
         public static bool isLoading = false;
 
-        public static bool headBobOn = false;
-        public static bool freezeCombat = false;
-        public static bool firstPerson = true;
-        public static bool moveFromHeadset = false;
+        public static bool headBobOn = (PlayerPrefs.GetInt("headBobOn", 0) == 1 ? true : false);
+        public static bool freezeCombat = (PlayerPrefs.GetInt("freezeCombat", 0) == 1 ? true : false);
+        public static bool firstPerson = (PlayerPrefs.GetInt("firstPerson", 1) == 1 ? true : false);
+        public static bool moveFromHeadset = (PlayerPrefs.GetInt("moveFromHeadset", 0) == 1 ? true : false);
 
         public static bool gamepadInUse = false;
 
@@ -51,6 +51,7 @@ namespace OutwardVR
 
         public static void ToggleHeadBob() { 
             headBobOn = !headBobOn;
+            PlayerPrefs.SetInt("headBobOn", headBobOn ? 1 : 0);
             if (VRInstanceManager.firstPerson && modelPlayerHead != null)
             {
                 if (headBobOn)
@@ -66,6 +67,7 @@ namespace OutwardVR
             if (Time.time - timeLastToggled > 2.5f) { 
                 timeLastToggled = Time.time;
                 firstPerson = !firstPerson;
+                PlayerPrefs.SetInt("firstPerson", firstPerson ? 1 : 0);
                 ToggleMotionControls((gamepadInUse) ? false : firstPerson ? true : false);
                 if (crouchInstance != null)
                     crouchInstance.enabled = firstPerson;

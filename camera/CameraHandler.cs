@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using HarmonyLib;
-using NodeCanvas.Framework;
-using OutwardVR;
 using OutwardVR.body;
 using OutwardVR.combat;
-using Rewired;
-using Rewired.Data.Mapping;
 using UnityEngine;
 using Valve.VR;
 using static ControlsInput;
-using static MapMagic.ObjectPool;
 
 namespace OutwardVR.camera
 {
@@ -40,14 +34,10 @@ namespace OutwardVR.camera
                 float xAxis = SteamVR_Actions._default.LeftJoystick.axis.x;
                 float yAxis = SteamVR_Actions._default.LeftJoystick.axis.y;
                 if (VRInstanceManager.gamepadInUse) {
-                    //ControlsInput.MoveVertical(__instance.OwnerPlayerSys.PlayerID)
                     xAxis = ControlsInput.MoveHorizontal(VRInstanceManager.currentPlayerId);
                     yAxis = ControlsInput.MoveVertical(VRInstanceManager.currentPlayerId);
                 }
-                if (VRInstanceManager.firstPerson)
-                    _direction = __instance.transform.forward * yAxis + __instance.transform.right * xAxis;
-                else
-                    _direction = VRInstanceManager.camRoot.transform.forward * yAxis + VRInstanceManager.camRoot.transform.right * xAxis;
+                _direction = __instance.transform.forward * yAxis + __instance.transform.right * xAxis;
                   
             }
         }
@@ -564,24 +554,25 @@ namespace OutwardVR.camera
                     {
                         if (!targetSys.Locked && (xMovement != 0 || yMovement != 0))
                         {
-                            // Rotate body to match camera position - Needs some work
+                            // Rotate body to match camera position
                             Vector3 vrRot = Camera.main.transform.rotation.eulerAngles;
                             // Can't rotate from controller direction if you're using gamepad
                             if (!VRInstanceManager.gamepadInUse && !VRInstanceManager.moveFromHeadset)
                                 vrRot = CameraManager.LeftHand.transform.eulerAngles;
                             Vector3 bodyRot = __instance.transform.rotation.eulerAngles;
-                            // If there is a difference of 17.5f between the body and camera rotation
+                            // If there is a difference of x between the body and camera rotation
                             if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) > HMD_AND_BODY_DIFF_TOLERANCE)
-                                // for every 17.5 degrees of difference in body and camera rotation, rotate the player x * -2f to rotate left or x * 2f to rotate right
+                                // for every x degrees of difference in body and camera rotation, rotate the player x * -2f to rotate left or x * 2f to rotate right
                                 clampedDiff = -2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / HMD_AND_BODY_DIFF_TOLERANCE);
                             else if (Mathf.DeltaAngle(vrRot.y, bodyRot.y) < -HMD_AND_BODY_DIFF_TOLERANCE)
                                 clampedDiff = 2f * (Mathf.DeltaAngle(vrRot.y, bodyRot.y) / -HMD_AND_BODY_DIFF_TOLERANCE);
                         }
-                        else if (VRInstanceManager.moveFromHeadset)
+                        else if (targetSys.Locked)
                             VRInstanceManager.camRoot.transform.rotation = __instance.transform.rotation;
                         VRInstanceManager.camRoot.transform.Rotate(0f, clampedDiff * -1, 0f, Space.World);
                         clampedDiff += xRot * OptionManager.Instance.GetMouseSense(MenuManager.Instance.MapOwnerPlayerID);
                         __instance.transform.Rotate(0f, clampedDiff, 0f);
+
 
                     }
                     else

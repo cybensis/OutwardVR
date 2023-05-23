@@ -91,7 +91,7 @@ namespace OutwardVR.UI
                 GameObject moveDirectionButton = Object.Instantiate(__instance.m_btnTogglePause.gameObject);
                 moveDirectionButton.transform.parent = __instance.m_btnTogglePause.transform.parent;
                 moveDirectionButton.transform.localPosition = new Vector3(0, -295, 0);
-                moveDirectionButton.transform.GetChild(0).GetComponent<Text>().text = "Move direction: " + (VRInstanceManager.moveFromHeadset ? "Headset" : "Hand");
+                moveDirectionButton.transform.GetChild(0).GetComponent<Text>().text = "Move direction: " + (VRInstanceManager.moveFromHeadset ? "Head" : "Hand");
                 buttonComp = moveDirectionButton.GetComponent<Button>();
                 buttonComp.onClick = new Button.ButtonClickedEvent();
                 buttonComp.onClick.AddListener(() => MoveDirectionButtonHandler(moveDirectionButton.transform.GetChild(0).GetComponent<Text>()));
@@ -114,12 +114,14 @@ namespace OutwardVR.UI
         private static void FreezeCombatButtonHandler(Text buttonText)
         {
             VRInstanceManager.freezeCombat = !VRInstanceManager.freezeCombat;
+            PlayerPrefs.SetInt("freezeCombat", VRInstanceManager.freezeCombat ? 1 : 0);
             buttonText.text = "Move during attack: " + ((VRInstanceManager.freezeCombat) ? "Off" : "On");
         }
 
         private static void MoveDirectionButtonHandler(Text buttonText)
         {
             VRInstanceManager.moveFromHeadset = !VRInstanceManager.moveFromHeadset;
+            PlayerPrefs.SetInt("moveFromHeadset", VRInstanceManager.moveFromHeadset ? 1 : 0);
             buttonText.text = "Move direction: " + (VRInstanceManager.moveFromHeadset ? "Headset" : "Hand");
         }
 

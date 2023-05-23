@@ -6,8 +6,7 @@
 <!-- [![Build Status][travis-image]][travis-url]
 [![Downloads Stats][npm-downloads]][npm-url] -->
 
-Currently this mod converts the standard third-person flatscreen Outward game to a first person VR experience with full 6DOF and motion control support.
-
+Currently this mod converts the standard third-person flatscreen Outward game to a first person VR experience with full 6DOF and motion control support. Now also supports third-person VR and gamepad support for a less intense experience.
 <br>
 
 ## <b>Installation</b>
@@ -50,13 +49,14 @@ Then opening with your favourite IDE should be enough to begin developing or bui
 <br>
 
 ## <b>Release History</b>
-
-* 0.9.0 - Beta version of the mod, mostly works but need community help to fine tune and find and fix bugs.
+* <b>0.9.2</b> - Added a bunch of QOL features and fixes with help from the community.
+* <b>0.9.1</b> - After getting some feedback from the community I've made a few changes that should improve accessibility for those who want a less intense VR experience.
+* <b>0.9.0</b> - Beta version of the mod, mostly works but need community help to fine tune and find and fix bugs.
 
 <br>
 
 ## <b>Support</b>
-* So far this mod has only been tested on a Quest 2 and with the Oculus Touch controllers. It should work for other VR headsets but it will not work for other VR controllers until you add your own controller mapping scheme.
+* So far this mod has support, and is known to work with the Quest 2 HMD and controllers, the Valve Index and controllers, and the HTC Vive and their controllers.
 
 <br>
 
@@ -64,6 +64,7 @@ Then opening with your favourite IDE should be enough to begin developing or bui
 
 * Big thanks to [PinkMilkProductions](https://www.youtube.com/channel/UCvZLpwlyxn6lFYXKsBl6qHg) for his Unity VR modding series 
 * Thanks to [dabeschte](https://github.com/dabeschte) for his [VR arm inverse kinematics repository](https://github.com/dabeschte/VRArmIK) which I based my IK off
+* Thanks to fella1 and Shpalman from the flat2vr discord for providing the Index and Vive controller bindings respectively.
 
 <br>
 
